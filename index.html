@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Szkolenie JavaScript - Rossmann</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background: #1a1a2e;
+        color: #e8e8e8;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      header {
+        text-align: center;
+        padding: 3em 1em 2em;
+        max-width: 800px;
+      }
+
+      header h1 {
+        font-size: 2.5em;
+        font-weight: 800;
+        color: #e3000f;
+        margin-bottom: 0.3em;
+      }
+
+      header p {
+        font-size: 1.1em;
+        color: #a0a0b0;
+        line-height: 1.6;
+      }
+
+      .badge {
+        display: inline-block;
+        background: rgba(227, 0, 15, 0.15);
+        color: #ff3344;
+        padding: 0.3em 1em;
+        border-radius: 20px;
+        font-size: 0.85em;
+        margin-top: 1em;
+      }
+
+      .days {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5em;
+        padding: 1em 2em 3em;
+        max-width: 1100px;
+        width: 100%;
+      }
+
+      .day-card {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 2em;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s,
+          border-color 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: block;
+      }
+
+      .day-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(227, 0, 15, 0.2);
+        border-color: rgba(227, 0, 15, 0.4);
+      }
+
+      .day-card .day-num {
+        font-size: 0.85em;
+        font-weight: 700;
+        color: #e3000f;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5em;
+      }
+
+      .day-card h2 {
+        font-size: 1.4em;
+        font-weight: 700;
+        margin-bottom: 0.5em;
+        color: #fff;
+      }
+
+      .day-card p {
+        font-size: 0.9em;
+        color: #a0a0b0;
+        line-height: 1.5;
+      }
+
+      .day-card .topics {
+        margin-top: 1em;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4em;
+      }
+
+      .day-card .topic-tag {
+        background: rgba(255, 255, 255, 0.06);
+        color: #c0c0d0;
+        padding: 0.2em 0.6em;
+        border-radius: 4px;
+        font-size: 0.75em;
+      }
+
+      footer {
+        text-align: center;
+        padding: 2em;
+        color: #555;
+        font-size: 0.85em;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1em;
+        max-width: 800px;
+        width: 100%;
+        padding: 0 2em;
+        margin-bottom: 2em;
+      }
+
+      .info-item {
+        text-align: center;
+        padding: 1em;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+      }
+
+      .info-item .label {
+        font-size: 0.75em;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .info-item .value {
+        font-size: 1.2em;
+        font-weight: 700;
+        color: #fff;
+        margin-top: 0.3em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>JavaScript dla Inżynierów Testów</h1>
+      <p>
+        Szkolenie 5-dniowe - podstawy JavaScript potrzebne do automatyzacji
+        testów (Cypress, k6)
+      </p>
+      <div class="badge">Rossmann - Marzec 2026</div>
+    </header>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="label">Czas trwania</div>
+        <div class="value">5 dni × 7h</div>
+      </div>
+      <div class="info-item">
+        <div class="label">Grupa</div>
+        <div class="value">~18 osób</div>
+      </div>
+      <div class="info-item">
+        <div class="label">Poziom</div>
+        <div class="value">Początkujący</div>
+      </div>
+    </div>
+
+    <div class="days">
+      <a href="slides/day-1.html" class="day-card">
+        <div class="day-num">Dzień 1</div>
+        <h2>Fundamenty JavaScript</h2>
+        <p>Czym jest JS, środowisko pracy, zmienne, typy danych, operatory</p>
+        <div class="topics">
+          <span class="topic-tag">let / const</span>
+          <span class="topic-tag">typy danych</span>
+          <span class="topic-tag">typeof</span>
+          <span class="topic-tag">operatory</span>
+          <span class="topic-tag">DevTools</span>
+        </div>
+      </a>
+
+      <a href="slides/day-2.html" class="day-card">
+        <div class="day-num">Dzień 2</div>
+        <h2>Sterowanie przepływem i funkcje</h2>
+        <p>Instrukcje warunkowe, pętle, funkcje, scope</p>
+        <div class="topics">
+          <span class="topic-tag">if / else</span>
+          <span class="topic-tag">for / while</span>
+          <span class="topic-tag">arrow functions</span>
+          <span class="topic-tag">scope</span>
+        </div>
+      </a>
+
+      <a href="slides/day-3.html" class="day-card">
+        <div class="day-num">Dzień 3</div>
+        <h2>Tablice i obiekty</h2>
+        <p>Tablice, metody iteracyjne, obiekty, destructuring, JSON</p>
+        <div class="topics">
+          <span class="topic-tag">map / filter</span>
+          <span class="topic-tag">obiekty</span>
+          <span class="topic-tag">destructuring</span>
+          <span class="topic-tag">JSON</span>
+        </div>
+      </a>
+
+      <a href="slides/day-4.html" class="day-card">
+        <div class="day-num">Dzień 4</div>
+        <h2>Asynchroniczność i DOM</h2>
+        <p>DOM, eventy, Promise, async/await, Fetch API</p>
+        <div class="topics">
+          <span class="topic-tag">DOM</span>
+          <span class="topic-tag">addEventListener</span>
+          <span class="topic-tag">Promise</span>
+          <span class="topic-tag">async/await</span>
+          <span class="topic-tag">fetch</span>
+        </div>
+      </a>
+
+      <a href="slides/day-5.html" class="day-card">
+        <div class="day-num">Dzień 5</div>
+        <h2>Klasy, Moduły, TypeScript + Test</h2>
+        <p>Klasy, moduły ES, error handling, TypeScript, test końcowy</p>
+        <div class="topics">
+          <span class="topic-tag">class</span>
+          <span class="topic-tag">import/export</span>
+          <span class="topic-tag">try/catch</span>
+          <span class="topic-tag">TypeScript</span>
+          <span class="topic-tag">test</span>
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      Nawigacja w prezentacji: <strong>Strzałki</strong> - slajdy &nbsp;|&nbsp;
+      <strong>F</strong> - pełny ekran &nbsp;|&nbsp; <strong>S</strong> -
+      notatki prezentera &nbsp;|&nbsp; <strong>Esc</strong> - przegląd slajdów
+    </footer>
+  </body>
+</html>

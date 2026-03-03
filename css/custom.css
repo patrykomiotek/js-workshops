@@ -1,0 +1,360 @@
+/* ============================================
+   Rossmann JS Training — Custom Reveal.js Theme
+   ============================================ */
+
+:root {
+  --rossmann-red: #E3000F;
+  --rossmann-red-dark: #B0000C;
+  --rossmann-red-light: #FF3344;
+  --bg-dark: #1a1a2e;
+  --bg-section: #16213e;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a0b0;
+  --code-bg: #0d1117;
+  --exercise-bg: #1a2a1a;
+  --exercise-border: #4CAF50;
+  --quiz-bg: #2a1a2a;
+  --quiz-border: #9C27B0;
+  --tip-bg: #1a2a3a;
+  --tip-border: #2196F3;
+  --warning-bg: #2a2a1a;
+  --warning-border: #FF9800;
+}
+
+/* === Slide overflow — allow scrolling on content-heavy slides === */
+.reveal .slides > section,
+.reveal .slides > section > section {
+  overflow-y: auto !important;
+  /* prevent reveal.js from clipping overflowing content */
+}
+
+/* === Base Overrides === */
+.reveal-viewport {
+  background: var(--bg-dark);
+}
+
+.reveal {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-primary);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+.reveal h1 {
+  font-size: 2.2em;
+  color: var(--rossmann-red);
+}
+
+.reveal h2 {
+  font-size: 1.6em;
+  color: #fff;
+}
+
+.reveal h3 {
+  font-size: 1.3em;
+  color: var(--rossmann-red-light);
+}
+
+.reveal p,
+.reveal li {
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.reveal ul,
+.reveal ol {
+  margin-left: 1em;
+}
+
+.reveal a {
+  color: var(--rossmann-red-light);
+}
+
+.reveal strong {
+  color: #fff;
+}
+
+/* === Title Slide === */
+.reveal .title-slide h1 {
+  font-size: 2.8em;
+  margin-bottom: 0.3em;
+}
+
+.reveal .title-slide .subtitle {
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  margin-bottom: 1em;
+}
+
+.reveal .title-slide .day-number {
+  display: inline-block;
+  background: var(--rossmann-red);
+  color: #fff;
+  padding: 0.2em 0.8em;
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+
+/* === Section Divider === */
+.reveal .section-slide {
+  background: var(--bg-section) !important;
+}
+
+.reveal .section-slide h2 {
+  color: var(--rossmann-red);
+  font-size: 2em;
+  border-bottom: 3px solid var(--rossmann-red);
+  padding-bottom: 0.3em;
+  display: inline-block;
+}
+
+.reveal .section-slide .section-number {
+  font-size: 3em;
+  font-weight: 800;
+  color: rgba(227, 0, 15, 0.3);
+  position: absolute;
+  top: 10%;
+  right: 10%;
+}
+
+/* === Code Slides === */
+.reveal pre {
+  width: 100%;
+  margin: 0.5em 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reveal pre code {
+  background: var(--code-bg);
+  padding: 1em;
+  font-size: 0.85em;
+  line-height: 1.5;
+  border-radius: 8px;
+  max-height: 500px;
+}
+
+.reveal code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.reveal :not(pre) > code {
+  background: rgba(227, 0, 15, 0.15);
+  color: var(--rossmann-red-light);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* === Exercise Slides === */
+.reveal .exercise-slide {
+  text-align: left;
+}
+
+.reveal .exercise {
+  background: var(--exercise-bg);
+  border-left: 4px solid var(--exercise-border);
+  border-radius: 0 8px 8px 0;
+  padding: 1em 1.5em;
+  margin: 0.8em 0;
+}
+
+.reveal .exercise h3 {
+  color: var(--exercise-border);
+  margin: 0 0 0.5em 0;
+  font-size: 1.1em;
+}
+
+.reveal .exercise h3::before {
+  content: "\1F4BB";
+  margin-right: 0.4em;
+}
+
+.reveal .exercise ol,
+.reveal .exercise ul {
+  margin-left: 0.5em;
+}
+
+/* === Quiz Slides === */
+.reveal .quiz {
+  background: var(--quiz-bg);
+  border-left: 4px solid var(--quiz-border);
+  border-radius: 0 8px 8px 0;
+  padding: 1em 1.5em;
+  margin: 0.8em 0;
+  text-align: left;
+}
+
+.reveal .quiz h3 {
+  color: var(--quiz-border);
+  margin: 0 0 0.5em 0;
+  font-size: 1.1em;
+}
+
+.reveal .quiz h3::before {
+  content: "\2753";
+  margin-right: 0.4em;
+}
+
+/* === Tip / Info Box === */
+.reveal .tip {
+  background: var(--tip-bg);
+  border-left: 4px solid var(--tip-border);
+  border-radius: 0 8px 8px 0;
+  padding: 0.8em 1.2em;
+  margin: 0.8em 0;
+  text-align: left;
+}
+
+.reveal .tip h3 {
+  color: var(--tip-border);
+  margin: 0 0 0.3em 0;
+  font-size: 1em;
+}
+
+.reveal .tip h3::before {
+  content: "\1F4A1";
+  margin-right: 0.4em;
+}
+
+/* === Warning Box === */
+.reveal .warning {
+  background: var(--warning-bg);
+  border-left: 4px solid var(--warning-border);
+  border-radius: 0 8px 8px 0;
+  padding: 0.8em 1.2em;
+  margin: 0.8em 0;
+  text-align: left;
+}
+
+.reveal .warning h3 {
+  color: var(--warning-border);
+  margin: 0 0 0.3em 0;
+  font-size: 1em;
+}
+
+.reveal .warning h3::before {
+  content: "\26A0\FE0F";
+  margin-right: 0.4em;
+}
+
+/* === Two-Column Layout === */
+.reveal .columns {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+}
+
+.reveal .columns .col {
+  flex: 1;
+}
+
+/* === Comparison Table === */
+.reveal table {
+  border-collapse: collapse;
+  margin: 0.5em auto;
+  font-size: 0.8em;
+}
+
+.reveal table th {
+  background: var(--rossmann-red);
+  color: #fff;
+  padding: 0.5em 1em;
+  text-align: left;
+  font-weight: 700;
+  font-size: 1.1em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.reveal table td {
+  padding: 0.5em 1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reveal table tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* === Fragment Highlight === */
+.reveal .highlight-red {
+  color: var(--rossmann-red);
+  font-weight: 700;
+}
+
+/* === Progress Bar === */
+.reveal .progress {
+  color: var(--rossmann-red);
+  height: 4px;
+}
+
+/* === Slide Number === */
+.reveal .slide-number {
+  color: var(--text-secondary);
+  font-size: 14px;
+  background: transparent;
+}
+
+/* === Agenda item === */
+.reveal .agenda {
+  text-align: left;
+}
+
+.reveal .agenda li {
+  margin-bottom: 0.4em;
+  list-style: none;
+  padding-left: 0.5em;
+}
+
+.reveal .agenda li::before {
+  content: "▸ ";
+  color: var(--rossmann-red);
+  font-weight: bold;
+}
+
+.reveal .agenda li .time {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  margin-left: 0.5em;
+}
+
+/* === Console output styling === */
+.reveal .console-output {
+  background: #000;
+  color: #0f0;
+  padding: 0.8em 1em;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  border: 1px solid #333;
+}
+
+/* === Keyboard shortcut display === */
+.reveal kbd {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 0.1em 0.5em;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  box-shadow: 0 2px 0 #222;
+}
+
+/* === Footer === */
+.reveal .slide-footer {
+  position: absolute;
+  bottom: 1em;
+  left: 1em;
+  font-size: 0.6em;
+  color: var(--text-secondary);
+}

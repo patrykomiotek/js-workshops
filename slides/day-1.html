@@ -1,0 +1,1817 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dzień 1 - Fundamenty JavaScript | Szkolenie Rossmann</title>
+
+    <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css" />
+    <link
+      rel="stylesheet"
+      href="../node_modules/reveal.js/dist/theme/black.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../node_modules/reveal.js/plugin/highlight/monokai.css"
+    />
+    <link rel="stylesheet" href="../css/custom.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ============================================================ -->
+        <!-- BLOCK 1: Wprowadzenie (~8-10 slides)                        -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 1: Title -->
+        <section class="title-slide">
+          <h1>JavaScript dla Inżynierów Testów</h1>
+          <span class="day-number">Dzień 1</span>
+          <p class="subtitle">Fundamenty JavaScript</p>
+          <aside class="notes">
+            Powitanie uczestników. Przedstawienie się. Zapytać o doświadczenie z
+            programowaniem. Ten dzień to solidne podstawy - zmienne, typy
+            danych, operatory. Tempo dostosowujemy do grupy.
+          </aside>
+        </section>
+
+        <!-- Slide 2: Agenda -->
+        <section>
+          <h2>Agenda</h2>
+          <ol class="agenda">
+            <li>Wprowadzenie do JavaScript</li>
+            <li>Środowisko pracy</li>
+            <li>
+              Zmienne - <code>let</code>, <code>const</code>, <code>var</code>
+            </li>
+            <li>Typy danych - string, number, boolean, null, undefined</li>
+            <li>Operatory</li>
+            <li>Ćwiczenia końcowe</li>
+          </ol>
+          <aside class="notes">
+            Krótko omówić plan dnia. Przerwy co ~1.5h. Zachęcić do zadawania
+            pytań na bieżąco. Ćwiczenia będą przeplatane z teorią.
+          </aside>
+        </section>
+
+        <!-- Slide 3: Czym jest JavaScript? -->
+        <section>
+          <h2>Czym jest JavaScript?</h2>
+          <ul>
+            <li>Język programowania stworzony w <strong>1995 roku</strong></li>
+            <li>Autor: <strong>Brendan Eich</strong> (Netscape)</li>
+            <li>Powstał w zaledwie <strong>10 dni</strong></li>
+            <li>Pierwotna nazwa: Mocha, potem LiveScript</li>
+            <li>Dziś - jeden z najpopularniejszych języków świata</li>
+          </ul>
+          <aside class="notes">
+            Brendan Eich stworzył prototyp w 10 dni. Nazwa JavaScript to chwyt
+            marketingowy - Java była wtedy bardzo popularna. JS nie ma prawie
+            nic wspólnego z Javą.
+          </aside>
+        </section>
+
+        <!-- Slide 4: Gdzie działa JavaScript? -->
+        <section>
+          <h2>Gdzie działa JavaScript?</h2>
+          <div class="columns">
+            <div class="col">
+              <h3>Przeglądarka</h3>
+              <ul>
+                <li>Chrome, Firefox, Safari</li>
+                <li>Strony internetowe</li>
+                <li>Aplikacje webowe</li>
+              </ul>
+            </div>
+            <div class="col">
+              <h3>Poza przeglądarką</h3>
+              <ul>
+                <li>Node.js (serwer)</li>
+                <li>Aplikacje mobilne</li>
+                <li>Narzędzia CLI</li>
+              </ul>
+            </div>
+          </div>
+          <aside class="notes">
+            JS jest wszędzie. Każda strona internetowa używa JS. Node.js
+            pozwolił uruchamiać JS poza przeglądarką - na serwerze, w
+            narzędziach, w testach.
+          </aside>
+        </section>
+
+        <!-- Slide 5: JavaScript w testowaniu -->
+        <section>
+          <h2>JavaScript w testowaniu</h2>
+          <p>Popularne narzędzia testowe oparte na JS:</p>
+          <div class="columns">
+            <div class="col">
+              <h3>Cypress</h3>
+              <pre><code data-trim data-noescape class="language-javascript">
+it("should add product to cart", () => {
+  cy.visit("/products");
+  cy.get(".add-to-cart").click();
+  cy.get(".cart-count")
+    .should("contain", "1");
+});
+</code></pre>
+            </div>
+            <div class="col">
+              <h3>Playwright</h3>
+              <pre><code data-trim data-noescape class="language-javascript">
+test("search for product", async ({ page }) => {
+  await page.goto("/");
+  await page.fill("#search", "shampoo");
+  await page.click(".search-btn");
+  await expect(page.locator(".results"))
+    .toBeVisible();
+});
+</code></pre>
+            </div>
+          </div>
+          <aside class="notes">
+            Pokazać, że znajomość JS jest kluczowa dla inżynierów testów
+            automatyzujących. Cypress i Playwright to 100% JavaScript. k6 używa
+            JS do definiowania testów wydajnościowych. Nie trzeba rozumieć
+            każdej linii - chodzi o zobaczenie, że JS jest wszędzie w testach.
+          </aside>
+        </section>
+
+        <!-- Slide 6: k6 - testy wydajnościowe -->
+        <section>
+          <h2>k6 - testy wydajnościowe</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+import http from "k6/http";
+import { check } from "k6";
+
+export default function () {
+  const response = http.get("https://api.rossmann.pl/products");
+
+  check(response, {
+    "status is 200": (r) => r.status === 200,
+    "response time < 500ms": (r) => r.timings.duration < 500,
+  });
+}
+</code></pre>
+          <aside class="notes">
+            k6 to narzędzie do testów wydajnościowych napisane w Go, ale skrypty
+            pisze się w JS. Znajomość JS pozwala pisać zaawansowane scenariusze
+            obciążeniowe.
+          </aside>
+        </section>
+
+        <!-- Slide 7: JavaScript vs Java -->
+        <section>
+          <h2>JavaScript vs Java</h2>
+          <div class="warning">
+            <h3>Częste nieporozumienie!</h3>
+            <p>JavaScript i Java to <strong>dwa różne języki</strong>.</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>JavaScript</th>
+                <th>Java</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dynamicznie typowany</td>
+                <td>Statycznie typowany</td>
+              </tr>
+              <tr>
+                <td>Skryptowy, interpretowany</td>
+                <td>Kompilowany do bytecode</td>
+              </tr>
+              <tr>
+                <td>Przeglądarka + Node.js</td>
+                <td>JVM (Java Virtual Machine)</td>
+              </tr>
+              <tr>
+                <td>Prototypy</td>
+                <td>Klasy (OOP)</td>
+              </tr>
+            </tbody>
+          </table>
+          <aside class="notes">
+            Nazwa JavaScript była chwytem marketingowym - Java była wtedy na
+            topie. To jedno z najczęściej zadawanych pytań na rozmowach
+            rekrutacyjnych. "Car and carpet" - wspólna część nazwy, ale całkiem
+            coś innego.
+          </aside>
+        </section>
+
+        <!-- Slide 8: Ekosystem JS -->
+        <section>
+          <h2>Ekosystem JavaScript</h2>
+          <ul>
+            <li>
+              <strong>npm</strong> - menedżer pakietów (ponad 2 miliony paczek)
+            </li>
+            <li><strong>Node.js</strong> - środowisko uruchomieniowe</li>
+            <li>
+              <strong>Frameworki frontendowe</strong> - React, Angular, Vue
+            </li>
+            <li>
+              <strong>Frameworki testowe</strong> - Cypress, Playwright, Jest
+            </li>
+            <li><strong>TypeScript</strong> - nadzbiór JS z typami</li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Instalacja pakietu z npm
+// npm install cypress
+// npm install playwright
+</code></pre>
+          <aside class="notes">
+            npm to jak sklep z częściami - można pobrać gotowe rozwiązania. Nie
+            trzeba wszystkiego pisać od zera. Na szkoleniu będziemy używać
+            Node.js i npm.
+          </aside>
+        </section>
+
+        <!-- Slide 9: Quiz - Wprowadzenie -->
+        <section>
+          <h2>Szybki quiz</h2>
+          <div class="quiz">
+            <h3>Sprawdź się!</h3>
+            <ol>
+              <li>W którym roku powstał JavaScript?</li>
+              <li>Kto stworzył JavaScript?</li>
+              <li>Czy JavaScript i Java to ten sam język?</li>
+              <li>Wymień jedno narzędzie testowe oparte na JS.</li>
+            </ol>
+          </div>
+          <aside class="notes">
+            Szybki quiz na rozgrzewkę. Można odpowiadać ustnie. 1) 1995, 2)
+            Brendan Eich, 3) Nie!, 4) Cypress/Playwright/k6/Jest
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BLOCK 2: Środowisko pracy (~5 slides)                      -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 10: Section divider -->
+        <section class="section-slide">
+          <span class="section-number">2</span>
+          <h2>Środowisko pracy</h2>
+          <p>Narzędzia, które będziemy używać</p>
+          <aside class="notes">
+            Przechodzimy do części praktycznej. Każdy powinien mieć
+            zainstalowane: VS Code, Node.js, Chrome.
+          </aside>
+        </section>
+
+        <!-- Slide 11: VS Code -->
+        <section>
+          <h2>VS Code - nasz edytor</h2>
+          <ul>
+            <li>Darmowy edytor od Microsoftu</li>
+            <li>Pobieranie: <code>code.visualstudio.com</code></li>
+            <li>
+              Przydatne rozszerzenia:
+              <ul>
+                <li><strong>ESLint</strong> - wykrywanie błędów</li>
+                <li><strong>Prettier</strong> - formatowanie kodu</li>
+                <li><strong>Live Server</strong> - podgląd na żywo</li>
+              </ul>
+            </li>
+          </ul>
+          <div class="tip">
+            <h3>Skrót klawiszowy</h3>
+            <p>
+              <code>Ctrl + `</code> (lub <code>Cmd + `</code>) - otwiera
+              terminal w VS Code
+            </p>
+          </div>
+          <aside class="notes">
+            Pokazać VS Code na żywo. Omówić interfejs: eksplorator plików,
+            terminal, rozszerzenia. Zainstalować razem ESLint i Prettier.
+          </aside>
+        </section>
+
+        <!-- Slide 12: Konsola przeglądarki -->
+        <section>
+          <h2>Konsola przeglądarki (DevTools)</h2>
+          <p>Jak otworzyć:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>Skrót</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Windows / Linux</td>
+                <td><code>F12</code> lub <code>Ctrl + Shift + I</code></td>
+              </tr>
+              <tr>
+                <td>macOS</td>
+                <td><code>Cmd + Opt + I</code></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Zakładka <strong>Console</strong> - tutaj można pisać kod JS na
+            żywo!
+          </p>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Wpisz w konsoli:
+2 + 2
+"Hello" + " World"
+</code></pre>
+          <aside class="notes">
+            Pokazać na żywo jak otworzyć DevTools. Wpisać kilka prostych
+            wyrażeń. Konsola to najszybszy sposób na eksperymentowanie z JS.
+            Zachęcić uczestników do otwarcia konsoli na swoich komputerach.
+          </aside>
+        </section>
+
+        <!-- Slide 13: Node.js -->
+        <section>
+          <h2>Node.js - uruchamianie skryptów</h2>
+          <p>Node.js pozwala uruchamiać JavaScript poza przeglądarką.</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+// plik: hello.js
+console.log("Witaj w swiecie JavaScript!");
+</code></pre>
+          <p>Uruchomienie w terminalu:</p>
+          <pre><code data-trim data-noescape class="language-bash">
+node hello.js
+</code></pre>
+          <div class="console-output">Witaj w świecie JavaScript!</div>
+          <aside class="notes">
+            Pokazać na żywo: stworzyć plik hello.js, uruchomić go przez node.
+            Sprawdzić wersję Node: node --version. Powinno być >= 18.
+          </aside>
+        </section>
+
+        <!-- Slide 14: Pierwszy program -->
+        <section>
+          <h2>Pierwszy program</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+console.log("Hello, Rossmann!");
+</code></pre>
+          <div class="console-output">Hello, Rossmann!</div>
+          <ul>
+            <li><code>console.log()</code> - wypisuje tekst w konsoli</li>
+            <li>Można wypisać tekst, liczby, zmienne...</li>
+            <li>To nasz główny sposób na "zobaczenie" co robi kod</li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-javascript">
+console.log("Imie:", "Anna");
+console.log("Wiek:", 30);
+console.log("2 + 3 =", 2 + 3);
+</code></pre>
+          <aside class="notes">
+            console.log to najważniejsza funkcja na początku nauki. Używamy jej
+            do debugowania, sprawdzania wartości, uczenia się. Pokazać że można
+            podać wiele argumentów po przecinku.
+          </aside>
+        </section>
+
+        <!-- Slide 15: Ćwiczenie - Środowisko -->
+        <section>
+          <h2>Ćwiczenie</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 2.1 - Twój pierwszy kod</h3>
+            <ol>
+              <li>Otwórz konsolę przeglądarki (<code>F12</code>)</li>
+              <li>
+                Wpisz: <code>console.log("Cześć, jestem [Twoje imię]!")</code>
+              </li>
+              <li>Stwórz plik <code>first.js</code> w VS Code</li>
+              <li>
+                Wpisz 3 różne <code>console.log()</code> z różnymi treściami
+              </li>
+              <li>Uruchom: <code>node first.js</code></li>
+            </ol>
+          </div>
+          <aside class="notes">
+            Dać 5-10 minut na ćwiczenie. Przejść się po sali i pomóc. Upewnić
+            się, że każdy ma działające środowisko. To kluczowy moment - jeśli
+            ktoś ma problem z setupem, trzeba go rozwiązać teraz.
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BLOCK 3: Zmienne (~10-12 slides)                            -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 16: Section divider -->
+        <section class="section-slide">
+          <span class="section-number">3</span>
+          <h2>Zmienne</h2>
+          <p>Przechowywanie danych w programie</p>
+          <aside class="notes">
+            Zmienne to jeden z najważniejszych konceptów. Bez nich nie można
+            pisać programów. Będziemy uczyć się let, const i var.
+          </aside>
+        </section>
+
+        <!-- Slide 17: Czym jest zmienna? -->
+        <section>
+          <h2>Czym jest zmienna?</h2>
+          <p>
+            Zmienna to <strong>pudełko z etykietą</strong>, w którym
+            przechowujemy dane.
+          </p>
+          <pre><code data-trim data-noescape class="language-javascript">
+let productName = "Szampon do wlosow";
+</code></pre>
+          <ul>
+            <li><code>let</code> - słowo kluczowe (tworzymy zmienną)</li>
+            <li><code>productName</code> - nazwa (etykieta na pudełku)</li>
+            <li><code>=</code> - operator przypisania (wkładamy do pudełka)</li>
+            <li>
+              <code>"Szampon do wlosow"</code> - wartość (zawartość pudełka)
+            </li>
+          </ul>
+          <aside class="notes">
+            Analogia z pudełkiem jest świetna dla początkujących. Etykieta to
+            nazwa zmiennej, zawartość to wartość. Możemy zmienić zawartość, ale
+            etykieta zostaje.
+          </aside>
+        </section>
+
+        <!-- Slide 18: let -->
+        <section>
+          <h2><code>let</code> - deklaracja zmiennej</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Deklaracja i przypisanie
+let price = 29.99;
+console.log(price); // 29.99
+
+// Zmiana wartosci
+price = 24.99;
+console.log(price); // 24.99
+
+// Deklaracja bez przypisania
+let discount;
+console.log(discount); // undefined
+</code></pre>
+          <div class="tip">
+            <h3>Zapamiętaj</h3>
+            <p><code>let</code> pozwala zmienić wartość zmiennej później.</p>
+          </div>
+          <aside class="notes">
+            let to nasz główny sposób na tworzenie zmiennych. Wartość można
+            zmienić. Jeśli nie przypiszemy wartości, zmienna ma wartość
+            undefined.
+          </aside>
+        </section>
+
+        <!-- Slide 19: const -->
+        <section>
+          <h2><code>const</code> - stała</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const companyName = "Rossmann";
+console.log(companyName); // "Rossmann"
+
+// Proba zmiany - BLAD!
+companyName = "Inna firma";
+// TypeError: Assignment to constant variable.
+</code></pre>
+          <div class="warning">
+            <h3>Uwaga</h3>
+            <p>
+              <code>const</code> wymaga przypisania wartości przy deklaracji!
+            </p>
+          </div>
+          <pre><code data-trim data-noescape class="language-javascript">
+const taxRate; // SyntaxError!
+const taxRate = 0.23; // OK
+</code></pre>
+          <aside class="notes">
+            const to stała - raz przypisana wartość nie może być zmieniona.
+            Używamy const domyślnie, a let tylko gdy wiemy, że wartość się
+            zmieni. To dobra praktyka - chroni przed przypadkowymi zmianami.
+          </aside>
+        </section>
+
+        <!-- Slide 20: var -->
+        <section>
+          <h2><code>var</code> - stary sposób</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+var userName = "Anna";
+console.log(userName); // "Anna"
+
+// var pozwala na re-deklaracje (let nie!)
+var userName = "Bartek"; // OK z var
+console.log(userName); // "Bartek"
+</code></pre>
+          <div class="warning">
+            <h3>Dlaczego unikamy <code>var</code>?</h3>
+            <ul>
+              <li>
+                <strong>Hoisting</strong> - zmienna istnieje przed deklaracją
+              </li>
+              <li>
+                Brak <strong>block scope</strong> - wycieka z bloków
+                <code>{}</code>
+              </li>
+              <li>Można przypadkowo nadpisać zmienną</li>
+            </ul>
+          </div>
+          <aside class="notes">
+            var to spuścizna starego JS (przed ES6/2015). W nowym kodzie zawsze
+            używamy let/const. Warto wiedzieć, że istnieje - spotkamy go w
+            starszym kodzie. Nie trzeba tłumaczyć hoistingu szczegółowo -
+            wystarczy powiedzieć że var jest nieprzewidywalny.
+          </aside>
+        </section>
+
+        <!-- Slide 21: Hoisting - przykład -->
+        <section>
+          <h2>Problem z <code>var</code> - hoisting</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Z var - dziala, ale wartosc to undefined
+console.log(product); // undefined (!)
+var product = "Krem";
+
+// Z let - blad (tak powinno byc!)
+console.log(item); // ReferenceError!
+let item = "Mydlo";
+</code></pre>
+          <div class="tip">
+            <h3>Zasada</h3>
+            <p>
+              <code>let</code> i <code>const</code> chronią nas przed użyciem
+              zmiennej przed jej zadeklarowaniem.
+            </p>
+          </div>
+          <aside class="notes">
+            Hoisting z var sprawia, że zmienna istnieje od początku funkcji, ale
+            ma wartość undefined. let i const rzucają błąd - co jest lepsze, bo
+            od razu widzimy problem.
+          </aside>
+        </section>
+
+        <!-- Slide 22: Porównanie let vs const vs var -->
+        <section>
+          <h2>let vs const vs var</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Cecha</th>
+                <th><code>let</code></th>
+                <th><code>const</code></th>
+                <th><code>var</code></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Zmiana wartości</td>
+                <td>Tak</td>
+                <td>Nie</td>
+                <td>Tak</td>
+              </tr>
+              <tr>
+                <td>Block scope</td>
+                <td>Tak</td>
+                <td>Tak</td>
+                <td>Nie</td>
+              </tr>
+              <tr>
+                <td>Hoisting</td>
+                <td>TDZ</td>
+                <td>TDZ</td>
+                <td>undefined</td>
+              </tr>
+              <tr>
+                <td>Re-deklaracja</td>
+                <td>Nie</td>
+                <td>Nie</td>
+                <td>Tak</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="tip">
+            <h3>Złota zasada</h3>
+            <p>
+              Używaj <code>const</code> domyślnie. <code>let</code> gdy musisz
+              zmienić wartość. <code>var</code> - nigdy.
+            </p>
+          </div>
+          <aside class="notes">
+            TDZ = Temporal Dead Zone - zmienna istnieje, ale nie można jej użyć
+            przed deklaracją. W praktyce: const domyślnie, let jeśli wartość się
+            zmienia, var nigdy.
+          </aside>
+        </section>
+
+        <!-- Slide 23: Nazewnictwo zmiennych -->
+        <section>
+          <h2>Nazewnictwo zmiennych</h2>
+          <div class="columns">
+            <div class="col">
+              <h3>Zasady</h3>
+              <ul>
+                <li>
+                  Zaczyna się od litery, <code>_</code> lub <code>$</code>
+                </li>
+                <li>Nie może zaczynać się od cyfry</li>
+                <li>Nie może być słowem kluczowym</li>
+                <li>Wielkość liter ma znaczenie</li>
+              </ul>
+            </div>
+            <div class="col">
+              <h3>Konwencja: camelCase</h3>
+              <pre><code data-trim data-noescape class="language-javascript">
+// Dobrze
+let productName = "Szampon";
+let totalPrice = 49.99;
+let isAvailable = true;
+
+// Zle
+let product_name = "Szampon";
+let TOTALPRICE = 49.99;
+let x = true;
+</code></pre>
+            </div>
+          </div>
+          <aside class="notes">
+            camelCase to standard w JavaScript. Pierwsza litera mała, kolejne
+            słowa z wielkiej. Nazwy powinny być opisowe - productName zamiast x
+            czy p. W testach spotkamy też UPPER_CASE dla stałych
+            konfiguracyjnych.
+          </aside>
+        </section>
+
+        <!-- Slide 24: Dobre nazwy zmiennych -->
+        <section>
+          <h2>Dobre nazwy zmiennych</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Dobre - opisowe, jasne
+const maxRetryCount = 3;
+const userEmail = "anna@rossmann.pl";
+let isTestPassed = true;
+let cartItemCount = 0;
+
+// Zle - niejasne, skrotowe
+const m = 3;
+const e = "anna@rossmann.pl";
+let flag = true;
+let c = 0;
+</code></pre>
+          <div class="tip">
+            <h3>Wskazówka</h3>
+            <p>
+              Czytając nazwę zmiennej, powinieneś od razu wiedzieć co
+              przechowuje.
+            </p>
+          </div>
+          <aside class="notes">
+            Dobre nazewnictwo to połowa sukcesu. Kod czyta się wielokrotnie
+            częściej niż pisze. Boolean zmienne zaczynamy od is, has, can,
+            should.
+          </aside>
+        </section>
+
+        <!-- Slide 25: Ćwiczenie - Zmienne -->
+        <section>
+          <h2>Ćwiczenie</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 3.1 - Zmienne</h3>
+            <p>Stwórz plik <code>variables.js</code> i zadeklaruj:</p>
+            <ol>
+              <li><code>const</code> z nazwą Twojego ulubionego produktu</li>
+              <li><code>const</code> z jego ceną</li>
+              <li><code>let</code> z ilością sztuk (zmieniaj ją 2 razy)</li>
+              <li>Wypisz wszystko przez <code>console.log()</code></li>
+            </ol>
+          </div>
+          <pre><code data-trim data-noescape class="language-javascript">
+const productName = "Krem nawilzajacy";
+const price = 15.99;
+let quantity = 1;
+console.log(productName, price, quantity);
+quantity = 3;
+console.log("Nowa ilosc:", quantity);
+</code></pre>
+          <aside class="notes">
+            Dać 5-7 minut. Przejść się po sali. Sprawdzić czy wszyscy rozumieją
+            różnicę między let a const. Niech spróbują zmienić const - zobaczą
+            błąd.
+          </aside>
+        </section>
+
+        <!-- Slide 26: Quiz - Zmienne -->
+        <section>
+          <h2>Quiz - Zmienne</h2>
+          <div class="quiz">
+            <h3>Co wyświetli ten kod?</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+let count = 10;
+count = 20;
+const name = "Rossmann";
+console.log(count);
+console.log(name);
+</code></pre>
+          </div>
+          <p class="fragment">
+            Odpowiedź: <code>20</code> i <code>"Rossmann"</code>
+          </p>
+          <aside class="notes">
+            Prosty quiz na zrozumienie. count zmienia wartość na 20 (let
+            pozwala). name pozostaje "Rossmann" (const). Fragment pojawi się po
+            kliknięciu.
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BLOCK 4: Typy danych (~15-18 slides)                        -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 27: Section divider -->
+        <section class="section-slide">
+          <span class="section-number">4</span>
+          <h2>Typy danych</h2>
+          <p>Co można przechowywać w zmiennych?</p>
+          <aside class="notes">
+            To najdłuższy blok. Będziemy omawiać każdy typ osobno z przykładami.
+            Przerwa po tym bloku.
+          </aside>
+        </section>
+
+        <!-- Slide 28: Typy prymitywne - przegląd -->
+        <section>
+          <h2>Typy prymitywne w JavaScript</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Typ</th>
+                <th>Przykład</th>
+                <th>Opis</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>string</code></td>
+                <td><code>"tekst"</code></td>
+                <td>Łańcuch znaków</td>
+              </tr>
+              <tr>
+                <td><code>number</code></td>
+                <td><code>42</code>, <code>3.14</code></td>
+                <td>Liczba</td>
+              </tr>
+              <tr>
+                <td><code>boolean</code></td>
+                <td><code>true</code>, <code>false</code></td>
+                <td>Wartość logiczna</td>
+              </tr>
+              <tr>
+                <td><code>undefined</code></td>
+                <td><code>undefined</code></td>
+                <td>Brak przypisanej wartości</td>
+              </tr>
+              <tr>
+                <td><code>null</code></td>
+                <td><code>null</code></td>
+                <td>Celowy brak wartości</td>
+              </tr>
+              <tr>
+                <td><code>symbol</code></td>
+                <td><code>Symbol()</code></td>
+                <td>(zaawansowany)</td>
+              </tr>
+              <tr>
+                <td><code>bigint</code></td>
+                <td><code>9007199254740991n</code></td>
+                <td>(zaawansowany)</td>
+              </tr>
+            </tbody>
+          </table>
+          <aside class="notes">
+            Skupiamy się na pierwszych 5 typach. Symbol i BigInt to typy
+            zaawansowane - nie będziemy ich omawiać. Każdy typ będziemy omawiać
+            szczegółowo na kolejnych slajdach.
+          </aside>
+        </section>
+
+        <!-- Slide 29: String - tworzenie -->
+        <section>
+          <h2>String - łańcuch znaków</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Trzy sposoby tworzenia stringow
+const single = 'Witaj';           // apostrofy
+const double = "Rossmann";        // cudzyslowy
+const backtick = `Sklep Rossmann`; // backticki
+
+// Lacznie stringow (konkatenacja)
+const greeting = "Witaj w " + "Rossmann";
+console.log(greeting); // "Witaj w Rossmann"
+
+// Dlugosc stringa
+const brand = "Rossmann";
+console.log(brand.length); // 8
+</code></pre>
+          <aside class="notes">
+            Trzy sposoby tworzenia stringów. Apostrofy i cudzysłowy są
+            równoważne. Backticki mają specjalną moc - interpolacja (będziemy
+            omawiać za chwilę). length to właściwość, nie metoda - bez nawiasów!
+          </aside>
+        </section>
+
+        <!-- Slide 30: String - metody -->
+        <section>
+          <h2>Metody stringów</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const product = "Szampon Rossmann Premium";
+
+// Zmiana wielkosci liter
+console.log(product.toUpperCase());
+// "SZAMPON ROSSMANN PREMIUM"
+
+console.log(product.toLowerCase());
+// "szampon rossmann premium"
+
+// Sprawdzanie zawartosci
+console.log(product.includes("Rossmann")); // true
+console.log(product.includes("Nivea"));    // false
+
+// Wycinanie fragmentu
+console.log(product.slice(0, 7));   // "Szampon"
+console.log(product.slice(8));      // "Rossmann Premium"
+</code></pre>
+          <aside class="notes">
+            Metody stringów są bardzo przydatne w testach - sprawdzanie tekstów
+            na stronie, porównywanie, wycinanie fragmentów. includes() używamy
+            np. w asercjach. slice(start, end) - end jest opcjonalny.
+          </aside>
+        </section>
+
+        <!-- Slide 31: String - więcej metod -->
+        <section>
+          <h2>Więcej metod stringów</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const email = "  anna@rossmann.pl  ";
+
+// Usuwanie bialych znakow
+console.log(email.trim()); // "anna@rossmann.pl"
+
+// Zamiana fragmentow
+const url = "https://rossmann.pl/products";
+console.log(url.replace("products", "offers"));
+// "https://rossmann.pl/offers"
+
+// Sprawdzanie poczatku/konca
+console.log(url.startsWith("https")); // true
+console.log(url.endsWith(".pl/products")); // true
+
+// Indeks znaku
+console.log("Rossmann".indexOf("s")); // 2
+</code></pre>
+          <aside class="notes">
+            trim() jest bardzo przydatny - formularze często mają dodatkowe
+            spacje. replace() zamienia tylko pierwsze wystąpienie - replaceAll()
+            zamienia wszystkie. Metody stringów nie zmieniają oryginalnego
+            stringa - zwracają nowy!
+          </aside>
+        </section>
+
+        <!-- Slide 32: Template literals -->
+        <section>
+          <h2>Template literals - backticki</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const productName = "Szampon Rossmann";
+const price = 12.99;
+const quantity = 3;
+
+// Stary sposob (konkatenacja)
+const oldWay = "Produkt: " + productName +
+               ", cena: " + price + " PLN";
+
+// Nowy sposob (template literal)
+const newWay = `Produkt: ${productName}, cena: ${price} PLN`;
+
+// Mozna wstawiac wyrazenia!
+const total = `Razem: ${price * quantity} PLN`;
+console.log(total); // "Razem: 38.97 PLN"
+</code></pre>
+          <div class="tip">
+            <h3>Wskazówka</h3>
+            <p>
+              Używaj <code>${}</code> zamiast łączenia stringów przez
+              <code>+</code>. Kod jest czytelniejszy.
+            </p>
+          </div>
+          <aside class="notes">
+            Template literals to jeden z najważniejszych feature'ów ES6.
+            Backtick to klawisz pod Esc (na klawiaturach PL może być inny
+            skrót). W ${} można wstawić dowolne wyrażenie JS.
+          </aside>
+        </section>
+
+        <!-- Slide 33: Template literals - wieloliniowe -->
+        <section>
+          <h2>Template literals - wiele linii</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Stary sposob - trudne do czytania
+const oldMessage = "Witaj!\n" +
+                   "Twoje zamowienie:\n" +
+                   "Produkt: Szampon\n" +
+                   "Cena: 12.99 PLN";
+
+// Template literal - naturalne linie
+const newMessage = `Witaj!
+Twoje zamowienie:
+Produkt: Szampon
+Cena: 12.99 PLN`;
+
+console.log(newMessage);
+</code></pre>
+          <aside class="notes">
+            Template literals zachowują znaki nowej linii - nie trzeba używać
+            \n. Świetne do tworzenia dłuższych tekstów, np. treści emaili w
+            testach.
+          </aside>
+        </section>
+
+        <!-- Slide 34: Number -->
+        <section>
+          <h2>Number - liczby</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Liczby calkowite (integer)
+const quantity = 5;
+const year = 2025;
+
+// Liczby zmiennoprzecinkowe (float)
+const price = 29.99;
+const taxRate = 0.23;
+
+// Obliczenia
+const total = price * quantity;
+const tax = total * taxRate;
+console.log(`Razem: ${total} PLN`);     // 149.95
+console.log(`VAT: ${tax.toFixed(2)} PLN`); // 34.49
+
+// Specjalne wartosci
+console.log(1 / 0);        // Infinity
+console.log("abc" * 2);    // NaN (Not a Number)
+</code></pre>
+          <aside class="notes">
+            W JS jest tylko jeden typ liczbowy - number. Obejmuje całkowite i
+            zmiennoprzecinkowe. toFixed(2) zaokrągla do 2 miejsc po przecinku -
+            zwraca stringa! NaN pojawia się gdy próbujemy zrobić matematykę na
+            nie-liczbach.
+          </aside>
+        </section>
+
+        <!-- Slide 35: NaN i Infinity -->
+        <section>
+          <h2>NaN i Infinity</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// NaN - Not a Number
+const result = "hello" * 5;
+console.log(result);       // NaN
+console.log(typeof result); // "number" (!)
+
+// Sprawdzanie czy cos jest NaN
+console.log(isNaN(result));          // true
+console.log(Number.isNaN(result));   // true (lepszy sposob)
+
+// NaN nie jest rowne niczemu, nawet sobie!
+console.log(NaN === NaN); // false (!)
+
+// Infinity
+console.log(1 / 0);    // Infinity
+console.log(-1 / 0);   // -Infinity
+</code></pre>
+          <div class="warning">
+            <h3>Pułapka!</h3>
+            <p>
+              <code>typeof NaN</code> zwraca <code>"number"</code> - to jeden z
+              dziwactw JS.
+            </p>
+          </div>
+          <aside class="notes">
+            NaN to częste źródło błędów. NaN !== NaN to jeden z najbardziej
+            zaskakujących faktów o JS. Zawsze używaj Number.isNaN() zamiast
+            porównania z NaN.
+          </aside>
+        </section>
+
+        <!-- Slide 36: Math -->
+        <section>
+          <h2>Obiekt Math</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Zaokraglanie
+console.log(Math.floor(4.7));   // 4 (w dol)
+console.log(Math.ceil(4.2));    // 5 (w gore)
+console.log(Math.round(4.5));   // 5 (najblizsza)
+
+// Losowa liczba
+console.log(Math.random());     // 0.0 - 0.999...
+
+// Losowa calkowita 1-100
+const randomNum = Math.floor(Math.random() * 100) + 1;
+console.log(randomNum);
+
+// Inne przydatne
+console.log(Math.max(10, 20, 5));   // 20
+console.log(Math.min(10, 20, 5));   // 5
+console.log(Math.abs(-15));          // 15
+</code></pre>
+          <aside class="notes">
+            Math to wbudowany obiekt z metodami matematycznymi. Math.random()
+            jest przydatne w testach - losowe dane testowe. Math.floor() często
+            łączymy z Math.random() żeby dostać losową liczbę całkowitą.
+          </aside>
+        </section>
+
+        <!-- Slide 37: Boolean -->
+        <section>
+          <h2>Boolean - wartość logiczna</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const isLoggedIn = true;
+const isAdmin = false;
+
+// Boolean z porownania
+const price = 29.99;
+const isExpensive = price > 50;
+console.log(isExpensive); // false
+
+const age = 25;
+const isAdult = age >= 18;
+console.log(isAdult); // true
+
+// W testach
+const isVisible = true;
+const isEnabled = false;
+const hasError = false;
+</code></pre>
+          <aside class="notes">
+            Boolean to typ z dwoma wartościami: true/false. Kluczowy w warunkach
+            i testach. W testach często sprawdzamy: isVisible, isEnabled,
+            hasError. Nazwy boolean zmiennych zaczynamy od is/has/can/should.
+          </aside>
+        </section>
+
+        <!-- Slide 38: Truthy i Falsy -->
+        <section>
+          <h2>Wartości truthy i falsy</h2>
+          <div class="columns">
+            <div class="col">
+              <h3>Falsy (fałszywe)</h3>
+              <pre><code data-trim data-noescape class="language-javascript">
+false
+0
+-0
+""        // pusty string
+null
+undefined
+NaN
+</code></pre>
+            </div>
+            <div class="col">
+              <h3>Truthy (prawdziwe)</h3>
+              <pre><code data-trim data-noescape class="language-javascript">
+true
+42         // kazda liczba != 0
+"hello"    // niepusty string
+"0"        // string z "0" (!)
+[]         // pusta tablica (!)
+{}         // pusty obiekt (!)
+</code></pre>
+            </div>
+          </div>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Kazda wartosc moze byc traktowana jako boolean
+if ("Rossmann") {
+  console.log("To jest truthy!"); // Wykona sie
+}
+</code></pre>
+          <aside class="notes">
+            To ważny koncept - JS automatycznie konwertuje wartości na boolean w
+            warunkach. Pułapki: "0" jest truthy (bo to niepusty string), [] i {}
+            też są truthy. 7 wartości falsy warto zapamiętać.
+          </aside>
+        </section>
+
+        <!-- Slide 39: null vs undefined -->
+        <section>
+          <h2><code>null</code> vs <code>undefined</code></h2>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th><code>undefined</code></th>
+                <th><code>null</code></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Znaczenie</td>
+                <td>Brak wartości (domyślne)</td>
+                <td>Celowy brak wartości</td>
+              </tr>
+              <tr>
+                <td>Kto ustawia</td>
+                <td>JavaScript automatycznie</td>
+                <td>Programista świadomie</td>
+              </tr>
+              <tr>
+                <td>typeof</td>
+                <td><code>"undefined"</code></td>
+                <td><code>"object"</code> (!)</td>
+              </tr>
+            </tbody>
+          </table>
+          <pre><code data-trim data-noescape class="language-javascript">
+let product;
+console.log(product);  // undefined (JS ustawil)
+
+let discount = null;
+console.log(discount); // null (my ustawilismy)
+
+// Porownanie
+console.log(null == undefined);  // true (!)
+console.log(null === undefined); // false
+</code></pre>
+          <aside class="notes">
+            undefined - JS mówi "nie wiem, nie przypisano wartości". null -
+            programista mówi "celowo nie ma tu wartości". typeof null ===
+            "object" to historyczny błąd w JS, który został na zawsze.
+          </aside>
+        </section>
+
+        <!-- Slide 40: typeof -->
+        <section>
+          <h2>Operator <code>typeof</code></h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+console.log(typeof "Rossmann");   // "string"
+console.log(typeof 42);           // "number"
+console.log(typeof true);         // "boolean"
+console.log(typeof undefined);    // "undefined"
+console.log(typeof null);         // "object" (blad!)
+console.log(typeof NaN);          // "number" (!)
+console.log(typeof [1, 2, 3]);    // "object"
+console.log(typeof {});           // "object"
+</code></pre>
+          <div class="warning">
+            <h3>Pułapki typeof</h3>
+            <ul>
+              <li>
+                <code>typeof null</code> zwraca <code>"object"</code> - to znany
+                błąd JS
+              </li>
+              <li>
+                <code>typeof NaN</code> zwraca <code>"number"</code> - mimo że
+                to "Not a Number"
+              </li>
+            </ul>
+          </div>
+          <aside class="notes">
+            typeof jest przydatny do sprawdzania typów w runtime. Dwie pułapki
+            warto zapamiętać: typeof null i typeof NaN. W testach często używamy
+            typeof do walidacji danych z API.
+          </aside>
+        </section>
+
+        <!-- Slide 41: Konwersja typów - explicit -->
+        <section>
+          <h2>Jawna konwersja typów</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Na string
+const num = 42;
+console.log(String(num));    // "42"
+console.log(num.toString()); // "42"
+
+// Na number
+const str = "123";
+console.log(Number(str));     // 123
+console.log(Number("abc"));   // NaN
+console.log(parseInt("50px")); // 50
+console.log(parseFloat("3.14abc")); // 3.14
+
+// Na boolean
+console.log(Boolean(1));     // true
+console.log(Boolean(0));     // false
+console.log(Boolean(""));    // false
+console.log(Boolean("abc")); // true
+</code></pre>
+          <aside class="notes">
+            Jawna konwersja - my świadomie konwertujemy typ. Number() jest
+            bardziej rygorystyczny niż parseInt() - Number("50px") daje NaN.
+            parseInt/parseFloat parsują ile się da i ignorują resztę.
+          </aside>
+        </section>
+
+        <!-- Slide 42: Konwersja typów - niejawna -->
+        <section>
+          <h2>Niejawna konwersja (coercion)</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// String + number = string (konkatenacja!)
+console.log("5" + 3);     // "53" (!)
+console.log("5" + true);  // "5true" (!)
+
+// Z innymi operatorami - konwersja na number
+console.log("5" - 3);     // 2
+console.log("5" * 2);     // 10
+console.log("5" / 2);     // 2.5
+
+// Niejawna konwersja na boolean
+if ("hello") { /* wykona sie */ }
+if (0)       { /* NIE wykona sie */ }
+</code></pre>
+          <div class="warning">
+            <h3>Uwaga!</h3>
+            <p>
+              Operator <code>+</code> z stringiem zawsze łączy stringi, nie
+              dodaje!
+            </p>
+          </div>
+          <aside class="notes">
+            Niejawna konwersja to jedno z największych źródeł błędów w JS. +
+            jest przeciążony: dodawanie liczb LUB łączenie stringów. Dlatego
+            ważne jest używanie === zamiast == (o tym za chwilę).
+          </aside>
+        </section>
+
+        <!-- Slide 43: Quirks JavaScript -->
+        <section>
+          <h2>Dziwactwa JavaScript</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Klasyczne JS "wat?"
+console.log(typeof null);        // "object"
+console.log(NaN === NaN);        // false
+console.log("" == false);        // true
+console.log([] == false);        // true
+console.log("" == 0);            // true
+console.log(null == undefined);  // true
+console.log(null == 0);          // false (!)
+
+// Wniosek:
+// Zawsze uzywaj === zamiast ==
+console.log("" === false);       // false (dobrze!)
+console.log("" === 0);           // false (dobrze!)
+</code></pre>
+          <div class="tip">
+            <h3>Prosty wniosek</h3>
+            <p>
+              Używaj <code>===</code> i <code>!==</code> - unikniesz tych
+              pułapek.
+            </p>
+          </div>
+          <aside class="notes">
+            Te przykłady są zabawne ale też pouczające. Pokazują dlaczego ===
+            jest ważne. Można to pokazać na żywo w konsoli - uczestnicy
+            zazwyczaj są zaskoczeni.
+          </aside>
+        </section>
+
+        <!-- Slide 44: Ćwiczenie - Typy danych -->
+        <section>
+          <h2>Ćwiczenie</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 4.1 - Typy danych</h3>
+            <p>Stwórz plik <code>types.js</code>:</p>
+            <ol>
+              <li>
+                Stwórz zmienne każdego typu: string, number, boolean, null,
+                undefined
+              </li>
+              <li>Użyj <code>typeof</code> na każdej i wypisz wynik</li>
+              <li>Połącz imię i nazwisko w template literal</li>
+              <li>
+                Oblicz cenę z rabatem 15% i wypisz z <code>toFixed(2)</code>
+              </li>
+            </ol>
+          </div>
+          <pre><code data-trim data-noescape class="language-javascript">
+const firstName = "Anna";
+const lastName = "Kowalska";
+console.log(`Klient: ${firstName} ${lastName}`);
+
+const price = 49.99;
+const discount = 0.15;
+const finalPrice = price * (1 - discount);
+console.log(`Cena po rabacie: ${finalPrice.toFixed(2)} PLN`);
+</code></pre>
+          <aside class="notes">
+            Dać 10 minut na ćwiczenie. Sprawdzić czy wszyscy rozumieją typeof i
+            template literals. To dobry moment na przerwę po tym ćwiczeniu -
+            dużo materiału.
+          </aside>
+        </section>
+
+        <!-- Slide 45: Ćwiczenie - Metody stringów -->
+        <section>
+          <h2>Ćwiczenie</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 4.2 - Praca ze stringami</h3>
+            <p>Stwórz plik <code>strings.js</code>:</p>
+            <ol>
+              <li>
+                Stwórz zmienną z adresem email (z białymi znakami na
+                początku/końcu)
+              </li>
+              <li>Oczyść email za pomocą <code>.trim()</code></li>
+              <li>Sprawdź czy email zawiera "@" (<code>.includes()</code>)</li>
+              <li>Zamień domenę na inną (<code>.replace()</code>)</li>
+              <li>
+                Wypisz email wielkimi literami (<code>.toUpperCase()</code>)
+              </li>
+            </ol>
+          </div>
+          <aside class="notes">
+            Ćwiczenie praktyczne z metodami stringów. Walidacja emaila to typowy
+            case w testach. Dać 5-7 minut.
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BLOCK 5: Operatory (~10-12 slides)                          -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 46: Section divider -->
+        <section class="section-slide">
+          <span class="section-number">5</span>
+          <h2>Operatory</h2>
+          <p>Wykonywanie operacji na danych</p>
+          <aside class="notes">
+            Operatory to symbole które mówią JS co zrobić z wartościami.
+            Najważniejszy temat w tym bloku: == vs ===.
+          </aside>
+        </section>
+
+        <!-- Slide 47: Operatory arytmetyczne -->
+        <section>
+          <h2>Operatory arytmetyczne</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const a = 10;
+const b = 3;
+
+console.log(a + b);   // 13  - dodawanie
+console.log(a - b);   // 7   - odejmowanie
+console.log(a * b);   // 30  - mnożenie
+console.log(a / b);   // 3.333... - dzielenie
+console.log(a % b);   // 1   - reszta z dzielenia (modulo)
+console.log(a ** b);  // 1000 - potęgowanie (10^3)
+
+// Praktyczny przyklad
+const totalItems = 17;
+const itemsPerPage = 5;
+const fullPages = Math.floor(totalItems / itemsPerPage); // 3
+const remainingItems = totalItems % itemsPerPage; // 2
+</code></pre>
+          <aside class="notes">
+            Operatory arytmetyczne działają jak w matematyce. Modulo (%)
+            przydaje się np. do sprawdzania parzystości, paginacji. Potęgowanie
+            (**) to nowszy operator.
+          </aside>
+        </section>
+
+        <!-- Slide 48: Operatory przypisania -->
+        <section>
+          <h2>Operatory przypisania</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+let score = 100;
+
+score = score + 10;  // 110 - pelna forma
+score += 10;         // 120 - skrocona forma (to samo!)
+
+score -= 20;         // 100
+score *= 2;          // 200
+score /= 4;          // 50
+
+// Inkrementacja / Dekrementacja
+let count = 0;
+count++;    // 1 (count = count + 1)
+count++;    // 2
+count--;    // 1 (count = count - 1)
+</code></pre>
+          <div class="tip">
+            <h3>Skróty</h3>
+            <p><code>x += 5</code> to to samo co <code>x = x + 5</code></p>
+          </div>
+          <aside class="notes">
+            Operatory przypisania to skróty - robią to samo co pełna forma, ale
+            krócej. ++ i -- są bardzo częste w pętlach (będziemy omawiać w
+            kolejnych dniach).
+          </aside>
+        </section>
+
+        <!-- Slide 49: Operatory porównania - == vs === -->
+        <section>
+          <h2>== vs === (najważniejszy slajd!)</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// == (luźne porownanie) - konwertuje typy!
+console.log(5 == "5");     // true (!)
+console.log(0 == false);   // true (!)
+console.log("" == false);  // true (!)
+console.log(null == undefined); // true (!)
+
+// === (scisle porownanie) - bez konwersji
+console.log(5 === "5");     // false (rozne typy)
+console.log(0 === false);   // false
+console.log("" === false);  // false
+console.log(null === undefined); // false
+</code></pre>
+          <div class="warning">
+            <h3>ZASADA NUMER 1</h3>
+            <p>
+              Zawsze używaj <code>===</code> i <code>!==</code>. Nigdy
+              <code>==</code> i <code>!=</code>.
+            </p>
+          </div>
+          <aside class="notes">
+            TO JEST NAJWAŻNIEJSZY SLAJD O OPERATORACH. Powiedzieć to wyraźnie.
+            == konwertuje typy przed porównaniem - to prowadzi do
+            nieoczekiwanych wyników. === porównuje wartość I typ -
+            bezpieczniejsze, przewidywalne. Każdy linter (ESLint) domyślnie
+            zakazuje == na rzecz ===.
+          </aside>
+        </section>
+
+        <!-- Slide 50: Więcej o porównaniach -->
+        <section>
+          <h2>Operatory porównania</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const price = 29.99;
+const budget = 50;
+
+console.log(price > budget);   // false
+console.log(price < budget);   // true
+console.log(price >= 29.99);   // true
+console.log(price <= 30);      // true
+
+// Porownywanie stringow (alfabetycznie)
+console.log("apple" < "banana"); // true
+console.log("a" < "b");         // true
+
+// Nie-rownosc
+console.log(5 !== "5");  // true (rozne typy - DOBRZE)
+console.log(5 != "5");   // false (konwersja - ZLE)
+</code></pre>
+          <aside class="notes">
+            Operatory > < >= <= działają intuicyjnie z liczbami. Stringi
+            porównywane są leksykograficznie (alfabetycznie wg kodów Unicode).
+            Przypomnienie: !== zamiast !=, tak jak === zamiast ==.
+          </aside>
+        </section>
+
+        <!-- Slide 51: Operatory logiczne -->
+        <section>
+          <h2>Operatory logiczne</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const isLoggedIn = true;
+const isAdmin = false;
+const hasPermission = true;
+
+// AND (&&) - oba musza byc true
+console.log(isLoggedIn && isAdmin);       // false
+console.log(isLoggedIn && hasPermission); // true
+
+// OR (||) - wystarczy jedno true
+console.log(isLoggedIn || isAdmin);  // true
+console.log(false || false);          // false
+
+// NOT (!) - negacja
+console.log(!isLoggedIn);  // false
+console.log(!isAdmin);     // true
+console.log(!!0);          // false (podwojna negacja = Boolean())
+</code></pre>
+          <aside class="notes">
+            Operatory logiczne to podstawa warunków. && - oba muszą być
+            prawdziwe. || - wystarczy jedno prawdziwe. ! - odwraca wartość. !!
+            to trick na konwersję do boolean (to samo co Boolean()).
+          </aside>
+        </section>
+
+        <!-- Slide 52: Operatory logiczne - praktyka -->
+        <section>
+          <h2>Operatory logiczne - praktyczne przykłady</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const age = 25;
+const hasID = true;
+const isMember = false;
+
+// Sprawdzenie wielu warunkow
+const canBuyAlcohol = age >= 18 && hasID;
+console.log(canBuyAlcohol); // true
+
+// Rabat dla czlonkow LUB starszych niz 65
+const getsDiscount = isMember || age >= 65;
+console.log(getsDiscount); // false
+
+// Wartosci domyslne z ||
+const userName = "" || "Gość";
+console.log(userName); // "Gosc" (pusty string jest falsy)
+
+// Nullish coalescing (??)
+const count = 0 ?? 10;
+console.log(count); // 0 (?? tylko null/undefined)
+</code></pre>
+          <aside class="notes">
+            || jest często używany do wartości domyślnych, ale ma pułapkę z 0 i
+            "". ?? (nullish coalescing) - nowszy operator, reaguje tylko na
+            null/undefined. Przykłady z testowania: sprawdzanie czy element jest
+            widoczny I klikalny.
+          </aside>
+        </section>
+
+        <!-- Slide 53: Operator warunkowy (ternary) -->
+        <section>
+          <h2>Operator warunkowy (ternary)</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Skladnia: warunek ? jesliTak : jesliNie
+
+const age = 20;
+const status = age >= 18 ? "dorosly" : "niepelnoletni";
+console.log(status); // "dorosly"
+
+// Praktyczne przyklady
+const price = 49.99;
+const shipping = price > 100 ? 0 : 9.99;
+console.log(`Dostawa: ${shipping} PLN`); // "Dostawa: 9.99 PLN"
+
+const score = 85;
+const grade = score >= 90 ? "A" :
+              score >= 80 ? "B" :
+              score >= 70 ? "C" : "F";
+console.log(grade); // "B"
+</code></pre>
+          <div class="tip">
+            <h3>Kiedy używać?</h3>
+            <p>
+              Dla prostych warunków. Zagnieżdżone ternary są trudne do czytania.
+            </p>
+          </div>
+          <aside class="notes">
+            Ternary to skrócony if/else w jednej linii. Świetny do prostych
+            warunków. Zagnieżdżone ternary (jak grade) są kontrowersyjne -
+            lepiej użyć if/else. Będziemy omawiać if/else szczegółowo w dniu 2.
+          </aside>
+        </section>
+
+        <!-- Slide 54: Priorytet operatorów -->
+        <section>
+          <h2>Priorytet operatorów</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+// Tak jak w matematyce - mnozenie przed dodawaniem
+console.log(2 + 3 * 4);   // 14 (nie 20!)
+console.log((2 + 3) * 4); // 20 (nawiasy zmieniaja priorytet)
+
+// Priorytet (od najwyzszego):
+// 1. () - nawiasy
+// 2. ** - potegowanie
+// 3. *, /, % - mnozenie, dzielenie, modulo
+// 4. +, - - dodawanie, odejmowanie
+// 5. <, >, <=, >= - porownania
+// 6. ===, !== - rownosc
+// 7. && - logiczne AND
+// 8. || - logiczne OR
+</code></pre>
+          <div class="tip">
+            <h3>Prosta zasada</h3>
+            <p>Kiedy nie jesteś pewien - użyj nawiasów <code>()</code>!</p>
+          </div>
+          <aside class="notes">
+            Nie trzeba uczyć się całej tabeli na pamięć. Najważniejsze: nawiasy
+            mają najwyższy priorytet. W wątpliwości - nawiasy. Czytelność kodu
+            jest ważniejsza niż zwięzłość.
+          </aside>
+        </section>
+
+        <!-- Slide 55: Ćwiczenie - Operatory -->
+        <section>
+          <h2>Ćwiczenie</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 5.1 - Kalkulator produktów</h3>
+            <p>Stwórz plik <code>calculator.js</code>:</p>
+            <ol>
+              <li>
+                Zadeklaruj zmienne: <code>productName</code>,
+                <code>price</code>, <code>quantity</code>,
+                <code>discountPercent</code>
+              </li>
+              <li>Oblicz <code>subtotal</code> (cena * ilość)</li>
+              <li>Oblicz <code>discountAmount</code></li>
+              <li>Oblicz <code>total</code> po rabacie</li>
+              <li>
+                Użyj ternary: jeśli total > 100, dostawa = 0, inaczej = 9.99
+              </li>
+              <li>Wypisz ładne podsumowanie z template literals</li>
+            </ol>
+          </div>
+          <aside class="notes">
+            Ćwiczenie łączące zmienne, typy danych i operatory. Dać 10-15 minut.
+            Przejść się po sali i pomóc. Zachęcać do eksperymentowania z różnymi
+            wartościami.
+          </aside>
+        </section>
+
+        <!-- Slide 56: Rozwiązanie ćwiczenia 5.1 -->
+        <section>
+          <h2>Rozwiązanie - Ćwiczenie 5.1</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const productName = "Krem nawilzajacy";
+const price = 34.99;
+const quantity = 3;
+const discountPercent = 10;
+
+const subtotal = price * quantity;
+const discountAmount = subtotal * (discountPercent / 100);
+const total = subtotal - discountAmount;
+const shipping = total > 100 ? 0 : 9.99;
+const finalTotal = total + shipping;
+
+console.log(`=== Podsumowanie zamowienia ===`);
+console.log(`Produkt: ${productName}`);
+console.log(`Cena: ${price.toFixed(2)} PLN x ${quantity}`);
+console.log(`Suma: ${subtotal.toFixed(2)} PLN`);
+console.log(`Rabat: -${discountAmount.toFixed(2)} PLN`);
+console.log(`Dostawa: ${shipping.toFixed(2)} PLN`);
+console.log(`DO ZAPLATY: ${finalTotal.toFixed(2)} PLN`);
+</code></pre>
+          <aside class="notes">
+            Omówić rozwiązanie krok po kroku. Zwrócić uwagę na toFixed(2) dla
+            kwot pieniężnych. Zaproponować modyfikacje: inne produkty, inne
+            rabaty.
+          </aside>
+        </section>
+
+        <!-- Slide 57: Quiz - Operatory -->
+        <section>
+          <h2>Quiz - Operatory</h2>
+          <div class="quiz">
+            <h3>Co zwróci każde wyrażenie?</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+console.log(5 + "3");
+console.log(5 - "3");
+console.log(5 === "5");
+console.log(true && false);
+console.log(0 || "default");
+</code></pre>
+          </div>
+          <p class="fragment">
+            <code>"53"</code>, <code>2</code>, <code>false</code>,
+            <code>false</code>,
+            <code>"default"</code>
+          </p>
+          <aside class="notes">
+            Omówić każdą odpowiedź: 1) "53" - string + number = konkatenacja 2)
+            2 - string - number = konwersja na number 3) false - różne typy, ===
+            nie konwertuje 4) false - AND: jedno false = false 5) "default" -
+            OR: 0 jest falsy, więc bierze drugą wartość
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BLOCK 6: Ćwiczenia końcowe i podsumowanie (~3-4 slides)     -->
+        <!-- ============================================================ -->
+
+        <!-- Slide 58: Section divider -->
+        <section class="section-slide">
+          <span class="section-number">6</span>
+          <h2>Podsumowanie dnia</h2>
+          <p>Co dziś poznaliśmy?</p>
+          <aside class="notes">
+            Ostatni blok dnia. Podsumowanie i ćwiczenia utrwalające.
+          </aside>
+        </section>
+
+        <!-- Slide 59: Co zapamiętać -->
+        <section>
+          <h2>Co zapamiętać z Dnia 1?</h2>
+          <ol>
+            <li>
+              <code>const</code> domyślnie, <code>let</code> gdy trzeba zmienić
+              wartość
+            </li>
+            <li>
+              5 typów prymitywnych: <code>string</code>, <code>number</code>,
+              <code>boolean</code>, <code>null</code>, <code>undefined</code>
+            </li>
+            <li>Template literals: <code>`Witaj ${name}`</code></li>
+            <li>
+              <strong>Zawsze <code>===</code></strong> zamiast <code>==</code>
+            </li>
+            <li>
+              <code>console.log()</code> - Twój najlepszy przyjaciel do
+              debugowania
+            </li>
+            <li>
+              Operatory logiczne: <code>&&</code> (AND), <code>||</code> (OR),
+              <code>!</code> (NOT)
+            </li>
+          </ol>
+          <aside class="notes">
+            Kluczowe takeaway z całego dnia. Poprosić uczestników o powtórzenie.
+            Zapytać czy są pytania. Zapowiedzieć dzień 2: instrukcje warunkowe,
+            pętle, funkcje.
+          </aside>
+        </section>
+
+        <!-- Slide 60: Ćwiczenie końcowe -->
+        <section>
+          <h2>Ćwiczenie końcowe</h2>
+          <div class="exercise">
+            <h3>Ćwiczenie 6.1 - Profil klienta Rossmann</h3>
+            <p>Stwórz plik <code>customer.js</code> - profil klienta:</p>
+            <ol>
+              <li>
+                Zmienne: <code>firstName</code>, <code>lastName</code>,
+                <code>email</code>, <code>age</code>, <code>isMember</code>,
+                <code>loyaltyPoints</code>
+              </li>
+              <li>Stwórz <code>fullName</code> z template literal</li>
+              <li>
+                Sprawdź czy klient jest pełnoletni (<code>age >= 18</code>)
+              </li>
+              <li>Oblicz rabat: członek = 15%, nie-członek = 5%</li>
+              <li>Oblicz cenę produktu 89.99 PLN po rabacie</li>
+              <li>Wypisz ładne podsumowanie (imię, rabat, cena końcowa)</li>
+              <li>Sprawdź <code>typeof</code> każdej zmiennej</li>
+            </ol>
+          </div>
+          <aside class="notes">
+            Dać 15-20 minut na to ćwiczenie. Łączy wszystko z całego dnia.
+            Przejść po sali, pomagać, odpowiadać na pytania. Można robić w
+            parach jeśli ktoś ma trudności.
+          </aside>
+        </section>
+
+        <!-- Slide 61: Rozwiązanie ćwiczenia końcowego -->
+        <section>
+          <h2>Rozwiązanie - Ćwiczenie 6.1</h2>
+          <pre><code data-trim data-noescape class="language-javascript">
+const firstName = "Anna";
+const lastName = "Kowalska";
+const email = "anna.kowalska@email.pl";
+const age = 28;
+const isMember = true;
+const loyaltyPoints = 1250;
+
+const fullName = `${firstName} ${lastName}`;
+const isAdult = age >= 18;
+
+const discountPercent = isMember ? 15 : 5;
+const productPrice = 89.99;
+const discount = productPrice * (discountPercent / 100);
+const finalPrice = productPrice - discount;
+
+console.log(`=== Profil klienta ===`);
+console.log(`Imie: ${fullName}`);
+console.log(`Email: ${email}`);
+console.log(`Pelnoletni: ${isAdult}`);
+console.log(`Czlonek Rossmann: ${isMember}`);
+console.log(`Punkty lojalnosciowe: ${loyaltyPoints}`);
+console.log(`Rabat: ${discountPercent}%`);
+console.log(`Cena: ${finalPrice.toFixed(2)} PLN`);
+</code></pre>
+          <aside class="notes">
+            Omówić rozwiązanie. Pochwalić uczestników za wytrwałość.
+            Zapowiedzieć dzień 2 - instrukcje warunkowe (if/else), pętle,
+            wprowadzenie do funkcji.
+          </aside>
+        </section>
+
+        <!-- Slide 62: Co dalej? -->
+        <section>
+          <h2>Co dalej? Dzień 2</h2>
+          <ul>
+            <li>
+              Instrukcje warunkowe - <code>if</code>, <code>else if</code>,
+              <code>else</code>, <code>switch</code>
+            </li>
+            <li>
+              Pętle - <code>for</code>, <code>while</code>,
+              <code>for...of</code>
+            </li>
+            <li>Funkcje - deklaracja, parametry, zwracanie wartości</li>
+            <li>Więcej ćwiczeń praktycznych!</li>
+          </ul>
+          <div class="tip">
+            <h3>Praca domowa (opcjonalna)</h3>
+            <p>
+              Otwórz konsolę przeglądarki i poeksperymentuj z typami danych i
+              operatorami. Spróbuj znaleźć własne "dziwactwa" JavaScript!
+            </p>
+          </div>
+          <aside class="notes">
+            Podziękować za udział. Zachęcić do eksperymentowania w domu.
+            Przypomnienie: jutro zaczynamy od warunków - to fundamenty logiki
+            programowania. Zapytać o feedback z dzisiejszego dnia.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../node_modules/reveal.js/dist/reveal.js"></script>
+    <script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+    <script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        view: "scroll",
+        scrollProgress: true,
+        plugins: [RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
