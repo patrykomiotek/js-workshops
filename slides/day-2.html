@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dzień 2 - Sterowanie przepływem i funkcje | Rossmann JS Training</title>
+
+  <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="../node_modules/reveal.js/dist/theme/black.css">
+  <link rel="stylesheet" href="../node_modules/reveal.js/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="../css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================================
+           BLOCK 1: Powtórzenie dnia 1 (~0.5h, ~5-6 slides)
+           ============================================================ -->
+
+      <!-- Slide 1: Title -->
+      <section class="title-slide">
+        <span class="day-number">Dzień 2</span>
+        <h1>JavaScript dla Testerów</h1>
+        <p class="subtitle">Sterowanie przepływem i funkcje</p>
+        <p><small>Rossmann Polska - Szkolenie</small></p>
+        <aside class="notes">
+          Powitanie uczestników. Dzień 2 - dzisiaj zajmiemy się instrukcjami warunkowymi,
+          pętlami i funkcjami. To fundamenty programowania, które pozwolą pisać
+          bardziej zaawansowane skrypty testowe.
+        </aside>
+      </section>
+
+      <!-- Slide 2: Agenda -->
+      <section>
+        <h2>Agenda</h2>
+        <ul class="agenda">
+          <li>Powtórzenie dnia 1 <span class="time">~30 min</span></li>
+          <li>Instrukcje warunkowe (if, else, switch) <span class="time">~1.5h</span></li>
+          <li>Pętle (for, while, for...of) <span class="time">~1.5h</span></li>
+          <li>Funkcje (deklaracja, parametry, arrow functions) <span class="time">~2.5h</span></li>
+          <li>Ćwiczenia praktyczne <span class="time">~1h</span></li>
+        </ul>
+        <aside class="notes">
+          Przedstawienie planu dnia. Zaczniemy od krótkiego powtórzenia, potem
+          przejdziemy do nowych tematów. Dużo ćwiczeń praktycznych.
+        </aside>
+      </section>
+
+      <!-- Slide 3: Quiz - zmienne -->
+      <section>
+        <h2>Powtórka z dnia 1</h2>
+        <div class="quiz">
+          <h3>Quiz: Zmienne</h3>
+          <p>Jaka jest różnica między <code>let</code> a <code>const</code>?</p>
+          <p class="fragment">
+            <strong>Odpowiedź:</strong> <code>let</code> pozwala na ponowne przypisanie wartości,
+            <code>const</code> - nie. Oba mają zasięg blokowy.
+          </p>
+        </div>
+        <aside class="notes">
+          Dajemy uczestnikom chwilę na zastanowienie się, potem odkrywamy odpowiedź.
+          Przypominamy, że const nie oznacza niezmienności obiektów - tylko brak ponownego przypisania.
+        </aside>
+      </section>
+
+      <!-- Slide 4: Quiz - typy danych -->
+      <section>
+        <h2>Powtórka z dnia 1</h2>
+        <div class="quiz">
+          <h3>Quiz: Typy danych</h3>
+          <p>Co zwróci <code>typeof null</code>?</p>
+          <p class="fragment">
+            <strong>Odpowiedź:</strong> <code>"object"</code> - to znany bug w JavaScript,
+            który istnieje od początku języka.
+          </p>
+        </div>
+        <aside class="notes">
+          Typowe pytanie na rozmowach kwalifikacyjnych. Warto znać tę ciekawostkę.
+          typeof undefined zwraca "undefined", typeof NaN zwraca "number".
+        </aside>
+      </section>
+
+      <!-- Slide 5: Quiz - operatory -->
+      <section>
+        <h2>Powtórka z dnia 1</h2>
+        <div class="quiz">
+          <h3>Quiz: Operatory</h3>
+          <p>Co zwróci wyrażenie <code>"5" == 5</code>? A co <code>"5" === 5</code>?</p>
+          <p class="fragment">
+            <strong>Odpowiedź:</strong><br>
+            <code>"5" == 5</code> &rarr; <code>true</code> (porównanie z konwersją typów)<br>
+            <code>"5" === 5</code> &rarr; <code>false</code> (ścisłe porównanie, różne typy)
+          </p>
+        </div>
+        <aside class="notes">
+          Przypomnienie o ważności używania potrójnego znaku równości.
+          W testach automatycznych zawsze używamy === żeby uniknąć niespodzianek.
+        </aside>
+      </section>
+
+      <!-- Slide 6: Rozgrzewka -->
+      <section>
+        <h2>Rozgrzewka</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Powtórka</h3>
+          <ol>
+            <li>Zadeklaruj zmienną <code>testName</code> z nazwą dowolnego testu</li>
+            <li>Zadeklaruj zmienną <code>testDuration</code> z czasem trwania (liczba)</li>
+            <li>Wyświetl w konsoli: <code>"Test [nazwa] trwał [czas] ms"</code> używając template literals</li>
+            <li>Sprawdź typ obu zmiennych za pomocą <code>typeof</code></li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Dajemy 5 minut na ćwiczenie. Przechodzimy po sali i pomagamy.
+          To rozgrzewka, która pozwoli uczestnikom przypomnieć sobie składnię z dnia 1.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 2: Instrukcje warunkowe (~1.5h, ~12-14 slides)
+           ============================================================ -->
+
+      <!-- Slide 7: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">02</span>
+        <h2>Instrukcje warunkowe</h2>
+        <p>Podejmowanie decyzji w kodzie</p>
+        <aside class="notes">
+          Przechodzimy do pierwszego nowego tematu. Instrukcje warunkowe to podstawa
+          sterowania przepływem programu. Pozwalają na wykonywanie różnego kodu
+          w zależności od warunków.
+        </aside>
+      </section>
+
+      <!-- Slide 8: if - podstawowa składnia -->
+      <section>
+        <h2>Instrukcja <code>if</code></h2>
+        <p>Podstawowa składnia - wykonaj kod <strong>jeśli warunek jest spełniony</strong></p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testsPassed = 15;
+let totalTests = 20;
+
+if (testsPassed === totalTests) {
+  console.log("Wszystkie testy przeszly!");
+}
+        </code></pre>
+        <div class="tip">
+          <h3>Zasada</h3>
+          <p>Warunek w nawiasach <code>()</code> jest konwertowany na <code>true</code> lub <code>false</code>.</p>
+        </div>
+        <aside class="notes">
+          Tłumaczenie składni if. Warunek musi być w nawiasach okrągłych,
+          blok kodu w klamrowych. Jeśli warunek jest prawdziwy - kod się wykonuje.
+        </aside>
+      </section>
+
+      <!-- Slide 9: if...else -->
+      <section>
+        <h2>Instrukcja <code>if...else</code></h2>
+        <p>Dwie ścieżki - co robić, <strong>gdy warunek nie jest spełniony</strong></p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let statusCode = 404;
+
+if (statusCode === 200) {
+  console.log("Odpowiedz OK");
+} else {
+  console.log("Blad! Kod statusu: " + statusCode);
+}
+        </code></pre>
+        <div class="console-output">
+          > Błąd! Kod statusu: 404
+        </div>
+        <aside class="notes">
+          Dodajemy blok else, który wykonuje się gdy warunek jest fałszywy.
+          Przykład z kontekstu testowania - sprawdzamy kod odpowiedzi HTTP.
+        </aside>
+      </section>
+
+      <!-- Slide 10: else if -->
+      <section>
+        <h2>Wiele warunków: <code>else if</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let statusCode = 301;
+
+if (statusCode === 200) {
+  console.log("Sukces");
+} else if (statusCode === 301) {
+  console.log("Przekierowanie");
+} else if (statusCode === 404) {
+  console.log("Nie znaleziono");
+} else if (statusCode === 500) {
+  console.log("Blad serwera");
+} else {
+  console.log("Nieznany kod: " + statusCode);
+}
+        </code></pre>
+        <aside class="notes">
+          Możemy dodać dowolną liczbę bloków else if. Warunki są sprawdzane
+          od góry do dołu - pierwszy spełniony warunek kończy sprawdzanie.
+        </aside>
+      </section>
+
+      <!-- Slide 11: Zagnieżdżone if -->
+      <section>
+        <h2>Zagnieżdżone warunki</h2>
+        <p>Jeden <code>if</code> wewnątrz drugiego</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let userRole = "admin";
+let isLoggedIn = true;
+
+if (isLoggedIn) {
+  if (userRole === "admin") {
+    console.log("Panel administratora");
+  } else {
+    console.log("Panel uzytkownika");
+  }
+} else {
+  console.log("Prosze sie zalogowac");
+}
+        </code></pre>
+        <div class="warning">
+          <h3>Uwaga</h3>
+          <p>Unikaj zbyt głębokich zagnieżdżeń - pogarszają czytelność kodu.</p>
+        </div>
+        <aside class="notes">
+          Pokaz zagnieżdżonego if. Wspomnienie o zasadzie - jeśli masz więcej
+          niż 2-3 poziomy zagnieżdżenia, warto przemyśleć refaktoryzację.
+          Można użyć operatorów logicznych && zamiast zagnieżdżania.
+        </aside>
+      </section>
+
+      <!-- Slide 12: Operatory logiczne w warunkach -->
+      <section>
+        <h2>Operatory logiczne w warunkach</h2>
+        <p>Zamiast zagnieżdżania - łączymy warunki</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let isLoggedIn = true;
+let userRole = "admin";
+
+// Zamiast zagniezdzonego if:
+if (isLoggedIn && userRole === "admin") {
+  console.log("Panel administratora");
+}
+
+// Sprawdzanie kilku mozliwosci:
+let browser = "Chrome";
+if (browser === "Chrome" || browser === "Firefox") {
+  console.log("Wspierana przegladarka");
+}
+        </code></pre>
+        <aside class="notes">
+          Pokazujemy jak operatory logiczne && i || pomagają uniknąć zagnieżdżania.
+          Częściej używamy tego zapisu w praktyce - jest czytelniejszy.
+        </aside>
+      </section>
+
+      <!-- Slide 13: Operator trójargumentowy -->
+      <section>
+        <h2>Operator trójargumentowy (ternary)</h2>
+        <p>Skrócony zapis <code>if...else</code> w jednej linii</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testsPassed = 18;
+let totalTests = 20;
+
+// Pelny if/else:
+let status;
+if (testsPassed === totalTests) {
+  status = "PASS";
+} else {
+  status = "FAIL";
+}
+
+// Ternary - to samo w jednej linii:
+let status2 = (testsPassed === totalTests) ? "PASS" : "FAIL";
+
+console.log(status2); // "FAIL"
+        </code></pre>
+        <div class="tip">
+          <h3>Składnia</h3>
+          <p><code>warunek ? wartość_jeśli_true : wartość_jeśli_false</code></p>
+        </div>
+        <aside class="notes">
+          Ternary jest przydatny dla prostych warunków. Nie należy go zagnieżdżać
+          - wtedy staje się nieczytelny. Idealny do przypisywania wartości.
+        </aside>
+      </section>
+
+      <!-- Slide 14: switch - składnia -->
+      <section>
+        <h2>Instrukcja <code>switch</code></h2>
+        <p>Alternatywa dla wielu <code>else if</code></p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testStatus = "failed";
+
+switch (testStatus) {
+  case "passed":
+    console.log("Test przeszedl pomyslnie");
+    break;
+  case "failed":
+    console.log("Test nie przeszedl");
+    break;
+  case "skipped":
+    console.log("Test zostal pominiety");
+    break;
+  default:
+    console.log("Nieznany status: " + testStatus);
+}
+        </code></pre>
+        <aside class="notes">
+          Switch porównuje wartość wyrażenia z każdym case za pomocą ===.
+          Ważne: każdy case wymaga break! Bez break kod "przechodzi" dalej
+          do następnego case (fall-through).
+        </aside>
+      </section>
+
+      <!-- Slide 15: switch - fall-through i break -->
+      <section>
+        <h2><code>switch</code> - pamiętaj o <code>break</code>!</h2>
+        <p>Bez <code>break</code> kod wykonuje się dalej (fall-through)</p>
+        <div class="columns">
+          <div class="col">
+            <p><strong>Bez break (błąd!):</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+let priority = "high";
+switch (priority) {
+  case "high":
+    console.log("Wysoki");
+  case "medium":
+    console.log("Sredni");
+  case "low":
+    console.log("Niski");
+}
+// Wyswietli: Wysoki, Sredni, Niski
+            </code></pre>
+          </div>
+          <div class="col">
+            <p><strong>Z break (poprawnie):</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+let priority = "high";
+switch (priority) {
+  case "high":
+    console.log("Wysoki");
+    break;
+  case "medium":
+    console.log("Sredni");
+    break;
+  case "low":
+    console.log("Niski");
+    break;
+}
+// Wyswietli: Wysoki
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          Pokaz fall-through - jeden z najczęstszych błędów. Można też celowo
+          go wykorzystać, np. grupując case'y bez kodu między nimi.
+        </aside>
+      </section>
+
+      <!-- Slide 16: switch vs if/else -->
+      <section>
+        <h2>Kiedy <code>switch</code>, kiedy <code>if/else</code>?</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Cecha</th>
+              <th><code>switch</code></th>
+              <th><code>if/else</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Porównanie</td>
+              <td>Jedna wartość z wieloma opcjami</td>
+              <td>Różne warunki, zakresy</td>
+            </tr>
+            <tr>
+              <td>Czytelność</td>
+              <td>Lepsza przy wielu wariantach</td>
+              <td>Lepsza przy 2-3 warunkach</td>
+            </tr>
+            <tr>
+              <td>Zakresy</td>
+              <td>Nie obsługuje (np. x &gt; 5)</td>
+              <td>Obsługuje dowolne wyrażenia</td>
+            </tr>
+            <tr>
+              <td>Typy</td>
+              <td>Używane z ===</td>
+              <td>Dowolne porównania</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p>Używaj <code>switch</code> gdy porównujesz jedną zmienną z wieloma konkretnymi wartościami.</p>
+        </div>
+        <aside class="notes">
+          Reguła kciuka: jeśli sprawdzamy jedną zmienną z wieloma możliwymi
+          wartościami - switch. Jeśli mamy różne warunki lub zakresy - if/else.
+        </aside>
+      </section>
+
+      <!-- Slide 17: Przykład praktyczny - walidacja formularza -->
+      <section>
+        <h2>Przykład: Walidacja formularza</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let username = "jan_kowalski";
+let password = "abc123";
+
+if (username.length === 0) {
+  console.log("Nazwa uzytkownika jest wymagana");
+} else if (username.length < 3) {
+  console.log("Nazwa musi miec min. 3 znaki");
+} else if (password.length < 6) {
+  console.log("Haslo musi miec min. 6 znakow");
+} else {
+  console.log("Formularz poprawny - mozna wyslac");
+}
+        </code></pre>
+        <div class="console-output">
+          > Formularz poprawny - można wysłać
+        </div>
+        <aside class="notes">
+          Przykład z kontekstu testowania - walidacja danych formularza.
+          To typowy scenariusz, który testerzy spotykają codziennie.
+        </aside>
+      </section>
+
+      <!-- Slide 18: Przykład - sprawdzanie roli użytkownika -->
+      <section>
+        <h2>Przykład: Sprawdzanie roli użytkownika</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let userRole = "editor";
+
+switch (userRole) {
+  case "admin":
+    console.log("Dostep: pelny");
+    console.log("Moze usuwac uzytkownikow");
+    break;
+  case "editor":
+    console.log("Dostep: edycja tresci");
+    console.log("Nie moze usuwac uzytkownikow");
+    break;
+  case "viewer":
+    console.log("Dostep: tylko odczyt");
+    break;
+  default:
+    console.log("Nieznana rola - brak dostepu");
+}
+        </code></pre>
+        <aside class="notes">
+          Praktyczny przykład ze switch - sprawdzamy rolę użytkownika i na jej podstawie
+          wyświetlamy uprawnienia. To częsty scenariusz w testach aplikacji webowych.
+        </aside>
+      </section>
+
+      <!-- Slide 19: Truthy i falsy -->
+      <section>
+        <h2>Wartości truthy i falsy</h2>
+        <p>JavaScript automatycznie konwertuje wartości na <code>true</code>/<code>false</code></p>
+        <div class="columns">
+          <div class="col">
+            <p><strong>Falsy (fałszywe):</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+false
+0
+"" // pusty string
+null
+undefined
+NaN
+            </code></pre>
+          </div>
+          <div class="col">
+            <p><strong>Truthy (prawdziwe):</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+true
+42         // kazda liczba != 0
+"tekst"    // niepusty string
+[]         // tablica (nawet pusta!)
+{}         // obiekt (nawet pusty!)
+            </code></pre>
+          </div>
+        </div>
+        <pre><code data-trim data-noescape class="language-javascript">
+let errorMessage = "";
+if (errorMessage) {
+  console.log("Jest blad: " + errorMessage);
+} else {
+  console.log("Brak bledow"); // To sie wykona
+}
+        </code></pre>
+        <aside class="notes">
+          Ważne w kontekście warunków - wiele wartości jest automatycznie konwertowanych.
+          Pusta tablica i pusty obiekt są truthy! To częsty błąd początkujących.
+        </aside>
+      </section>
+
+      <!-- Slide 20: Ćwiczenie - instrukcje warunkowe -->
+      <section>
+        <h2>Czas na praktykę!</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Klasyfikator ocen</h3>
+          <ol>
+            <li>Zadeklaruj zmienną <code>score</code> z wynikiem testu (0-100)</li>
+            <li>Napisz warunki, które wyświetlą ocenę:
+              <ul>
+                <li>90-100: <strong>"Celujący"</strong></li>
+                <li>75-89: <strong>"Dobry"</strong></li>
+                <li>60-74: <strong>"Dostateczny"</strong></li>
+                <li>Poniżej 60: <strong>"Niedostateczny"</strong></li>
+              </ul>
+            </li>
+            <li>Dodaj obsługę błędnych wartości (ujemne, większe niż 100)</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie na 10-15 minut. Przechodzimy po sali i pomagamy.
+          Ważne, żeby uczestnicy spróbowali sami - nie podpowiadamy od razu.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 3: Pętle (~1.5h, ~12-14 slides)
+           ============================================================ -->
+
+      <!-- Slide 21: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">03</span>
+        <h2>Pętle</h2>
+        <p>Powtarzanie operacji wiele razy</p>
+        <aside class="notes">
+          Przechodzimy do pętli. Pętle pozwalają na powtarzanie bloku kodu
+          wielokrotnie. To kluczowe np. przy przetwarzaniu list wyników testów.
+        </aside>
+      </section>
+
+      <!-- Slide 22: for - składnia -->
+      <section>
+        <h2>Pętla <code>for</code></h2>
+        <p>Najczęściej używana pętla - <strong>znamy liczbę powtórzeń</strong></p>
+        <pre><code data-trim data-noescape class="language-javascript">
+//    inicjalizacja; warunek; krok
+for (let i = 0; i &lt; 5; i++) {
+  console.log("Iteracja numer: " + i);
+}
+        </code></pre>
+        <div class="console-output">
+          > Iteracja numer: 0<br>
+          > Iteracja numer: 1<br>
+          > Iteracja numer: 2<br>
+          > Iteracja numer: 3<br>
+          > Iteracja numer: 4
+        </div>
+        <div class="tip">
+          <h3>Trzy części pętli for</h3>
+          <p><strong>Inicjalizacja</strong> - wykonuje się raz | <strong>Warunek</strong> - sprawdzany przed każdą iteracją | <strong>Krok</strong> - po każdej iteracji</p>
+        </div>
+        <aside class="notes">
+          Tłumaczenie każdej części pętli for. Zwrócenie uwagi na i++ (inkrementacja).
+          Zmienna i jest dostępna tylko wewnątrz pętli dzięki let.
+        </aside>
+      </section>
+
+      <!-- Slide 23: for - iterowanie po tablicy -->
+      <section>
+        <h2><code>for</code> - iterowanie po tablicy</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let browsers = ["Chrome", "Firefox", "Safari", "Edge"];
+
+for (let i = 0; i &lt; browsers.length; i++) {
+  console.log("Test w przegladarce: " + browsers[i]);
+}
+        </code></pre>
+        <div class="console-output">
+          > Test w przeglądarce: Chrome<br>
+          > Test w przeglądarce: Firefox<br>
+          > Test w przeglądarce: Safari<br>
+          > Test w przeglądarce: Edge
+        </div>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p><code>browsers.length</code> zwraca liczbę elementów tablicy. Indeksy zaczynają się od <code>0</code>.</p>
+        </div>
+        <aside class="notes">
+          Klasyczne użycie pętli for - przechodzenie po elementach tablicy.
+          Zwrócenie uwagi na .length i na to, że indeksy zaczynają się od 0.
+        </aside>
+      </section>
+
+      <!-- Slide 24: while -->
+      <section>
+        <h2>Pętla <code>while</code></h2>
+        <p>Powtarzaj <strong>dopóki warunek jest spełniony</strong></p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let attempts = 0;
+let maxAttempts = 3;
+
+while (attempts &lt; maxAttempts) {
+  console.log("Proba polaczenia nr " + (attempts + 1));
+  attempts++;
+}
+
+console.log("Wykonano " + attempts + " prob");
+        </code></pre>
+        <div class="console-output">
+          > Próba połączenia nr 1<br>
+          > Próba połączenia nr 2<br>
+          > Próba połączenia nr 3<br>
+          > Wykonano 3 prób
+        </div>
+        <aside class="notes">
+          While używamy, gdy nie znamy dokładnej liczby powtórzeń.
+          Warunek jest sprawdzany PRZED każdą iteracją - jeśli na początku jest fałszywy,
+          kod się nie wykona ani razu.
+        </aside>
+      </section>
+
+      <!-- Slide 25: while - nieskończona pętla -->
+      <section>
+        <h2>Nieskończona pętla</h2>
+        <div class="warning">
+          <h3>Uwaga!</h3>
+          <p>Jeśli warunek <code>while</code> nigdy nie stanie się <code>false</code>, pętla nigdy się nie zakończy!</p>
+        </div>
+        <pre><code data-trim data-noescape class="language-javascript">
+// NIEBEZPIECZNE - nie uruchamiaj!
+let counter = 0;
+while (counter &lt; 10) {
+  console.log(counter);
+  // Brak counter++ - petla nigdy sie nie skonczy!
+}
+        </code></pre>
+        <div class="tip">
+          <h3>Jak uniknąć?</h3>
+          <p>Zawsze upewnij się, że warunek pętli w końcu stanie się <code>false</code>.
+          W przeglądarce można zamknąć kartę. W Node.js: <kbd>Ctrl+C</kbd>.</p>
+        </div>
+        <aside class="notes">
+          Ważne ostrzeżenie! Pokazujemy przykład nieskończonej pętli i jak ją przerwać.
+          To częsty błąd początkujących - zapominają o inkrementacji licznika.
+        </aside>
+      </section>
+
+      <!-- Slide 26: do...while -->
+      <section>
+        <h2>Pętla <code>do...while</code></h2>
+        <p>Wykona się <strong>co najmniej raz</strong> - warunek sprawdzany na końcu</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let userInput;
+let validInputs = ["tak", "nie"];
+
+do {
+  userInput = "tak"; // symulacja odpowiedzi uzytkownika
+  console.log("Uzytkownik wpisal: " + userInput);
+} while (!validInputs.includes(userInput));
+
+console.log("Zaakceptowano odpowiedz: " + userInput);
+        </code></pre>
+        <div class="columns">
+          <div class="col">
+            <p><strong>while:</strong> sprawdza warunek <em>przed</em> iteracją</p>
+          </div>
+          <div class="col">
+            <p><strong>do...while:</strong> sprawdza warunek <em>po</em> iteracji</p>
+          </div>
+        </div>
+        <aside class="notes">
+          do...while gwarantuje przynajmniej jedno wykonanie. Używana rzadziej,
+          ale przydatna np. przy walidacji danych - chcemy przynajmniej raz poprosić
+          o dane i potem sprawdzić czy są poprawne.
+        </aside>
+      </section>
+
+      <!-- Slide 27: for...of -->
+      <section>
+        <h2>Pętla <code>for...of</code></h2>
+        <p>Wygodna składnia do iterowania po kolekcjach</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testResults = ["passed", "failed", "passed", "skipped", "passed"];
+
+for (let result of testResults) {
+  console.log("Wynik testu: " + result);
+}
+        </code></pre>
+        <div class="console-output">
+          > Wynik testu: passed<br>
+          > Wynik testu: failed<br>
+          > Wynik testu: passed<br>
+          > Wynik testu: skipped<br>
+          > Wynik testu: passed
+        </div>
+        <div class="tip">
+          <h3>Zaleta</h3>
+          <p>Nie potrzebujemy indeksu <code>i</code> - bezpośredni dostęp do elementu. Czytelniejszy kod!</p>
+        </div>
+        <aside class="notes">
+          for...of to nowoczesna składnia (ES6). Idealna, gdy nie potrzebujemy
+          indeksu, a jedynie wartości elementów. Działa z tablicami, stringami
+          i innymi obiektami iterowalnymi.
+        </aside>
+      </section>
+
+      <!-- Slide 28: break -->
+      <section>
+        <h2><code>break</code> - przerywanie pętli</h2>
+        <p>Natychmiast kończy wykonywanie pętli</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testResults = ["passed", "passed", "failed", "passed", "passed"];
+
+console.log("Szukam pierwszego bledu...");
+
+for (let i = 0; i &lt; testResults.length; i++) {
+  if (testResults[i] === "failed") {
+    console.log("Znaleziono blad w tescie nr " + (i + 1));
+    break; // Konczymy szukanie
+  }
+  console.log("Test " + (i + 1) + ": OK");
+}
+        </code></pre>
+        <div class="console-output">
+          > Szukam pierwszego błędu...<br>
+          > Test 1: OK<br>
+          > Test 2: OK<br>
+          > Znaleziono błąd w teście nr 3
+        </div>
+        <aside class="notes">
+          Break przerywa całą pętlę. Przydatne, gdy szukamy pierwszego wystąpienia
+          i nie musimy przeglądać reszty kolekcji.
+        </aside>
+      </section>
+
+      <!-- Slide 29: continue -->
+      <section>
+        <h2><code>continue</code> - pomijanie iteracji</h2>
+        <p>Przeskakuje do następnej iteracji pętli</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testResults = ["passed", "skipped", "failed", "passed", "skipped"];
+
+console.log("Analiza wynikow (pomijam skipped):");
+
+for (let result of testResults) {
+  if (result === "skipped") {
+    continue; // Pomijamy pominiete testy
+  }
+  console.log("Analizuje wynik: " + result);
+}
+        </code></pre>
+        <div class="console-output">
+          > Analiza wyników (pomijam skipped):<br>
+          > Analizuję wynik: passed<br>
+          > Analizuję wynik: failed<br>
+          > Analizuję wynik: passed
+        </div>
+        <aside class="notes">
+          Continue pomija bieżącą iterację i przechodzi do następnej.
+          Nie kończy pętli jak break - tylko pomija resztę kodu w tej iteracji.
+        </aside>
+      </section>
+
+      <!-- Slide 30: Zagnieżdżone pętle -->
+      <section>
+        <h2>Zagnieżdżone pętle</h2>
+        <p>Pętla wewnątrz pętli - np. testowanie wielu kombinacji</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let browsers = ["Chrome", "Firefox"];
+let resolutions = ["1920x1080", "1366x768", "375x667"];
+
+for (let browser of browsers) {
+  for (let resolution of resolutions) {
+    console.log(`Test: ${browser} @ ${resolution}`);
+  }
+}
+        </code></pre>
+        <div class="console-output">
+          > Test: Chrome @ 1920x1080<br>
+          > Test: Chrome @ 1366x768<br>
+          > Test: Chrome @ 375x667<br>
+          > Test: Firefox @ 1920x1080<br>
+          > Test: Firefox @ 1366x768<br>
+          > Test: Firefox @ 375x667
+        </div>
+        <aside class="notes">
+          Zagnieżdżone pętle generują iloczyn kartezjański - każda kombinacja.
+          Przykład z kontekstu testowania - sprawdzamy każdą przeglądarkę
+          w każdej rozdzielczości. Uwaga na wydajność przy dużych zbiorach!
+        </aside>
+      </section>
+
+      <!-- Slide 31: Przykład - zliczanie wyników -->
+      <section>
+        <h2>Przykład: Zliczanie wyników testów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let results = ["passed", "failed", "passed", "passed",
+               "skipped", "failed", "passed"];
+
+let passed = 0;
+let failed = 0;
+let skipped = 0;
+
+for (let result of results) {
+  if (result === "passed") passed++;
+  else if (result === "failed") failed++;
+  else if (result === "skipped") skipped++;
+}
+
+console.log(`Wyniki: ${passed} OK, ${failed} bledow, ${skipped} pominieto`);
+console.log(`Procent sukcesu: ${Math.round(passed / results.length * 100)}%`);
+        </code></pre>
+        <div class="console-output">
+          > Wyniki: 4 OK, 2 błędów, 1 pominięto<br>
+          > Procent sukcesu: 57%
+        </div>
+        <aside class="notes">
+          Łączenie pętli z warunkami - typowy scenariusz. Zliczamy wyniki
+          testów i obliczamy procent sukcesu. Uczestnicy mogą spróbować
+          dodać więcej statystyk.
+        </aside>
+      </section>
+
+      <!-- Slide 32: Przykład - wyszukiwanie w tablicy -->
+      <section>
+        <h2>Przykład: Wyszukiwanie błędu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let logs = [
+  "INFO: Aplikacja uruchomiona",
+  "INFO: Uzytkownik zalogowany",
+  "WARNING: Wolne polaczenie",
+  "ERROR: Baza danych niedostepna",
+  "INFO: Ponowna proba polaczenia"
+];
+
+let errorFound = false;
+
+for (let log of logs) {
+  if (log.startsWith("ERROR")) {
+    console.log("Znaleziono blad: " + log);
+    errorFound = true;
+    break;
+  }
+}
+
+if (!errorFound) {
+  console.log("Brak bledow w logach");
+}
+        </code></pre>
+        <aside class="notes">
+          Praktyczny przykład - przeszukiwanie logów w poszukiwaniu błędów.
+          Używamy startsWith() do sprawdzenia początku stringa i break po znalezieniu.
+        </aside>
+      </section>
+
+      <!-- Slide 33: Ćwiczenie - pętle -->
+      <section>
+        <h2>Czas na praktykę!</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Pętle</h3>
+          <ol>
+            <li>Stwórz tablicę z 5 nazwami produktów (np. z rossmann.pl)</li>
+            <li>Użyj pętli <code>for</code>, aby wyświetlić każdy produkt z numerem:
+              <code>"1. Szampon", "2. Krem"...</code></li>
+            <li>Użyj pętli <code>for...of</code>, aby policzyć ile produktów ma nazwę dłuższą niż 5 znaków</li>
+            <li>Użyj pętli <code>while</code>, aby wyświetlać produkty aż napotkasz produkt o nazwie "STOP"
+              (dodaj "STOP" do tablicy)</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie na 15 minut. Trzy podpunkty - każdy używa innej pętli.
+          Pomagamy uczestnikom, zwracamy uwagę na poprawne warunki i inkrementację.
+        </aside>
+      </section>
+
+      <!-- Slide 34: Ćwiczenie - pętle zaawansowane -->
+      <section>
+        <h2>Ćwiczenie dodatkowe</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Raport testów</h3>
+          <ol>
+            <li>Dana jest tablica wyników:
+              <code>["pass", "fail", "pass", "pass", "fail", "skip", "pass"]</code></li>
+            <li>Użyj pętli, aby policzyć ile jest wyników każdego typu</li>
+            <li>Wyświetl raport:
+              <code>"Passed: 4 | Failed: 2 | Skipped: 1"</code></li>
+            <li>Wyświetl procentowy udział każdego typu</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie dla szybszych uczestników. Łączy pętle z warunkami.
+          Można zaproponować użycie switch zamiast if/else.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 4: Funkcje (~2.5h, ~18-20 slides)
+           ============================================================ -->
+
+      <!-- Slide 35: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">04</span>
+        <h2>Funkcje</h2>
+        <p>Organizacja i ponowne użycie kodu</p>
+        <aside class="notes">
+          Najważniejszy blok dnia! Funkcje to fundament programowania.
+          Pozwalają na organizację kodu i jego ponowne użycie.
+        </aside>
+      </section>
+
+      <!-- Slide 36: Czym jest funkcja? -->
+      <section>
+        <h2>Czym jest funkcja?</h2>
+        <p>Funkcja to <strong>nazwany blok kodu</strong>, który można wielokrotnie wywołać</p>
+        <div class="columns">
+          <div class="col">
+            <h3>Przepis kucharski</h3>
+            <ul>
+              <li>Ma nazwę ("Naleśniki")</li>
+              <li>Przyjmuje składniki (parametry)</li>
+              <li>Wykonuje kroki (ciało funkcji)</li>
+              <li>Daje wynik (return)</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Funkcja w JS</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+function makePancakes(eggs, milk) {
+  let batter = mix(eggs, milk);
+  let result = fry(batter);
+  return result;
+}
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          Analogia z przepisem kucharskim jest bardzo intuicyjna.
+          Funkcja ma nazwę, parametry (składniki), ciało (instrukcje)
+          i może zwracać wynik (gotowe danie).
+        </aside>
+      </section>
+
+      <!-- Slide 37: Deklaracja funkcji -->
+      <section>
+        <h2>Deklaracja funkcji</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Deklaracja (definicja) funkcji
+function greetTester(name) {
+  console.log("Czesc, " + name + "! Gotowy na testy?");
+}
+
+// Wywolanie funkcji
+greetTester("Anna");
+greetTester("Marek");
+        </code></pre>
+        <div class="console-output">
+          > Cześć, Anna! Gotowy na testy?<br>
+          > Cześć, Marek! Gotowy na testy?
+        </div>
+        <div class="tip">
+          <h3>Składnia</h3>
+          <p><code>function nazwaFunkcji(parametry) { ... }</code></p>
+        </div>
+        <aside class="notes">
+          Pierwsza forma deklaracji - słowo kluczowe function, nazwa, nawiasy
+          z parametrami, klamry z ciałem. Zwracamy uwagę na różnicę między
+          deklaracją a wywołaniem.
+        </aside>
+      </section>
+
+      <!-- Slide 38: Wywołanie funkcji -->
+      <section>
+        <h2>Deklaracja vs wywołanie</h2>
+        <p>Deklaracja <strong>tworzy</strong> funkcję. Wywołanie <strong>uruchamia</strong> ją.</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+// 1. Deklaracja - tworzymy funkcje (nic sie nie dzieje)
+function runTest(testName) {
+  console.log("Uruchamiam test: " + testName);
+  console.log("Test zakonczony!");
+}
+
+// 2. Bez wywolania - funkcja istnieje, ale sie nie wykonuje
+// ...nic w konsoli...
+
+// 3. Wywolanie - uruchamiamy funkcje (teraz sie wykonuje!)
+runTest("Login");
+runTest("Wyszukiwanie");
+        </code></pre>
+        <div class="warning">
+          <h3>Częsty błąd</h3>
+          <p>Napisanie funkcji, ale zapomnienie o jej wywołaniu. Funkcja sama się nie uruchomi!</p>
+        </div>
+        <aside class="notes">
+          Podkreślamy różnicę - deklaracja to jak napisanie przepisu,
+          wywołanie to jak gotowanie według tego przepisu. Można wywołać
+          wielokrotnie.
+        </aside>
+      </section>
+
+      <!-- Slide 39: Parametry i argumenty -->
+      <section>
+        <h2>Parametry i argumenty</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+//                parametr1    parametr2
+function calculateSum(a, b) {
+  console.log("Suma: " + (a + b));
+}
+
+//           argument1  argument2
+calculateSum(10, 20);     // Suma: 30
+calculateSum(5, 3);       // Suma: 8
+        </code></pre>
+        <div class="tip">
+          <h3>Różnica</h3>
+          <p><strong>Parametr</strong> - zmienna w deklaracji funkcji (placeholder).<br>
+          <strong>Argument</strong> - konkretna wartość przekazana przy wywołaniu.</p>
+        </div>
+        <aside class="notes">
+          Parametr to slot, argument to wartość, która ten slot wypełnia.
+          W praktyce ludzie używają tych terminów zamiennie, ale warto znać różnicę.
+        </aside>
+      </section>
+
+      <!-- Slide 40: return -->
+      <section>
+        <h2><code>return</code> - zwracanie wartości</h2>
+        <p>Funkcja może <strong>zwrócić wynik</strong>, który można zapisać w zmiennej</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+function add(a, b) {
+  return a + b;
+  // Kod po return NIE zostanie wykonany!
+}
+
+let result = add(15, 25);
+console.log("Wynik: " + result); // Wynik: 40
+
+// Mozna tez uzyc bezposrednio:
+console.log("Podwojony: " + add(10, 10) * 2); // Podwojony: 40
+        </code></pre>
+        <div class="warning">
+          <h3>Ważne</h3>
+          <p><code>return</code> kończy wykonywanie funkcji. Kod po <code>return</code> nigdy się nie wykona.</p>
+        </div>
+        <aside class="notes">
+          Return zwraca wartość i kończy funkcję. Bez return funkcja zwraca undefined.
+          Pokaz, że console.log WYŚWIETLA, a return ZWRACA - to różne rzeczy.
+        </aside>
+      </section>
+
+      <!-- Slide 41: console.log vs return -->
+      <section>
+        <h2><code>console.log</code> vs <code>return</code></h2>
+        <div class="columns">
+          <div class="col">
+            <p><strong>console.log - wyświetla</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+function addAndPrint(a, b) {
+  console.log(a + b);
+}
+
+let result = addAndPrint(2, 3);
+// Wyswietli: 5
+console.log(result);
+// Wyswietli: undefined
+            </code></pre>
+          </div>
+          <div class="col">
+            <p><strong>return - zwraca</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+function addAndReturn(a, b) {
+  return a + b;
+}
+
+let result = addAndReturn(2, 3);
+// Nic nie wyswietli
+console.log(result);
+// Wyswietli: 5
+            </code></pre>
+          </div>
+        </div>
+        <div class="tip">
+          <h3>Zasada</h3>
+          <p><code>console.log</code> = pokazuje na ekranie. <code>return</code> = oddaje wartość do dalszego użycia.</p>
+        </div>
+        <aside class="notes">
+          To jeden z najczęstszych błędów początkujących - mylenie console.log z return.
+          Console.log jest jak powiedzenie czegoś na głos, return to jak podanie wyniku.
+        </aside>
+      </section>
+
+      <!-- Slide 42: Parametry domyślne -->
+      <section>
+        <h2>Parametry domyślne</h2>
+        <p>Można podać wartość domyślną, gdy argument nie zostanie przekazany</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+function createTestReport(testName, status = "pending") {
+  return `Test "${testName}" - status: ${status}`;
+}
+
+console.log(createTestReport("Login", "passed"));
+// Test "Login" - status: passed
+
+console.log(createTestReport("Wyszukiwanie"));
+// Test "Wyszukiwanie" - status: pending
+        </code></pre>
+        <div class="tip">
+          <h3>Składnia</h3>
+          <p><code>function nazwa(param1, param2 = "domyślna") { ... }</code></p>
+        </div>
+        <aside class="notes">
+          Parametry domyślne są bardzo przydatne. Jeśli nie przekażemy argumentu,
+          użyty zostanie domyślny. Stosowane często w funkcjach konfiguracyjnych.
+        </aside>
+      </section>
+
+      <!-- Slide 43: Function expression -->
+      <section>
+        <h2>Wyrażenie funkcyjne (Function Expression)</h2>
+        <p>Funkcja przypisana do zmiennej</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Function Expression
+const calculatePercentage = function(part, total) {
+  return Math.round((part / total) * 100);
+};
+
+console.log(calculatePercentage(15, 20) + "%"); // 75%
+        </code></pre>
+        <div class="columns">
+          <div class="col">
+            <p><strong>Function Declaration:</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+// Mozna wywolac PRZED deklaracja
+sayHi(); // Dziala!
+function sayHi() {
+  console.log("Czesc!");
+}
+            </code></pre>
+          </div>
+          <div class="col">
+            <p><strong>Function Expression:</strong></p>
+            <pre><code data-trim data-noescape class="language-javascript">
+// NIE mozna wywolac przed
+sayHi(); // Blad!
+const sayHi = function() {
+  console.log("Czesc!");
+};
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          Różnica: deklaracja jest "hoistowana" - można ją wywołać przed definicją.
+          Expression nie - musi być zdefiniowana przed wywołaniem.
+          W praktyce stosujemy obie formy.
+        </aside>
+      </section>
+
+      <!-- Slide 44: Arrow function -->
+      <section>
+        <h2>Arrow Function (funkcja strzałkowa)</h2>
+        <p>Krótsza składnia - wprowadzona w ES6</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Function Expression
+const add = function(a, b) {
+  return a + b;
+};
+
+// Arrow Function - to samo, krocej
+const addArrow = (a, b) => {
+  return a + b;
+};
+
+console.log(add(2, 3));      // 5
+console.log(addArrow(2, 3)); // 5
+        </code></pre>
+        <div class="tip">
+          <h3>Składnia</h3>
+          <p>Zamieniamy <code>function</code> na <code>=></code> (strzałkę) po nawiasach.</p>
+        </div>
+        <aside class="notes">
+          Arrow function to nowoczesna składnia, bardzo popularna w dzisiejszym JS.
+          Pokazujemy transformację krok po kroku: usuwamy function, dodajemy strzałkę.
+        </aside>
+      </section>
+
+      <!-- Slide 45: Arrow function - skrócona składnia -->
+      <section>
+        <h2>Arrow Function - skróty</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Pelna arrow function
+const multiply = (a, b) => {
+  return a * b;
+};
+
+// Skrocona - jedna linia, implicit return (bez return i {})
+const multiplyShort = (a, b) => a * b;
+
+// Jeden parametr - mozna pominac nawiasy
+const double = x => x * 2;
+
+// Brak parametrow - puste nawiasy
+const getTimestamp = () => Date.now();
+
+console.log(multiplyShort(3, 4)); // 12
+console.log(double(5));           // 10
+        </code></pre>
+        <aside class="notes">
+          Trzy skróty: 1) implicit return - bez klamr i return dla jednego wyrażenia,
+          2) jeden parametr - bez nawiasów,
+          3) brak parametrów - puste nawiasy wymagane.
+        </aside>
+      </section>
+
+      <!-- Slide 46: Porównanie typów funkcji -->
+      <section>
+        <h2>Porównanie: 3 sposoby tworzenia funkcji</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Cecha</th>
+              <th>Declaration</th>
+              <th>Expression</th>
+              <th>Arrow</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Składnia</td>
+              <td><code>function f() {}</code></td>
+              <td><code>const f = function() {}</code></td>
+              <td><code>const f = () => {}</code></td>
+            </tr>
+            <tr>
+              <td>Hoisting</td>
+              <td>Tak</td>
+              <td>Nie</td>
+              <td>Nie</td>
+            </tr>
+            <tr>
+              <td>Krótki zapis</td>
+              <td>Nie</td>
+              <td>Nie</td>
+              <td>Tak (implicit return)</td>
+            </tr>
+            <tr>
+              <td>Użycie</td>
+              <td>Ogólne</td>
+              <td>Callbacki</td>
+              <td>Callbacki, metody tablic</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="tip">
+          <h3>Dla początkujących</h3>
+          <p>Na start używaj <code>function declaration</code> - jest najprostsza. Arrow functions poznasz lepiej przy tablicach.</p>
+        </div>
+        <aside class="notes">
+          Podsumowanie trzech sposobów. Nie przytłaczamy szczegółami -
+          na początku ważne jest, żeby uczestnicy umieli tworzyć proste funkcje.
+          Arrow functions będą bardziej użyteczne przy tablicach (metody map, filter).
+        </aside>
+      </section>
+
+      <!-- Slide 47: Scope - zasięg zmiennych -->
+      <section>
+        <h2>Scope - zasięg zmiennych</h2>
+        <p>Gdzie zmienna jest <strong>dostępna</strong> (widoczna)?</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let globalVar = "Jestem globalna";  // Dostepna wszedzie
+
+function testScope() {
+  let localVar = "Jestem lokalna"; // Tylko wewnatrz funkcji
+  console.log(globalVar);  // OK
+  console.log(localVar);   // OK
+}
+
+testScope();
+console.log(globalVar);  // OK
+console.log(localVar);   // BLAD! localVar nie istnieje tutaj
+        </code></pre>
+        <div class="columns">
+          <div class="col">
+            <p><strong>Global scope</strong> - dostępna wszędzie</p>
+          </div>
+          <div class="col">
+            <p><strong>Local scope</strong> - dostępna tylko w funkcji</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Scope to zasięg widoczności zmiennej. Zmienna lokalna nie jest widoczna
+          na zewnątrz funkcji. Globalna - jest widoczna wszędzie.
+          Dobra praktyka: unikaj zmiennych globalnych.
+        </aside>
+      </section>
+
+      <!-- Slide 48: Scope - block scope -->
+      <section>
+        <h2>Block scope - <code>let</code> vs <code>var</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// var - NIE ma zasiegu blokowego (tylko funkcyjny)
+if (true) {
+  var oldWay = "Widoczna na zewnatrz!";
+}
+console.log(oldWay); // "Widoczna na zewnatrz!" - dziala!
+
+// let - MA zasieg blokowy
+if (true) {
+  let newWay = "Tylko wewnatrz bloku";
+}
+console.log(newWay); // BLAD! newWay nie istnieje tutaj
+        </code></pre>
+        <div class="warning">
+          <h3>Dlaczego unikamy var?</h3>
+          <p><code>var</code> "wyciekała" z bloków <code>if</code>, <code>for</code> itd.
+          <code>let</code> i <code>const</code> są bezpieczniejsze - mają zasięg blokowy.</p>
+        </div>
+        <aside class="notes">
+          Ważna różnica - var ma tylko zasięg funkcyjny, więc "wycieka" z bloków.
+          To był częsty źródło błędów. let i const rozwiązują ten problem.
+          Dlatego w nowoczesnym JS używamy let i const, nie var.
+        </aside>
+      </section>
+
+      <!-- Slide 49: Scope - przykład z pętlą -->
+      <section>
+        <h2>Scope w pętlach</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Problem z var w petli
+for (var i = 0; i &lt; 3; i++) {
+  // ...
+}
+console.log(i); // 3 - var "wycieklo" z petli!
+
+// Rozwiazanie z let
+for (let j = 0; j &lt; 3; j++) {
+  // ...
+}
+console.log(j); // BLAD! j nie istnieje tutaj
+        </code></pre>
+        <div class="tip">
+          <h3>Zasada</h3>
+          <p>Zawsze używaj <code>let</code> lub <code>const</code>. Unikaj <code>var</code> - to relikt przeszłości.</p>
+        </div>
+        <aside class="notes">
+          Praktyczny przykład - zmienna i z pętli for jest dostępna po pętli
+          gdy użyjemy var. Z let - nie. To ważne przy pisaniu testów,
+          gdzie zmienne pętli nie powinny wpływać na inne części kodu.
+        </aside>
+      </section>
+
+      <!-- Slide 50: Funkcje jako czarne skrzynki -->
+      <section>
+        <h2>Funkcje jako "czarne skrzynki"</h2>
+        <p>Input &rarr; Przetwarzanie &rarr; Output</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Nie musimy wiedziec JAK dziala wewnatrz
+// Wazne: co przyjmuje i co zwraca
+
+function validateEmail(email) {
+  // Wewnetrzna logika (czarna skrzynka)
+  let hasAt = email.includes("@");
+  let hasDot = email.includes(".");
+  let isLongEnough = email.length >= 5;
+
+  return hasAt && hasDot && isLongEnough;
+}
+
+// Uzycie - interesuje nas tylko input/output
+console.log(validateEmail("jan@rossmann.pl"));  // true
+console.log(validateEmail("niepoprawny"));       // false
+        </code></pre>
+        <aside class="notes">
+          Analogia z czarną skrzynką - używający funkcji nie musi znać
+          implementacji, wystarczy wiedzieć co wchodzi i co wychodzi.
+          To kluczowa koncepcja w programowaniu i w testowaniu!
+        </aside>
+      </section>
+
+      <!-- Slide 51: Przykład - funkcja formatująca -->
+      <section>
+        <h2>Przykład: Formatowanie daty testu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+function formatTestDate(date) {
+  let day = String(date.getDate()).padStart(2, "0");
+  let month = String(date.getMonth() + 1).padStart(2, "0");
+  let year = date.getFullYear();
+  let hours = String(date.getHours()).padStart(2, "0");
+  let minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+let now = new Date();
+console.log("Test wykonany: " + formatTestDate(now));
+// np. "Test wykonany: 27.02.2026 14:30"
+        </code></pre>
+        <aside class="notes">
+          Praktyczny przykład - formatowanie daty. Taka funkcja jest używana
+          wielokrotnie w raportach testowych. Pokazujemy padStart i getMonth()+1.
+        </aside>
+      </section>
+
+      <!-- Slide 52: Przykład - funkcja walidująca -->
+      <section>
+        <h2>Przykład: Walidacja hasła</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+const validatePassword = (password) => {
+  if (password.length < 8) {
+    return "Haslo za krotkie (min. 8 znakow)";
+  }
+  if (password === password.toLowerCase()) {
+    return "Haslo musi zawierac wielka litere";
+  }
+  if (!/\d/.test(password)) {
+    return "Haslo musi zawierac cyfre";
+  }
+  return "Haslo poprawne";
+};
+
+console.log(validatePassword("abc"));       // Za krotkie
+console.log(validatePassword("abcdefgh"));  // Brak wielkiej litery
+console.log(validatePassword("Abcdefgh"));  // Brak cyfry
+console.log(validatePassword("Abcdefg1"));  // Poprawne
+        </code></pre>
+        <aside class="notes">
+          Arrow function z wieloma warunkami walidacji. Funkcja zwraca
+          komunikat błędu lub potwierdzenie. To typowy scenariusz testowy -
+          sprawdzanie reguł walidacji.
+        </aside>
+      </section>
+
+      <!-- Slide 53: Funkcje wywołujące funkcje -->
+      <section>
+        <h2>Funkcje wywołujące funkcje</h2>
+        <p>Funkcje mogą korzystać z innych funkcji</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+function isValidEmail(email) {
+  return email.includes("@") && email.includes(".");
+}
+
+function isValidPassword(password) {
+  return password.length >= 8;
+}
+
+function validateForm(email, password) {
+  if (!isValidEmail(email)) {
+    return "Nieprawidlowy email";
+  }
+  if (!isValidPassword(password)) {
+    return "Haslo za krotkie";
+  }
+  return "Formularz poprawny";
+}
+
+console.log(validateForm("jan@test.pl", "haslo123"));
+// "Formularz poprawny"
+        </code></pre>
+        <aside class="notes">
+          Kompozycja funkcji - duża funkcja korzysta z mniejszych.
+          To dobra praktyka - każda funkcja robi jedną rzecz.
+          Łatwiejsze do testowania i debugowania.
+        </aside>
+      </section>
+
+      <!-- Slide 54: Ćwiczenie - podstawowe funkcje -->
+      <section>
+        <h2>Czas na praktykę!</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Pierwsze funkcje</h3>
+          <ol>
+            <li>Napisz funkcję <code>greet(name)</code>, która zwraca <code>"Cześć, [name]!"</code></li>
+            <li>Napisz arrow function <code>isEven(number)</code>, która zwraca <code>true</code> jeśli liczba jest parzysta</li>
+            <li>Napisz funkcję <code>getMax(a, b, c)</code>, która zwraca największą z trzech liczb</li>
+            <li>Przetestuj każdą funkcję wywołując ją z różnymi argumentami</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Podstawowe ćwiczenie na tworzenie funkcji. 10-15 minut.
+          Pomagamy tym, którzy mają trudności ze składnią.
+        </aside>
+      </section>
+
+      <!-- Slide 55: Ćwiczenie - funkcje zaawansowane -->
+      <section>
+        <h2>Ćwiczenie zaawansowane</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Funkcje testowe</h3>
+          <ol>
+            <li>Napisz funkcję <code>generateTestId(prefix)</code>, która zwraca np. <code>"TC-001"</code>
+              (z domyślnym prefixem "TC")</li>
+            <li>Napisz funkcję <code>calculatePassRate(passed, total)</code>, która zwraca procent
+              (np. <code>"75.00%"</code>)</li>
+            <li>Napisz funkcję <code>categorizeResponse(statusCode)</code>, która zwraca kategorię:
+              <code>"success"</code>, <code>"redirect"</code>, <code>"client error"</code>, <code>"server error"</code></li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Trudniejsze ćwiczenie - funkcje z kontekstem testowym.
+          Dajemy 15-20 minut. Można pracować w parach.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 5: Ćwiczenia praktyczne (~1h, ~5-6 slides)
+           ============================================================ -->
+
+      <!-- Slide 56: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">05</span>
+        <h2>Ćwiczenia praktyczne</h2>
+        <p>Łączymy wszystko razem</p>
+        <aside class="notes">
+          Ostatni blok - ćwiczenia łączące warunki, pętle i funkcje.
+          Uczestnicy powinni pracować samodzielnie, my pomagamy.
+        </aside>
+      </section>
+
+      <!-- Slide 57: FizzBuzz -->
+      <section>
+        <h2>Ćwiczenie: FizzBuzz</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Klasyczne FizzBuzz</h3>
+          <p>Napisz funkcję <code>fizzBuzz(n)</code>, która dla liczb od 1 do <code>n</code>:</p>
+          <ul>
+            <li>Wyświetla <code>"Fizz"</code> - jeśli liczba jest podzielna przez 3</li>
+            <li>Wyświetla <code>"Buzz"</code> - jeśli podzielna przez 5</li>
+            <li>Wyświetla <code>"FizzBuzz"</code> - jeśli podzielna przez 3 i 5</li>
+            <li>W przeciwnym razie wyświetla samą liczbę</li>
+          </ul>
+          <p><strong>Podpowiedź:</strong> operator modulo <code>%</code> zwraca resztę z dzielenia. <code>15 % 3 === 0</code></p>
+        </div>
+        <aside class="notes">
+          Klasyczne zadanie programistyczne. Łączy pętle z warunkami i funkcje.
+          Ważna kolejność warunków - najpierw sprawdzamy podzielność przez 15 (3 i 5),
+          potem przez 3, potem przez 5.
+        </aside>
+      </section>
+
+      <!-- Slide 58: Walidacja email -->
+      <section>
+        <h2>Ćwiczenie: Walidacja email</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Walidator adresu email</h3>
+          <p>Napisz funkcję <code>validateEmail(email)</code>, która sprawdza:</p>
+          <ol>
+            <li>Czy email nie jest pusty</li>
+            <li>Czy zawiera dokładnie jeden znak <code>@</code></li>
+            <li>Czy po <code>@</code> jest kropka</li>
+            <li>Czy długość jest większa niż 5 znaków</li>
+          </ol>
+          <p>Funkcja powinna zwracać obiekt:</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+// { isValid: true, message: "Email poprawny" }
+// { isValid: false, message: "Brak znaku @" }
+          </code></pre>
+          <p>Przetestuj dla: <code>"jan@rossmann.pl"</code>, <code>"niepoprawny"</code>, <code>"@@test.pl"</code>, <code>""</code></p>
+        </div>
+        <aside class="notes">
+          Bardziej zaawansowane ćwiczenie - funkcja zwraca obiekt z wynikiem.
+          To przygotowanie do pisania funkcji testowych, które zwracają
+          status i komunikat.
+        </aside>
+      </section>
+
+      <!-- Slide 59: Ćwiczenie - analiza danych testowych -->
+      <section>
+        <h2>Ćwiczenie: Analiza wyników testów</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie: Test Reporter</h3>
+          <p>Dana jest tablica wyników testów:</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+let testSuite = [
+  { name: "Login test", status: "passed", duration: 1200 },
+  { name: "Search test", status: "failed", duration: 3500 },
+  { name: "Cart test", status: "passed", duration: 800 },
+  { name: "Checkout test", status: "failed", duration: 5000 },
+  { name: "Profile test", status: "skipped", duration: 0 },
+  { name: "Logout test", status: "passed", duration: 600 }
+];
+          </code></pre>
+          <p>Napisz funkcje, które:</p>
+          <ol>
+            <li><code>countByStatus(tests, status)</code> - liczy testy o danym statusie</li>
+            <li><code>getFailedTests(tests)</code> - zwraca nazwy nieudanych testów</li>
+            <li><code>getAverageDuration(tests)</code> - zwraca średni czas (bez skipped)</li>
+            <li><code>generateReport(tests)</code> - wyświetla pełny raport</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Najbardziej zaawansowane ćwiczenie dnia. Łączą pętle, warunki, funkcje
+          i pracę z tablicami obiektów. Dajemy 20-25 minut.
+          Można pracować w parach. Pomagamy mniej doświadczonym.
+        </aside>
+      </section>
+
+      <!-- Slide 60: Podsumowanie dnia -->
+      <section>
+        <h2>Podsumowanie dnia 2</h2>
+        <div class="columns">
+          <div class="col">
+            <h3>Czego się nauczyliśmy:</h3>
+            <ul>
+              <li><strong>Instrukcje warunkowe</strong> - if, else, switch</li>
+              <li><strong>Pętle</strong> - for, while, for...of</li>
+              <li><strong>Funkcje</strong> - deklaracja, parametry, return</li>
+              <li><strong>Arrow functions</strong> - skrócona składnia</li>
+              <li><strong>Scope</strong> - zasięg zmiennych</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Kluczowe zasady:</h3>
+            <ul>
+              <li>Używaj <code>===</code> zamiast <code>==</code></li>
+              <li>Pamiętaj o <code>break</code> w switch</li>
+              <li>Unikaj nieskończonych pętli</li>
+              <li>Używaj <code>let</code>/<code>const</code>, nie <code>var</code></li>
+              <li>Funkcja powinna robić jedną rzecz</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          Podsumowujemy cały dzień. Pytamy co było najtrudniejsze,
+          co było ciekawe. Zachęcamy do samodzielnych ćwiczeń w domu.
+        </aside>
+      </section>
+
+      <!-- Slide 61: Co dalej? -->
+      <section>
+        <h2>Co dalej? Dzień 3</h2>
+        <ul>
+          <li>Tablice - metody (map, filter, find, reduce)</li>
+          <li>Obiekty - tworzenie, właściwości, metody</li>
+          <li>Destrukturyzacja i spread operator</li>
+          <li>Praca z danymi JSON</li>
+        </ul>
+        <br><br>
+        <p><strong>Dziękuję za dzisiejszy dzień!</strong></p>
+        <p>Pytania?</p>
+        <aside class="notes">
+          Zapowiedź kolejnego dnia. Zachęcamy do przejrzenia materiału w domu.
+          Pytania końcowe - odpowiadamy na wątpliwości.
+        </aside>
+      </section>
+
+    </div><!-- /.slides -->
+  </div><!-- /.reveal -->
+
+  <script src="../node_modules/reveal.js/dist/reveal.js"></script>
+  <script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+  <script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      view: 'scroll',
+      scrollProgress: true,
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+</body>
+</html>
