@@ -1,0 +1,1835 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dzień 3 - Tablice i obiekty | Rossmann JS Training</title>
+  <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="../node_modules/reveal.js/dist/theme/black.css">
+  <link rel="stylesheet" href="../node_modules/reveal.js/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="../css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================================
+           BLOCK 1: Powtórzenie dnia 2 (~5 slides)
+           ============================================================ -->
+
+      <!-- Slide 1: Title -->
+      <section class="title-slide">
+        <span class="day-number">Dzień 3</span>
+        <h1>Tablice i obiekty</h1>
+        <p class="subtitle">JavaScript dla testerów manualnych</p>
+        <aside class="notes">
+          Powitaj uczestników. Dzień 3 - dziś zajmiemy się strukturami danych: tablicami i obiektami.
+          To fundamenty pracy z danymi w JavaScript i kluczowe przy testowaniu API.
+        </aside>
+      </section>
+
+      <!-- Slide 2: Agenda -->
+      <section>
+        <h2>Agenda</h2>
+        <ul class="agenda">
+          <li>Powtórzenie dnia 2 <span class="time">~30 min</span></li>
+          <li>Tablice - tworzenie i podstawowe metody <span class="time">~2h</span></li>
+          <li>Iteracja po tablicach <span class="time">~2h</span></li>
+          <li>Obiekty - klucze, wartości, zagnieżdżanie <span class="time">~1.5h</span></li>
+          <li>Destructuring i spread operator <span class="time">~30 min</span></li>
+          <li>JSON - format danych <span class="time">~30 min</span></li>
+        </ul>
+        <aside class="notes">
+          Omów plan dnia. Podkreśl, że tablice i obiekty to struktury, które będą towarzyszyć
+          uczestnikom w każdym kolejnym dniu szkolenia - szczególnie przy pracy z API.
+        </aside>
+      </section>
+
+      <!-- Slide 3: Quiz - powtórzenie warunków -->
+      <section>
+        <h2>Powtórzenie - Dzień 2</h2>
+        <div class="quiz">
+          <h3>Quiz: Warunki i pętle</h3>
+          <p>Co wypisze poniższy kod?</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+let count = 0;
+for (let i = 1; i <= 5; i++) {
+  if (i % 2 === 0) {
+    count++;
+  }
+}
+console.log(count);
+          </code></pre>
+          <p class="fragment"><strong>Odpowiedź:</strong> <code>2</code> (liczby parzyste: 2 i 4)</p>
+        </div>
+        <aside class="notes">
+          Daj uczestnikom chwilę na zastanowienie. Przypomnij operator modulo i działanie pętli for.
+        </aside>
+      </section>
+
+      <!-- Slide 4: Quiz - funkcje -->
+      <section>
+        <h2>Powtórzenie - Funkcje</h2>
+        <div class="quiz">
+          <h3>Quiz: Funkcje</h3>
+          <p>Co zwróci wywołanie <code>greet("Anna")</code>?</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+function greet(name) {
+  return "Cześć, " + name + "!";
+}
+
+console.log(greet("Anna"));
+          </code></pre>
+          <p class="fragment"><strong>Odpowiedź:</strong> <code>"Cześć, Anna!"</code></p>
+        </div>
+        <aside class="notes">
+          Przypomnij, jak działa return i łączenie stringów. Zapytaj, czy ktoś pamięta template literals.
+        </aside>
+      </section>
+
+      <!-- Slide 5: Quiz - arrow functions -->
+      <section>
+        <h2>Powtórzenie - Arrow functions</h2>
+        <div class="quiz">
+          <h3>Quiz: Która wersja jest poprawna?</h3>
+          <pre><code data-trim data-noescape class="language-javascript">
+// A
+const double = (x) => { x * 2 };
+
+// B
+const double = (x) => x * 2;
+
+// C
+const double = x => return x * 2;
+          </code></pre>
+          <p class="fragment"><strong>Odpowiedź:</strong> <strong>B</strong> - zwięzła forma arrow function z niejawnym return</p>
+          <p class="fragment">A - brak <code>return</code> w bloku <code>{}</code>, C - <code>return</code> bez bloku <code>{}</code></p>
+        </div>
+        <aside class="notes">
+          To częsty błąd - klamry bez return. Podkreśl różnicę między zwięzłą a blokową formą arrow function.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 2: Tablice (~15-18 slides)
+           ============================================================ -->
+
+      <!-- Slide 6: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">01</span>
+        <h2>Tablice</h2>
+        <p>Uporządkowane kolekcje danych</p>
+        <aside class="notes">
+          Przechodzimy do tablic - jednej z najważniejszych struktur danych w JavaScript.
+        </aside>
+      </section>
+
+      <!-- Slide 7: Czym jest tablica? -->
+      <section>
+        <h2>Czym jest tablica?</h2>
+        <p>Tablica to <strong>uporządkowana lista elementów</strong></p>
+        <div class="columns">
+          <div class="col">
+            <h3>Analogia</h3>
+            <p>Lista zakupów w Rossmann:</p>
+            <ol>
+              <li>Szampon</li>
+              <li>Pasta do zębów</li>
+              <li>Krem nawilżający</li>
+              <li>Dezodorant</li>
+            </ol>
+          </div>
+          <div class="col">
+            <h3>W JavaScript</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+let shoppingList = [
+  "Szampon",
+  "Pasta do zębów",
+  "Krem nawilżający",
+  "Dezodorant"
+];
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          Użyj prostej analogii - lista zakupów. Każdy element ma swoją pozycję (indeks).
+          Tablica może przechowywać dowolne typy danych.
+        </aside>
+      </section>
+
+      <!-- Slide 8: Tworzenie tablic -->
+      <section>
+        <h2>Tworzenie tablic</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Literał tablicy - preferowany sposób
+let products = ["Szampon", "Krem", "Pasta"];
+
+// Pusta tablica
+let emptyList = [];
+
+// Tablica z różnymi typami
+let mixed = ["tekst", 42, true, null];
+
+// Konstruktor Array (rzadko używany)
+let numbers = new Array(1, 2, 3);
+        </code></pre>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p>Zawsze używaj zapisu <code>[]</code> zamiast <code>new Array()</code>. Jest prostszy i bezpieczniejszy.</p>
+        </div>
+        <aside class="notes">
+          Pokaż, że tablice mogą zawierać różne typy - ale w praktyce najczęściej trzymamy
+          elementy tego samego typu. Ostrzeż przed new Array(3) - tworzy pustą tablicę o długości 3, nie tablicę [3].
+        </aside>
+      </section>
+
+      <!-- Slide 9: Indeksowanie -->
+      <section>
+        <h2>Indeksowanie - dostęp do elementów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta", "Dezodorant"];
+//  indeks:       0          1       2         3
+
+console.log(products[0]);  // "Szampon"
+console.log(products[2]);  // "Pasta"
+console.log(products[4]);  // undefined (nie istnieje!)
+        </code></pre>
+        <div class="warning">
+          <h3>Uwaga</h3>
+          <p>Indeksowanie zaczyna się od <strong>zera</strong>, nie od jedynki!
+          Pierwszy element to <code>[0]</code>, drugi to <code>[1]</code> itd.</p>
+        </div>
+        <aside class="notes">
+          To klasyczny błąd off-by-one. Podkreśl, że próba dostępu do nieistniejącego indeksu
+          zwraca undefined, a nie powoduje błąd.
+        </aside>
+      </section>
+
+      <!-- Slide 10: .length -->
+      <section>
+        <h2><code>.length</code> - długość tablicy</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta"];
+
+console.log(products.length);  // 3
+
+// Ostatni element
+console.log(products[products.length - 1]);  // "Pasta"
+
+// Pusta tablica
+let empty = [];
+console.log(empty.length);  // 0
+
+// Sprawdzanie czy tablica jest pusta
+if (products.length > 0) {
+  console.log("Lista nie jest pusta");
+}
+        </code></pre>
+        <aside class="notes">
+          Pokaż pattern dostępu do ostatniego elementu: array[array.length - 1].
+          Przy okazji przypomnij, że length to właściwość, nie metoda - bez nawiasów.
+        </aside>
+      </section>
+
+      <!-- Slide 11: push() i pop() -->
+      <section>
+        <h2><code>push()</code> i <code>pop()</code></h2>
+        <p>Dodawanie i usuwanie <strong>z końca</strong> tablicy</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let cart = ["Szampon", "Krem"];
+
+// push() - dodaje na koniec
+cart.push("Pasta");
+console.log(cart);  // ["Szampon", "Krem", "Pasta"]
+
+cart.push("Mydło", "Żel");
+console.log(cart);  // ["Szampon", "Krem", "Pasta", "Mydło", "Żel"]
+
+// pop() - usuwa z końca (i zwraca usunięty element)
+let lastItem = cart.pop();
+console.log(lastItem);  // "Żel"
+console.log(cart);       // ["Szampon", "Krem", "Pasta", "Mydło"]
+        </code></pre>
+        <aside class="notes">
+          push i pop to najczęściej używane metody. Podkreśl, że push może przyjąć
+          wiele argumentów naraz, a pop zwraca usunięty element.
+        </aside>
+      </section>
+
+      <!-- Slide 12: shift() i unshift() -->
+      <section>
+        <h2><code>shift()</code> i <code>unshift()</code></h2>
+        <p>Dodawanie i usuwanie <strong>z początku</strong> tablicy</p>
+        <pre><code data-trim data-noescape class="language-javascript">
+let queue = ["Anna", "Bartek", "Celina"];
+
+// unshift() - dodaje na początek
+queue.unshift("Dorota");
+console.log(queue);  // ["Dorota", "Anna", "Bartek", "Celina"]
+
+// shift() - usuwa z początku (i zwraca usunięty element)
+let firstPerson = queue.shift();
+console.log(firstPerson);  // "Dorota"
+console.log(queue);         // ["Anna", "Bartek", "Celina"]
+        </code></pre>
+        <div class="tip">
+          <h3>Analogia</h3>
+          <p><code>push/pop</code> - stos talerzy (ostatni kładziony, pierwszy zdejmowany)<br>
+          <code>unshift/shift</code> - kolejka w sklepie (nowi na koniec, obsługa z początku)</p>
+        </div>
+        <aside class="notes">
+          Nazwy shift/unshift mogą być mylące. Użyj analogii - push/pop to stos, shift/unshift to kolejka.
+          shift i unshift są wolniejsze, bo przeindeksowują wszystkie elementy.
+        </aside>
+      </section>
+
+      <!-- Slide 13: splice() -->
+      <section>
+        <h2><code>splice()</code> - operacje w środku tablicy</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta", "Mydło", "Żel"];
+
+// Usuwanie: splice(start, ilość)
+products.splice(1, 2);
+console.log(products);  // ["Szampon", "Mydło", "Żel"]
+
+// Dodawanie: splice(start, 0, ...elementy)
+products.splice(1, 0, "Balsam", "Odżywka");
+console.log(products);  // ["Szampon", "Balsam", "Odżywka", "Mydło", "Żel"]
+
+// Zamiana: splice(start, ilość, ...nowe)
+products.splice(0, 1, "Szampon XL");
+console.log(products);  // ["Szampon XL", "Balsam", "Odżywka", "Mydło", "Żel"]
+        </code></pre>
+        <aside class="notes">
+          splice to szwajcarski scyzoryk tablic - potrafi usuwać, dodawać i zamieniać.
+          Podkreśl, że splice MUTUJE oryginalną tablicę. Pierwszy argument to indeks startowy,
+          drugi to liczba elementów do usunięcia, kolejne to elementy do dodania.
+        </aside>
+      </section>
+
+      <!-- Slide 14: includes() -->
+      <section>
+        <h2><code>includes()</code> - czy element istnieje?</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta"];
+
+console.log(products.includes("Krem"));     // true
+console.log(products.includes("Dezodorant")); // false
+
+// Użycie w warunku
+if (products.includes("Szampon")) {
+  console.log("Szampon jest na liście!");
+}
+
+// Uwaga na wielkość liter!
+console.log(products.includes("szampon")); // false
+        </code></pre>
+        <div class="warning">
+          <h3>Uwaga</h3>
+          <p><code>includes()</code> porównuje wartości ściśle (<code>===</code>), więc rozróżnia wielkość liter.</p>
+        </div>
+        <aside class="notes">
+          includes jest bardzo przydatne w testach - np. sprawdzanie, czy dany element znajduje się
+          w odpowiedzi z API. Podkreśl case-sensitivity.
+        </aside>
+      </section>
+
+      <!-- Slide 15: indexOf() -->
+      <section>
+        <h2><code>indexOf()</code> - znajdowanie indeksu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta", "Krem"];
+
+console.log(products.indexOf("Krem"));       // 1 (pierwsze wystąpienie)
+console.log(products.indexOf("Dezodorant")); // -1 (nie znaleziono!)
+
+// Sprawdzanie czy element istnieje (stary sposób)
+if (products.indexOf("Pasta") !== -1) {
+  console.log("Pasta znaleziona na indeksie:", products.indexOf("Pasta"));
+}
+
+// lastIndexOf - szuka od końca
+console.log(products.lastIndexOf("Krem"));  // 3
+        </code></pre>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p>Jeśli potrzebujesz tylko sprawdzić obecność - użyj <code>includes()</code>.
+          <code>indexOf()</code> przydaje się, gdy potrzebujesz konkretnej pozycji.</p>
+        </div>
+        <aside class="notes">
+          indexOf zwraca -1 gdy element nie istnieje. Przed includes() to był jedyny sposób na sprawdzenie
+          obecności elementu. Pokaż oba podejścia.
+        </aside>
+      </section>
+
+      <!-- Slide 16: slice() -->
+      <section>
+        <h2><code>slice()</code> - wycinanie fragmentu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta", "Mydło", "Żel"];
+
+// slice(start, end) - end NIE jest uwzględniony
+let subset = products.slice(1, 3);
+console.log(subset);    // ["Krem", "Pasta"]
+console.log(products);  // ["Szampon", "Krem", "Pasta", "Mydło", "Żel"]
+                        // oryginał niezmieniony!
+
+// Tylko start - do końca
+console.log(products.slice(2));  // ["Pasta", "Mydło", "Żel"]
+
+// Ujemne indeksy - od końca
+console.log(products.slice(-2));  // ["Mydło", "Żel"]
+
+// Kopia tablicy
+let copy = products.slice();
+        </code></pre>
+        <aside class="notes">
+          Kluczowa różnica: slice NIE mutuje oryginalnej tablicy (w przeciwieństwie do splice).
+          Podkreśl, że end jest exclusive - element na pozycji end nie jest uwzględniony.
+        </aside>
+      </section>
+
+      <!-- Slide 17: Mutacja vs nowa tablica -->
+      <section>
+        <h2>Mutacja vs tworzenie nowej tablicy</h2>
+        <div class="columns">
+          <div class="col">
+            <h3>Mutujące (zmieniają oryginał)</h3>
+            <ul>
+              <li><code>push()</code></li>
+              <li><code>pop()</code></li>
+              <li><code>shift()</code></li>
+              <li><code>unshift()</code></li>
+              <li><code>splice()</code></li>
+              <li><code>sort()</code></li>
+              <li><code>reverse()</code></li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Niemutujące (tworzą nową)</h3>
+            <ul>
+              <li><code>slice()</code></li>
+              <li><code>map()</code></li>
+              <li><code>filter()</code></li>
+              <li><code>concat()</code></li>
+              <li><code>flat()</code></li>
+              <li><code>toSorted()</code></li>
+              <li><code>toReversed()</code></li>
+            </ul>
+          </div>
+        </div>
+        <div class="warning">
+          <h3>Uwaga</h3>
+          <p>Mutacja to częsty źródło błędów! Zawsze sprawdź, czy metoda zmienia oryginał.</p>
+        </div>
+        <aside class="notes">
+          To bardzo ważna koncepcja. W testach automatycznych często pracujemy na danych,
+          które nie powinny być zmieniane między testami. Pokaż, jak łatwo o niespodziewany efekt uboczny.
+        </aside>
+      </section>
+
+      <!-- Slide 18: Przykład praktyczny - lista produktów -->
+      <section>
+        <h2>Przykład: Lista produktów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta"];
+
+// Dodaj nowy produkt
+products.push("Mydło");
+
+// Sprawdź czy produkt jest na liście
+if (products.includes("Krem")) {
+  console.log("Krem jest dostępny!");
+}
+
+// Usuń produkt o podanym indeksie
+let indexToRemove = products.indexOf("Pasta");
+if (indexToRemove !== -1) {
+  products.splice(indexToRemove, 1);
+}
+
+console.log(products);  // ["Szampon", "Krem", "Mydło"]
+console.log(`Produktów: ${products.length}`);  // Produktów: 3
+        </code></pre>
+        <aside class="notes">
+          Pokaż realny scenariusz - zarządzanie listą produktów. Zwróć uwagę na pattern:
+          najpierw indexOf, potem sprawdzenie czy !== -1, a potem splice.
+        </aside>
+      </section>
+
+      <!-- Slide 19: Przykład - lista testów -->
+      <section>
+        <h2>Przykład: Lista przypadków testowych</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testCases = [
+  "Login z poprawnymi danymi",
+  "Login z błędnym hasłem",
+  "Rejestracja nowego użytkownika",
+  "Reset hasła"
+];
+
+console.log(`Liczba testów: ${testCases.length}`);
+
+// Dodaj nowy test
+testCases.push("Wylogowanie użytkownika");
+
+// Pobierz pierwsze 3 testy do uruchomienia
+let firstBatch = testCases.slice(0, 3);
+console.log("Pierwsza partia:", firstBatch);
+
+// Sprawdź czy test istnieje
+let searchTerm = "Reset hasła";
+console.log(`"${searchTerm}" - istnieje: ${testCases.includes(searchTerm)}`);
+        </code></pre>
+        <aside class="notes">
+          Przykład bliski testerom - zarządzanie listą przypadków testowych.
+          Pokaż, jak metody tablicowe mogą być przydatne w codziennej pracy testera.
+        </aside>
+      </section>
+
+      <!-- Slide 20: Ćwiczenie - Tablice podstawy -->
+      <section>
+        <h2>Ćwiczenie: Menedżer listy zakupów</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.1 - Podstawowe operacje na tablicach</h3>
+          <ol>
+            <li>Utwórz tablicę <code>shoppingList</code> z 5 produktami Rossmann</li>
+            <li>Wyświetl trzeci element z listy</li>
+            <li>Dodaj 2 nowe produkty na koniec</li>
+            <li>Usuń pierwszy element z listy</li>
+            <li>Sprawdź, czy "Szampon" jest na liście</li>
+            <li>Znajdź indeks wybranego produktu</li>
+            <li>Wytnij środkowe 3 elementy do nowej tablicy (bez mutacji)</li>
+            <li>Wyświetl długość obu tablic</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Daj uczestnikom 15-20 minut na to ćwiczenie. Chodź po sali i pomagaj.
+          Najczęstszy problem: pomylenie slice i splice.
+        </aside>
+      </section>
+
+      <!-- Slide 21: Ćwiczenie - Koszyk zakupowy -->
+      <section>
+        <h2>Ćwiczenie: Koszyk zakupowy</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.2 - Zarządzanie koszykiem</h3>
+          <ol>
+            <li>Utwórz pustą tablicę <code>cart</code></li>
+            <li>Napisz funkcję <code>addToCart(product)</code> - dodaje produkt, jeśli go jeszcze nie ma</li>
+            <li>Napisz funkcję <code>removeFromCart(product)</code> - usuwa produkt z koszyka</li>
+            <li>Napisz funkcję <code>showCart()</code> - wyświetla zawartość i liczbę produktów</li>
+            <li>Przetestuj dodając, usuwając i wyświetlając produkty</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie łączy tablice z funkcjami z dnia 2. Podpowiedź: includes() do sprawdzenia
+          duplikatów, indexOf() + splice() do usuwania.
+        </aside>
+      </section>
+
+      <!-- Slide 22: Rozwiązanie ćwiczenia 3.2 -->
+      <section>
+        <h2>Rozwiązanie: Koszyk zakupowy</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let cart = [];
+
+function addToCart(product) {
+  if (cart.includes(product)) {
+    console.log(`"${product}" jest już w koszyku!`);
+  } else {
+    cart.push(product);
+    console.log(`Dodano "${product}" do koszyka.`);
+  }
+}
+
+function removeFromCart(product) {
+  let index = cart.indexOf(product);
+  if (index !== -1) {
+    cart.splice(index, 1);
+    console.log(`Usunięto "${product}" z koszyka.`);
+  } else {
+    console.log(`"${product}" nie ma w koszyku!`);
+  }
+}
+
+function showCart() {
+  console.log(`Koszyk (${cart.length}):`, cart);
+}
+        </code></pre>
+        <aside class="notes">
+          Omów rozwiązanie krok po kroku. Podkreśl pattern indexOf + splice do usuwania po wartości.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 3: Iteracja po tablicach (~15-18 slides)
+           ============================================================ -->
+
+      <!-- Slide 23: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">02</span>
+        <h2>Iteracja po tablicach</h2>
+        <p>forEach, map, filter i inne metody wyższego rzędu</p>
+        <aside class="notes">
+          Teraz przejdziemy do potężnych metod iteracyjnych. To one sprawiają, że JavaScript
+          jest tak wygodny do pracy z danymi.
+        </aside>
+      </section>
+
+      <!-- Slide 24: forEach() -->
+      <section>
+        <h2><code>forEach()</code> - iteracja po elementach</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = ["Szampon", "Krem", "Pasta"];
+
+// forEach przyjmuje funkcję (callback)
+products.forEach(function(product) {
+  console.log("Produkt:", product);
+});
+
+// Z arrow function (krótsza forma)
+products.forEach((product, index) => {
+  console.log(`${index + 1}. ${product}`);
+});
+        </code></pre>
+        <div class="console-output">
+          1. Szampon<br>
+          2. Krem<br>
+          3. Pasta
+        </div>
+        <aside class="notes">
+          forEach to najprostszy sposób na przejście po tablicy. Podkreśl, że callback dostaje
+          element i opcjonalnie indeks. forEach nic nie zwraca (undefined).
+        </aside>
+      </section>
+
+      <!-- Slide 25: map() -->
+      <section>
+        <h2><code>map()</code> - transformacja elementów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let prices = [10, 25, 50, 15];
+
+// map() tworzy NOWĄ tablicę z przetworzonymi elementami
+let discountedPrices = prices.map(price => price * 0.9);
+console.log(discountedPrices);  // [9, 22.5, 45, 13.5]
+console.log(prices);            // [10, 25, 50, 15] - oryginał niezmieniony!
+
+// Dodanie waluty
+let formatted = prices.map(price => `${price} zł`);
+console.log(formatted);  // ["10 zł", "25 zł", "50 zł", "15 zł"]
+
+// Wyciągnięcie właściwości
+let names = ["anna", "bartek", "celina"];
+let upper = names.map(name => name.toUpperCase());
+console.log(upper);  // ["ANNA", "BARTEK", "CELINA"]
+        </code></pre>
+        <aside class="notes">
+          map to jedna z najważniejszych metod. Kluczowe: tworzy NOWĄ tablicę tej samej długości.
+          Każdy element jest przetransformowany przez funkcję callback.
+        </aside>
+      </section>
+
+      <!-- Slide 26: map() vs forEach() -->
+      <section>
+        <h2><code>map()</code> vs <code>forEach()</code></h2>
+        <div class="columns">
+          <div class="col">
+            <h3><code>forEach()</code></h3>
+            <ul>
+              <li>Nie zwraca nowej tablicy</li>
+              <li>Służy do wykonania akcji</li>
+              <li>np. wyświetlanie, logowanie</li>
+            </ul>
+            <pre><code data-trim data-noescape class="language-javascript">
+products.forEach(p => {
+  console.log(p);
+});
+// zwraca: undefined
+            </code></pre>
+          </div>
+          <div class="col">
+            <h3><code>map()</code></h3>
+            <ul>
+              <li>Zwraca NOWĄ tablicę</li>
+              <li>Służy do transformacji</li>
+              <li>np. zmiana formatu danych</li>
+            </ul>
+            <pre><code data-trim data-noescape class="language-javascript">
+let upper = products.map(p => {
+  return p.toUpperCase();
+});
+// zwraca: ["SZAMPON", ...]
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          To kluczowe rozróżnienie. Jeśli potrzebujesz nowej tablicy - map. Jeśli chcesz
+          tylko coś zrobić z każdym elementem (np. wyświetlić) - forEach.
+        </aside>
+      </section>
+
+      <!-- Slide 27: filter() -->
+      <section>
+        <h2><code>filter()</code> - filtrowanie elementów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let prices = [5, 12, 35, 8, 50, 22, 3];
+
+// Filtruj produkty droższe niż 10 zł
+let expensive = prices.filter(price => price > 10);
+console.log(expensive);  // [12, 35, 50, 22]
+
+// Filtruj parzyste
+let even = prices.filter(price => price % 2 === 0);
+console.log(even);  // [12, 8, 50, 22]
+
+// Filtruj po tekście
+let products = ["Szampon Head", "Krem Nivea", "Szampon Dove", "Pasta Colgate"];
+let shampoos = products.filter(p => p.startsWith("Szampon"));
+console.log(shampoos);  // ["Szampon Head", "Szampon Dove"]
+        </code></pre>
+        <div class="tip">
+          <h3>Zapamiętaj</h3>
+          <p><code>filter()</code> zwraca nową tablicę z elementami, dla których callback zwrócił <code>true</code>.</p>
+        </div>
+        <aside class="notes">
+          filter jest niezwykle przydatny w testach - np. filtrowanie błędów z logów, filtrowanie
+          odpowiedzi API po statusie. Podkreśl, że tablica wynikowa może być krótsza lub pusta.
+        </aside>
+      </section>
+
+      <!-- Slide 28: find() -->
+      <section>
+        <h2><code>find()</code> - znajdowanie pierwszego pasującego</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let prices = [5, 12, 35, 8, 50];
+
+// Znajdź pierwszy element większy niż 10
+let found = prices.find(price => price > 10);
+console.log(found);  // 12 (nie tablica, ale sam element!)
+
+// Jeśli nie znaleziono
+let notFound = prices.find(price => price > 100);
+console.log(notFound);  // undefined
+
+// Szukanie w tablicy stringów
+let products = ["Szampon", "Krem nawilżający", "Pasta", "Krem ochronny"];
+let cream = products.find(p => p.includes("Krem"));
+console.log(cream);  // "Krem nawilżający" (pierwszy pasujący)
+        </code></pre>
+        <div class="tip">
+          <h3>find() vs filter()</h3>
+          <p><code>find()</code> zwraca <strong>pierwszy</strong> pasujący element (lub <code>undefined</code>).
+          <code>filter()</code> zwraca <strong>wszystkie</strong> pasujące (jako tablicę).</p>
+        </div>
+        <aside class="notes">
+          find jest przydatny, gdy szukamy jednego konkretnego elementu. Zwraca sam element,
+          nie tablicę. Jeśli nie znajdzie - zwraca undefined.
+        </aside>
+      </section>
+
+      <!-- Slide 29: some() i every() -->
+      <section>
+        <h2><code>some()</code> i <code>every()</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let prices = [5, 12, 35, 8, 50];
+
+// some() - czy PRZYNAJMNIEJ JEDEN spełnia warunek?
+console.log(prices.some(p => p > 40));   // true (50 > 40)
+console.log(prices.some(p => p > 100));  // false
+
+// every() - czy WSZYSTKIE spełniają warunek?
+console.log(prices.every(p => p > 0));   // true (wszystkie dodatnie)
+console.log(prices.every(p => p > 10));  // false (5 i 8 nie spełniają)
+        </code></pre>
+        <div class="columns">
+          <div class="col">
+            <h3><code>some()</code></h3>
+            <p>"Czy jest choć jeden taki, że...?"</p>
+          </div>
+          <div class="col">
+            <h3><code>every()</code></h3>
+            <p>"Czy wszystkie są takie, że...?"</p>
+          </div>
+        </div>
+        <aside class="notes">
+          some i every zwracają boolean - bardzo przydatne w asercjach testowych.
+          Analogia: some = operator OR (przynajmniej jeden), every = operator AND (każdy).
+        </aside>
+      </section>
+
+      <!-- Slide 30: some() i every() - przykłady testowe -->
+      <section>
+        <h2><code>some()</code> / <code>every()</code> w testach</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let testResults = [
+  { name: "Login test", passed: true },
+  { name: "Cart test", passed: false },
+  { name: "Search test", passed: true }
+];
+
+// Czy wszystkie testy przeszły?
+let allPassed = testResults.every(test => test.passed);
+console.log(`Wszystkie testy OK: ${allPassed}`);  // false
+
+// Czy jakikolwiek test nie przeszedł?
+let anyFailed = testResults.some(test => !test.passed);
+console.log(`Są błędne testy: ${anyFailed}`);  // true
+
+// Walidacja danych - czy wszystkie ceny są dodatnie?
+let prices = [10, 25, -5, 30];
+let allPositive = prices.every(p => p > 0);
+console.log(`Poprawne ceny: ${allPositive}`);  // false
+        </code></pre>
+        <aside class="notes">
+          Pokaż kontekst testowy. some i every są idealne do sprawdzania warunków
+          na zbiorze danych - np. walidacja danych z API.
+        </aside>
+      </section>
+
+      <!-- Slide 31: reduce() - podstawy -->
+      <section>
+        <h2><code>reduce()</code> - redukcja do jednej wartości</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let prices = [10, 25, 50, 15];
+
+// Sumowanie - najczęstsze zastosowanie
+let total = prices.reduce((sum, price) => {
+  return sum + price;
+}, 0);  // 0 to wartość początkowa
+console.log(total);  // 100
+
+// Krótsza forma
+let total2 = prices.reduce((sum, price) => sum + price, 0);
+
+// Znajdowanie maksimum
+let max = prices.reduce((biggest, price) => {
+  return price > biggest ? price : biggest;
+}, 0);
+console.log(max);  // 50
+        </code></pre>
+        <aside class="notes">
+          reduce to najsilniejsza metoda iteracyjna - ale też najtrudniejsza do zrozumienia.
+          Na tym etapie skup się na sumowaniu i zliczaniu. Podkreśl rolę wartości początkowej (akumulatora).
+        </aside>
+      </section>
+
+      <!-- Slide 32: reduce() - zliczanie -->
+      <section>
+        <h2><code>reduce()</code> - zliczanie elementów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let votes = ["tak", "nie", "tak", "tak", "nie", "tak"];
+
+let result = votes.reduce((counts, vote) => {
+  counts[vote] = (counts[vote] || 0) + 1;
+  return counts;
+}, {});
+
+console.log(result);  // { tak: 4, nie: 2 }
+
+// Zliczanie produktów po kategorii
+let categories = ["kosmetyki", "higiena", "kosmetyki", "higiena", "jedzenie"];
+
+let categoryCounts = categories.reduce((acc, category) => {
+  acc[category] = (acc[category] || 0) + 1;
+  return acc;
+}, {});
+
+console.log(categoryCounts);  // { kosmetyki: 2, higiena: 2, jedzenie: 1 }
+        </code></pre>
+        <aside class="notes">
+          Zliczanie to drugiej najczęstsze użycie reduce. Akumulator to obiekt, do którego dodajemy klucze.
+          Jeśli to zbyt trudne - wróć do tego później. Nie wszyscy muszą to teraz opanować.
+        </aside>
+      </section>
+
+      <!-- Slide 33: Chainowanie metod -->
+      <section>
+        <h2>Chainowanie metod</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = [
+  { name: "Szampon", price: 15, category: "higiena" },
+  { name: "Krem", price: 45, category: "kosmetyki" },
+  { name: "Pasta", price: 8, category: "higiena" },
+  { name: "Perfumy", price: 120, category: "kosmetyki" },
+  { name: "Mydło", price: 5, category: "higiena" }
+];
+
+// Znajdź nazwy produktów z kategorii "higiena" tańszych niż 10 zł
+let result = products
+  .filter(p => p.category === "higiena")
+  .filter(p => p.price < 10)
+  .map(p => p.name);
+
+console.log(result);  // ["Pasta", "Mydło"]
+        </code></pre>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p>Metody <code>filter()</code> i <code>map()</code> zwracają tablice,
+          więc możemy wywoływać kolejne metody w łańcuchu (chain).</p>
+        </div>
+        <aside class="notes">
+          Chainowanie to potężna technika. Czyta się od góry do dołu: najpierw filtruj,
+          potem transformuj. Każda metoda zwraca nową tablicę, na której można wywołać kolejną metodę.
+        </aside>
+      </section>
+
+      <!-- Slide 34: Chainowanie - bardziej zaawansowane -->
+      <section>
+        <h2>Chainowanie - przykład z sumowaniem</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let products = [
+  { name: "Szampon", price: 15, inStock: true },
+  { name: "Krem", price: 45, inStock: false },
+  { name: "Pasta", price: 8, inStock: true },
+  { name: "Perfumy", price: 120, inStock: true },
+  { name: "Mydło", price: 5, inStock: true }
+];
+
+// Łączna cena dostępnych produktów
+let totalInStock = products
+  .filter(p => p.inStock)
+  .map(p => p.price)
+  .reduce((sum, price) => sum + price, 0);
+
+console.log(`Wartość dostępnych: ${totalInStock} zł`);  // 148 zł
+
+// Ile produktów jest dostępnych?
+let inStockCount = products.filter(p => p.inStock).length;
+console.log(`Dostępnych: ${inStockCount}`);  // 4
+        </code></pre>
+        <aside class="notes">
+          Pokaż, jak elegancko można łączyć filter + map + reduce. Przy okazji
+          pokaż, że .length na wyniku filter to prosty sposób na zliczenie pasujących elementów.
+        </aside>
+      </section>
+
+      <!-- Slide 35: Porównanie: for vs forEach vs map -->
+      <section>
+        <h2>Porównanie: <code>for</code> vs <code>forEach</code> vs <code>map</code></h2>
+        <table>
+          <thead>
+            <tr><th>Cecha</th><th><code>for</code></th><th><code>forEach</code></th><th><code>map</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Zwraca nową tablicę</td><td>Nie</td><td>Nie</td><td>Tak</td></tr>
+            <tr><td>Można przerwać (<code>break</code>)</td><td>Tak</td><td>Nie</td><td>Nie</td></tr>
+            <tr><td>Czytelność</td><td>Niska</td><td>Średnia</td><td>Wysoka</td></tr>
+            <tr><td>Kiedy używać?</td><td>Potrzebujesz break/continue</td><td>Efekty uboczne (logowanie)</td><td>Transformacja danych</td></tr>
+          </tbody>
+        </table>
+        <div class="tip">
+          <h3>Zasada ogólna</h3>
+          <p>Potrzebujesz nowej tablicy? &rarr; <code>map()</code><br>
+          Chcesz coś zrobić z każdym elementem? &rarr; <code>forEach()</code><br>
+          Potrzebujesz <code>break</code>? &rarr; <code>for</code></p>
+        </div>
+        <aside class="notes">
+          Pokaż tabelę porównawczą. W praktyce w nowoczesnym JS preferujemy metody funkcyjne
+          (map, filter, forEach) nad klasyczną pętlę for. Ale for wciąż jest przydatny gdy potrzebujemy break.
+        </aside>
+      </section>
+
+      <!-- Slide 36: Praktyczny przykład - dane testowe -->
+      <section>
+        <h2>Przykład: Analiza wyników testów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let tests = [
+  { name: "TC-001", status: "passed", duration: 120 },
+  { name: "TC-002", status: "failed", duration: 350 },
+  { name: "TC-003", status: "passed", duration: 90 },
+  { name: "TC-004", status: "skipped", duration: 0 },
+  { name: "TC-005", status: "failed", duration: 500 }
+];
+
+let failedTests = tests.filter(t => t.status === "failed");
+console.log("Niezdane:", failedTests.map(t => t.name));
+// ["TC-002", "TC-005"]
+
+let avgDuration = tests
+  .filter(t => t.status !== "skipped")
+  .map(t => t.duration)
+  .reduce((sum, d) => sum + d, 0) / tests.filter(t => t.status !== "skipped").length;
+
+console.log(`Średni czas: ${avgDuration}ms`);
+        </code></pre>
+        <aside class="notes">
+          Przykład bliski sercu testerów - analiza wyników testów. Pokaż, jak filter + map + reduce
+          pozwalają łatwo wyciągać statystyki z danych.
+        </aside>
+      </section>
+
+      <!-- Slide 37: Ćwiczenie - iteracja -->
+      <section>
+        <h2>Ćwiczenie: Analiza danych produktów</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.3 - Metody iteracyjne</h3>
+          <p>Masz tablicę produktów:</p>
+          <pre><code data-trim data-noescape class="language-javascript">
+let products = [
+  { name: "Szampon", price: 15.99, inStock: true },
+  { name: "Krem", price: 45.00, inStock: false },
+  { name: "Pasta", price: 8.50, inStock: true },
+  { name: "Perfumy", price: 129.99, inStock: true },
+  { name: "Mydło", price: 4.99, inStock: true },
+  { name: "Dezodorant", price: 18.50, inStock: false }
+];
+          </code></pre>
+          <ol>
+            <li>Wyświetl nazwy wszystkich produktów (<code>forEach</code>)</li>
+            <li>Utwórz tablicę samych nazw (<code>map</code>)</li>
+            <li>Znajdź produkty tańsze niż 20 zł (<code>filter</code>)</li>
+            <li>Znajdź pierwszy niedostępny produkt (<code>find</code>)</li>
+            <li>Sprawdź, czy wszystkie są tańsze niż 200 zł (<code>every</code>)</li>
+            <li>Oblicz sumę cen dostępnych produktów (<code>filter</code> + <code>reduce</code>)</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          To duże ćwiczenie - daj 20-25 minut. Uczestnicy mogą rozwiązywać punkt po punkcie.
+          Pomagaj z reduce, bo to najtrudniejsza część.
+        </aside>
+      </section>
+
+      <!-- Slide 38: Ćwiczenie - filtrowanie i transformacja -->
+      <section>
+        <h2>Ćwiczenie: Raport testów</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.4 - Chainowanie metod</h3>
+          <pre><code data-trim data-noescape class="language-javascript">
+let testResults = [
+  { id: 1, name: "Login OK", status: "passed", time: 1200 },
+  { id: 2, name: "Login fail", status: "failed", time: 3500 },
+  { id: 3, name: "Search", status: "passed", time: 800 },
+  { id: 4, name: "Cart add", status: "failed", time: 5000 },
+  { id: 5, name: "Checkout", status: "skipped", time: 0 },
+  { id: 6, name: "Logout", status: "passed", time: 600 }
+];
+          </code></pre>
+          <ol>
+            <li>Wyfiltruj tylko testy ze statusem <code>"failed"</code></li>
+            <li>Utwórz tablicę nazw zdanych testów (chain: <code>filter</code> + <code>map</code>)</li>
+            <li>Oblicz średni czas testów (bez skipped)</li>
+            <li>Sprawdź, czy jakikolwiek test trwał dłużej niż 4000ms</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Kolejne ćwiczenie na chainowanie. Podkreśl, żeby najpierw filtrować, potem transformować.
+          Średni czas: suma / liczba (pomiń skipped).
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 4: Obiekty (~10-12 slides)
+           ============================================================ -->
+
+      <!-- Slide 39: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">03</span>
+        <h2>Obiekty</h2>
+        <p>Kolekcje par klucz-wartość</p>
+        <aside class="notes">
+          Przechodzimy do obiektów - drugiej kluczowej struktury danych w JavaScript.
+          Obiekty to fundament JSON, a więc i pracy z API.
+        </aside>
+      </section>
+
+      <!-- Slide 40: Czym jest obiekt? -->
+      <section>
+        <h2>Czym jest obiekt?</h2>
+        <p>Obiekt to <strong>zbiór par klucz-wartość</strong></p>
+        <div class="columns">
+          <div class="col">
+            <h3>Analogia</h3>
+            <p>Karta produktu w Rossmann:</p>
+            <ul>
+              <li><strong>Nazwa:</strong> Szampon Head &amp; Shoulders</li>
+              <li><strong>Cena:</strong> 24.99 zł</li>
+              <li><strong>Kategoria:</strong> Higiena</li>
+              <li><strong>Dostępny:</strong> Tak</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>W JavaScript</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+let product = {
+  name: "Szampon H&S",
+  price: 24.99,
+  category: "Higiena",
+  inStock: true
+};
+            </code></pre>
+          </div>
+        </div>
+        <aside class="notes">
+          Obiekt to jak formularz lub karta - ma pola (klucze) i wartości.
+          Tablica = lista elementów, obiekt = zbiór nazwanych właściwości.
+        </aside>
+      </section>
+
+      <!-- Slide 41: Tworzenie obiektu -->
+      <section>
+        <h2>Tworzenie obiektu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Literał obiektowy - preferowany sposób
+let user = {
+  firstName: "Anna",
+  lastName: "Kowalska",
+  age: 30,
+  isAdmin: false
+};
+
+// Pusty obiekt
+let emptyObj = {};
+
+// Zagnieżdżone wartości
+let product = {
+  name: "Krem Nivea",
+  price: 29.99,
+  tags: ["kosmetyki", "twarz", "nawilżenie"],  // tablica jako wartość
+  manufacturer: {                                // obiekt jako wartość
+    name: "Beiersdorf",
+    country: "Niemcy"
+  }
+};
+        </code></pre>
+        <aside class="notes">
+          Pokaż, że wartości mogą być dowolnego typu - stringi, liczby, boolean, tablice, a nawet inne obiekty.
+          To właśnie daje obiektom elastyczność.
+        </aside>
+      </section>
+
+      <!-- Slide 42: Dot notation vs bracket notation -->
+      <section>
+        <h2>Dostęp do właściwości</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let user = { firstName: "Anna", lastName: "Kowalska", age: 30 };
+
+// Dot notation - najczęściej używana
+console.log(user.firstName);  // "Anna"
+console.log(user.age);        // 30
+
+// Bracket notation - z użyciem stringa
+console.log(user["lastName"]);  // "Kowalska"
+
+// Bracket notation - z dynamicznym kluczem
+let field = "firstName";
+console.log(user[field]);  // "Anna"
+
+// Dodawanie nowych właściwości
+user.email = "anna@example.com";
+user["phone"] = "123-456-789";
+
+// Usuwanie właściwości
+delete user.phone;
+        </code></pre>
+        <div class="tip">
+          <h3>Kiedy bracket notation?</h3>
+          <p>Gdy klucz jest w zmiennej, zawiera spacje lub znaki specjalne, np. <code>user["full-name"]</code>.</p>
+        </div>
+        <aside class="notes">
+          Dot notation jest prostsza i częstsza. Bracket notation potrzebna, gdy klucz pochodzi
+          ze zmiennej (np. z danych dynamicznych) lub zawiera znaki specjalne.
+        </aside>
+      </section>
+
+      <!-- Slide 43: Modyfikacja obiektu -->
+      <section>
+        <h2>Modyfikacja obiektu</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let product = {
+  name: "Szampon",
+  price: 15.99,
+  inStock: true
+};
+
+// Zmiana wartości
+product.price = 12.99;
+console.log(product.price);  // 12.99
+
+// Dodanie nowej właściwości
+product.discount = 20;
+
+// Sprawdzenie czy klucz istnieje
+console.log("name" in product);      // true
+console.log("color" in product);     // false
+console.log(product.color);          // undefined
+
+// Usunięcie właściwości
+delete product.discount;
+console.log(product);
+// { name: "Szampon", price: 12.99, inStock: true }
+        </code></pre>
+        <aside class="notes">
+          Obiekty są mutowalne - możemy dowolnie dodawać, zmieniać i usuwać właściwości.
+          Operator "in" sprawdza istnienie klucza. Dostęp do nieistniejącego klucza zwraca undefined.
+        </aside>
+      </section>
+
+      <!-- Slide 44: Zagnieżdżone obiekty -->
+      <section>
+        <h2>Zagnieżdżone obiekty</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let order = {
+  id: 12345,
+  customer: {
+    name: "Anna Kowalska",
+    address: {
+      street: "ul. Marszałkowska 10",
+      city: "Warszawa",
+      zip: "00-001"
+    }
+  },
+  items: [
+    { name: "Szampon", quantity: 2, price: 15.99 },
+    { name: "Krem", quantity: 1, price: 45.00 }
+  ]
+};
+
+// Dostęp do zagnieżdżonych właściwości
+console.log(order.customer.name);            // "Anna Kowalska"
+console.log(order.customer.address.city);    // "Warszawa"
+console.log(order.items[0].name);            // "Szampon"
+console.log(order.items.length);             // 2
+        </code></pre>
+        <aside class="notes">
+          Zagnieżdżone obiekty to codzienność w API - odpowiedzi JSON często mają głęboką strukturę.
+          Pokaż, jak łączymy dot notation z indeksowaniem tablic.
+        </aside>
+      </section>
+
+      <!-- Slide 45: Optional chaining -->
+      <section>
+        <h2>Bezpieczny dostęp - <code>?.</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let user = {
+  name: "Anna",
+  address: null
+};
+
+// Niebezpiecznie - błąd!
+// console.log(user.address.city);  // TypeError!
+
+// Bezpiecznie - optional chaining
+console.log(user.address?.city);     // undefined (bez błędu)
+console.log(user.phone?.number);     // undefined (bez błędu)
+
+// Przydatne przy danych z API
+let response = { data: { users: [{ name: "Anna" }] } };
+let firstName = response.data?.users?.[0]?.name;
+console.log(firstName);  // "Anna"
+
+let missing = response.data?.products?.[0]?.name;
+console.log(missing);  // undefined
+        </code></pre>
+        <div class="tip">
+          <h3>Wskazówka</h3>
+          <p><code>?.</code> zatrzymuje się i zwraca <code>undefined</code> jeśli wartość po lewej to <code>null</code> lub <code>undefined</code>.</p>
+        </div>
+        <aside class="notes">
+          Optional chaining to ratunek przy pracy z nieprzewidywalnymi danymi z API.
+          Bez niego musielibyśmy sprawdzać każdy poziom zagnieżdżenia osobno.
+        </aside>
+      </section>
+
+      <!-- Slide 46: Metody w obiekcie -->
+      <section>
+        <h2>Metody w obiekcie</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let cart = {
+  items: [],
+
+  addItem(product) {
+    this.items.push(product);
+    console.log(`Dodano: ${product}`);
+  },
+
+  removeItem(product) {
+    let index = this.items.indexOf(product);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      console.log(`Usunięto: ${product}`);
+    }
+  },
+
+  getCount() {
+    return this.items.length;
+  }
+};
+
+cart.addItem("Szampon");
+cart.addItem("Krem");
+console.log(cart.getCount());  // 2
+cart.removeItem("Szampon");
+console.log(cart.items);       // ["Krem"]
+        </code></pre>
+        <aside class="notes">
+          Metoda to funkcja będąca wartością właściwości obiektu. this odnosi się do samego obiektu.
+          Pokaż krótki zapis metod (bez ": function").
+        </aside>
+      </section>
+
+      <!-- Slide 47: Object.keys(), Object.values(), Object.entries() -->
+      <section>
+        <h2><code>Object.keys()</code>, <code>values()</code>, <code>entries()</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let product = {
+  name: "Szampon",
+  price: 15.99,
+  category: "higiena",
+  inStock: true
+};
+
+// Wszystkie klucze
+console.log(Object.keys(product));
+// ["name", "price", "category", "inStock"]
+
+// Wszystkie wartości
+console.log(Object.values(product));
+// ["Szampon", 15.99, "higiena", true]
+
+// Pary [klucz, wartość]
+console.log(Object.entries(product));
+// [["name","Szampon"], ["price",15.99], ["category","higiena"], ["inStock",true]]
+
+// Liczba właściwości
+console.log(Object.keys(product).length);  // 4
+        </code></pre>
+        <aside class="notes">
+          Te trzy metody zamieniają obiekt na tablicę - dzięki czemu możemy użyć map, filter itp.
+          Object.entries zwraca tablicę par, co jest szczególnie przydatne.
+        </aside>
+      </section>
+
+      <!-- Slide 48: Iterowanie po obiekcie -->
+      <section>
+        <h2>Iterowanie po obiekcie</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let scores = { anna: 85, bartek: 92, celina: 78, damian: 95 };
+
+// for...in - iteruje po kluczach
+for (let name in scores) {
+  console.log(`${name}: ${scores[name]} pkt`);
+}
+
+// Object.entries() + forEach
+Object.entries(scores).forEach(([name, score]) => {
+  console.log(`${name}: ${score} pkt`);
+});
+
+// Object.entries() + filter + map
+let topStudents = Object.entries(scores)
+  .filter(([name, score]) => score >= 90)
+  .map(([name, score]) => name);
+
+console.log("Najlepsi:", topStudents);  // ["bartek", "damian"]
+        </code></pre>
+        <aside class="notes">
+          for...in to najprostszy sposób, ale Object.entries z destructuringiem jest czytelniejszy
+          i pozwala na chainowanie z filter/map. Pokaż oba podejścia.
+        </aside>
+      </section>
+
+      <!-- Slide 49: Przykład - obiekt użytkownika -->
+      <section>
+        <h2>Przykład: Profil użytkownika</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let user = {
+  id: 1001,
+  email: "anna.kowalska@rossmann.pl",
+  profile: {
+    firstName: "Anna",
+    lastName: "Kowalska",
+    role: "tester"
+  },
+  permissions: ["read", "write", "test"],
+  isActive: true,
+
+  getFullName() {
+    return `${this.profile.firstName} ${this.profile.lastName}`;
+  },
+
+  hasPermission(perm) {
+    return this.permissions.includes(perm);
+  }
+};
+
+console.log(user.getFullName());           // "Anna Kowalska"
+console.log(user.hasPermission("write"));  // true
+console.log(user.hasPermission("admin"));  // false
+        </code></pre>
+        <aside class="notes">
+          Realistyczny przykład obiektu użytkownika - taki, jaki można spotkać w prawdziwej aplikacji.
+          Pokaż, jak łączy się zagnieżdżanie, tablice, metody i warunki.
+        </aside>
+      </section>
+
+      <!-- Slide 50: Ćwiczenie - obiekty -->
+      <section>
+        <h2>Ćwiczenie: Katalog produktów</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.5 - Obiekty i tablice</h3>
+          <ol>
+            <li>Utwórz obiekt <code>product</code> z polami: <code>name</code>, <code>price</code>, <code>category</code>, <code>ratings</code> (tablica ocen 1-5)</li>
+            <li>Dodaj metodę <code>getAverageRating()</code> obliczającą średnią ocen</li>
+            <li>Dodaj metodę <code>getInfo()</code> zwracającą sformatowany opis</li>
+            <li>Utwórz tablicę 3-4 takich produktów</li>
+            <li>Wyfiltruj produkty ze średnią oceną powyżej 4.0</li>
+            <li>Posortuj produkty po cenie (rosnąco)</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie łączy obiekty z tablicami. Daj 20 minut. Podpowiedź dla sortowania:
+          array.sort((a, b) => a.price - b.price). Pomagaj z reduce do obliczania średniej.
+        </aside>
+      </section>
+
+      <!-- Slide 51: Ćwiczenie - obiekt sklepu -->
+      <section>
+        <h2>Ćwiczenie: Sklep internetowy</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.6 - Obiekt ze stanem</h3>
+          <p>Utwórz obiekt <code>store</code> z:</p>
+          <ul>
+            <li>Właściwość <code>products</code> - tablica obiektów produktów (name, price, stock)</li>
+            <li>Metoda <code>findProduct(name)</code> - szuka produktu po nazwie</li>
+            <li>Metoda <code>getAvailableProducts()</code> - zwraca produkty, gdzie stock > 0</li>
+            <li>Metoda <code>getTotalValue()</code> - suma: price * stock każdego produktu</li>
+            <li>Metoda <code>getMostExpensive()</code> - zwraca najdroższy produkt</li>
+          </ul>
+        </div>
+        <aside class="notes">
+          Bardziej rozbudowane ćwiczenie integracyjne. Uczestnicy mogą pracować w parach.
+          Daj 20-25 minut. To ćwiczenie symuluje prosty model sklepu.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 5: Destructuring & Spread (~5-6 slides)
+           ============================================================ -->
+
+      <!-- Slide 52: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">04</span>
+        <h2>Destructuring &amp; Spread</h2>
+        <p>Wygodne wydobywanie i łączenie danych</p>
+        <aside class="notes">
+          Destructuring i spread to nowoczesne składnie ES6+, które znacznie upraszczają
+          pracę z tablicami i obiektami.
+        </aside>
+      </section>
+
+      <!-- Slide 53: Destructuring tablic -->
+      <section>
+        <h2>Destructuring tablic</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let colors = ["czerwony", "zielony", "niebieski"];
+
+// Bez destructuringu
+let first = colors[0];
+let second = colors[1];
+
+// Z destructuringiem
+let [r, g, b] = colors;
+console.log(r);  // "czerwony"
+console.log(g);  // "zielony"
+console.log(b);  // "niebieski"
+
+// Pomijanie elementów
+let [, , third] = colors;
+console.log(third);  // "niebieski"
+
+// Wartości domyślne
+let [a, x, c, d = "żółty"] = colors;
+console.log(d);  // "żółty"
+
+// Zamiana wartości zmiennych
+let x1 = 10, y1 = 20;
+[x1, y1] = [y1, x1];
+console.log(x1, y1);  // 20, 10
+        </code></pre>
+        <aside class="notes">
+          Destructuring tablic przypisuje elementy po pozycji. Przydatne przy odbieraniu
+          wyników z funkcji zwracających tablice. Zamiana wartości to elegancki trick.
+        </aside>
+      </section>
+
+      <!-- Slide 54: Destructuring obiektów -->
+      <section>
+        <h2>Destructuring obiektów</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let user = { name: "Anna", age: 30, email: "anna@test.pl", role: "tester" };
+
+// Bez destructuringu
+let name1 = user.name;
+let age1 = user.age;
+
+// Z destructuringiem
+let { name, age, email } = user;
+console.log(name);   // "Anna"
+console.log(email);  // "anna@test.pl"
+
+// Zmiana nazwy zmiennej
+let { name: userName, role: userRole } = user;
+console.log(userName);  // "Anna"
+console.log(userRole);  // "tester"
+
+// Wartości domyślne
+let { name: n, phone = "brak" } = user;
+console.log(phone);  // "brak"
+
+// Zagnieżdżony destructuring
+let order = { customer: { name: "Anna", city: "Warszawa" } };
+let { customer: { city } } = order;
+console.log(city);  // "Warszawa"
+        </code></pre>
+        <aside class="notes">
+          Destructuring obiektów przypisuje po nazwie klucza (nie po pozycji jak w tablicach).
+          Bardzo często używane w parametrach funkcji i przy pracy z API response.
+        </aside>
+      </section>
+
+      <!-- Slide 55: Destructuring w parametrach funkcji -->
+      <section>
+        <h2>Destructuring w funkcjach</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Bez destructuringu
+function displayUser(user) {
+  console.log(`${user.name}, wiek: ${user.age}`);
+}
+
+// Z destructuringiem w parametrach
+function displayUser({ name, age, role = "user" }) {
+  console.log(`${name}, wiek: ${age}, rola: ${role}`);
+}
+
+let user = { name: "Anna", age: 30, email: "anna@test.pl" };
+displayUser(user);  // "Anna, wiek: 30, rola: user"
+
+// Destructuring w callback z tablicą obiektów
+let users = [
+  { name: "Anna", score: 85 },
+  { name: "Bartek", score: 92 }
+];
+
+users.forEach(({ name, score }) => {
+  console.log(`${name}: ${score} pkt`);
+});
+        </code></pre>
+        <aside class="notes">
+          Destructuring w parametrach funkcji to bardzo częsty pattern. Od razu widać,
+          jakie właściwości obiektu są używane w funkcji. Pokaż też użycie w forEach callback.
+        </aside>
+      </section>
+
+      <!-- Slide 56: Spread operator -->
+      <section>
+        <h2>Spread operator <code>...</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Łączenie tablic
+let fruits = ["jabłko", "banan"];
+let veggies = ["marchew", "brokuł"];
+let all = [...fruits, ...veggies];
+console.log(all);  // ["jabłko", "banan", "marchew", "brokuł"]
+
+// Kopiowanie tablicy (płytka kopia)
+let original = [1, 2, 3];
+let copy = [...original];
+
+// Łączenie obiektów
+let defaults = { theme: "dark", lang: "pl", fontSize: 14 };
+let userPrefs = { lang: "en", fontSize: 16 };
+let settings = { ...defaults, ...userPrefs };
+console.log(settings);
+// { theme: "dark", lang: "en", fontSize: 16 }
+// userPrefs nadpisuje defaults!
+
+// Dodawanie właściwości
+let user = { name: "Anna", age: 30 };
+let extendedUser = { ...user, role: "tester", active: true };
+        </code></pre>
+        <aside class="notes">
+          Spread to trzy kropki. W tablicach "rozpakowuje" elementy, w obiektach "rozpakowuje" pary klucz-wartość.
+          Przy łączeniu obiektów, późniejsze wartości nadpisują wcześniejsze (jak w settings).
+        </aside>
+      </section>
+
+      <!-- Slide 57: Rest parameters -->
+      <section>
+        <h2>Rest parameters <code>...args</code></h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Rest w parametrach funkcji - zbiera pozostałe argumenty
+function sum(...numbers) {
+  return numbers.reduce((total, n) => total + n, 0);
+}
+console.log(sum(1, 2, 3));       // 6
+console.log(sum(10, 20, 30, 40)); // 100
+
+// Rest z innymi parametrami
+function logFirst(first, ...rest) {
+  console.log("Pierwszy:", first);
+  console.log("Pozostałe:", rest);
+}
+logFirst("A", "B", "C", "D");
+// Pierwszy: A
+// Pozostałe: ["B", "C", "D"]
+
+// Rest w destructuringu
+let [head, ...tail] = [1, 2, 3, 4, 5];
+console.log(head);  // 1
+console.log(tail);  // [2, 3, 4, 5]
+        </code></pre>
+        <div class="tip">
+          <h3>Spread vs Rest</h3>
+          <p><strong>Spread</strong> - rozpakowuje elementy: <code>[...arr]</code><br>
+          <strong>Rest</strong> - zbiera elementy: <code>function(...args)</code></p>
+        </div>
+        <aside class="notes">
+          Rest i spread używają tej samej składni (trzy kropki), ale w odwrotnych kierunkach.
+          Rest zbiera wiele wartości do jednej tablicy, spread rozkłada tablicę na wiele wartości.
+        </aside>
+      </section>
+
+      <!-- Slide 58: Ćwiczenie - Destructuring & Spread -->
+      <section>
+        <h2>Ćwiczenie: Destructuring i Spread</h2>
+        <div class="exercise">
+          <h3>Ćwiczenie 3.7 - Nowoczesna składnia</h3>
+          <ol>
+            <li>Użyj destructuringu, by wyciągnąć <code>name</code> i <code>email</code> z obiektu użytkownika</li>
+            <li>Użyj destructuringu tablicy, by przypisać pierwsze 2 elementy do zmiennych</li>
+            <li>Napisz funkcję <code>merge(...objects)</code>, która łączy dowolną liczbę obiektów w jeden (spread)</li>
+            <li>Utwórz kopię tablicy produktów i dodaj nowy element (bez mutacji oryginału)</li>
+            <li>Napisz funkcję przyjmującą obiekt z parametrami <code>{ name, age, city }</code> (destructuring w parametrach)</li>
+          </ol>
+        </div>
+        <aside class="notes">
+          Ćwiczenie na nowe składnie. Daj 10-15 minut. Podpowiedź do merge:
+          reduce + spread albo Object.assign. Podkreśl, że to się przydaje przy testach z danymi.
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           BLOCK 6: JSON (~4-5 slides)
+           ============================================================ -->
+
+      <!-- Slide 59: Section divider -->
+      <section class="section-slide">
+        <span class="section-number">05</span>
+        <h2>JSON</h2>
+        <p>JavaScript Object Notation</p>
+        <aside class="notes">
+          Ostatni blok na dziś - JSON. To format danych, który będzie kluczowy przy pracy z API.
+        </aside>
+      </section>
+
+      <!-- Slide 60: Czym jest JSON? -->
+      <section>
+        <h2>Czym jest JSON?</h2>
+        <p><strong>JSON</strong> (JavaScript Object Notation) - tekstowy format wymiany danych</p>
+        <div class="columns">
+          <div class="col">
+            <h3>Obiekt JavaScript</h3>
+            <pre><code data-trim data-noescape class="language-javascript">
+let product = {
+  name: "Szampon",
+  price: 15.99,
+  inStock: true,
+  tags: ["higiena", "włosy"]
+};
+            </code></pre>
+          </div>
+          <div class="col">
+            <h3>JSON (tekst)</h3>
+            <pre><code data-trim data-noescape class="language-json">
+{
+  "name": "Szampon",
+  "price": 15.99,
+  "inStock": true,
+  "tags": ["higiena", "włosy"]
+}
+            </code></pre>
+          </div>
+        </div>
+        <div class="warning">
+          <h3>Różnice</h3>
+          <p>W JSON klucze <strong>muszą</strong> być w cudzysłowach. Brak komentarzy, brak <code>undefined</code>, brak funkcji.</p>
+        </div>
+        <aside class="notes">
+          JSON wygląda prawie jak obiekt JS, ale to STRING - tekst. Kluczowe różnice:
+          podwójne cudzysłowy wokół kluczy, brak trailing comma, brak komentarzy.
+        </aside>
+      </section>
+
+      <!-- Slide 61: JSON.stringify() -->
+      <section>
+        <h2><code>JSON.stringify()</code> - obiekt na tekst</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let user = {
+  name: "Anna",
+  age: 30,
+  skills: ["JS", "HTML", "CSS"]
+};
+
+// Konwersja obiektu na string JSON
+let jsonString = JSON.stringify(user);
+console.log(jsonString);
+// '{"name":"Anna","age":30,"skills":["JS","HTML","CSS"]}'
+
+console.log(typeof jsonString);  // "string"
+
+// Ładne formatowanie (pretty print)
+let pretty = JSON.stringify(user, null, 2);
+console.log(pretty);
+// {
+//   "name": "Anna",
+//   "age": 30,
+//   "skills": [
+//     "JS",
+//     "HTML",
+//     "CSS"
+//   ]
+// }
+        </code></pre>
+        <aside class="notes">
+          stringify zamienia obiekt JS na string JSON. Drugi argument to replacer (null = bez filtra),
+          trzeci to liczba spacji dla wcięć. Pretty print jest przydatny do debugowania.
+        </aside>
+      </section>
+
+      <!-- Slide 62: JSON.parse() -->
+      <section>
+        <h2><code>JSON.parse()</code> - tekst na obiekt</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+let jsonString = '{"name":"Anna","age":30,"isActive":true}';
+
+// Konwersja stringa JSON na obiekt
+let user = JSON.parse(jsonString);
+console.log(user.name);     // "Anna"
+console.log(user.age);      // 30
+console.log(typeof user);   // "object"
+
+// Niepoprawny JSON - błąd!
+try {
+  let broken = JSON.parse("{ name: Anna }");  // brak cudzysłowów!
+} catch (error) {
+  console.log("Błąd parsowania:", error.message);
+}
+
+// Częsty pattern: parse + praca z danymi
+let responseBody = '{"products":[{"name":"Szampon","price":15.99}]}';
+let data = JSON.parse(responseBody);
+console.log(data.products[0].name);  // "Szampon"
+        </code></pre>
+        <aside class="notes">
+          parse zamienia string JSON na obiekt JS. Niepoprawny JSON rzuca wyjątek - dlatego
+          warto opakowywać w try/catch. To kluczowe przy pracy z odpowiedziami API.
+        </aside>
+      </section>
+
+      <!-- Slide 63: JSON w kontekście API -->
+      <section>
+        <h2>JSON w kontekście API</h2>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Typowa odpowiedź API (jako string JSON)
+let apiResponse = `{
+  "status": 200,
+  "data": {
+    "users": [
+      { "id": 1, "name": "Anna", "role": "tester" },
+      { "id": 2, "name": "Bartek", "role": "developer" }
+    ],
+    "total": 2
+  }
+}`;
+
+// Parsowanie odpowiedzi
+let response = JSON.parse(apiResponse);
+
+// Praca z danymi
+let users = response.data.users;
+let testers = users.filter(u => u.role === "tester");
+console.log("Testerzy:", testers.map(u => u.name));  // ["Anna"]
+
+// Tworzenie body requestu
+let newUser = { name: "Celina", role: "tester" };
+let requestBody = JSON.stringify(newUser);
+console.log(requestBody);
+// '{"name":"Celina","role":"tester"}'
+        </code></pre>
+        <aside class="notes">
+          To jest kwintesencja tego dnia - połączenie JSON z tablicami i obiektami.
+          W pracy testera API: odbieramy JSON (parse), przetwarzamy dane (filter, map),
+          wysyłamy JSON (stringify). To fundament następnych dni szkolenia.
+        </aside>
+      </section>
+
+      <!-- Slide 64: Podsumowanie dnia -->
+      <section>
+        <h2>Podsumowanie dnia 3</h2>
+        <div class="columns">
+          <div class="col">
+            <h3>Tablice</h3>
+            <ul>
+              <li><code>push/pop</code>, <code>shift/unshift</code></li>
+              <li><code>splice</code>, <code>slice</code>, <code>includes</code></li>
+              <li><code>forEach</code>, <code>map</code>, <code>filter</code></li>
+              <li><code>find</code>, <code>some</code>, <code>every</code></li>
+              <li><code>reduce</code>, chainowanie</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>Obiekty &amp; JSON</h3>
+            <ul>
+              <li>Tworzenie i dostęp do właściwości</li>
+              <li>Dot vs bracket notation</li>
+              <li>Zagnieżdżone obiekty</li>
+              <li>Destructuring i spread</li>
+              <li><code>JSON.parse()</code> / <code>JSON.stringify()</code></li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          Podsumuj najważniejsze tematy. Podkreśl, że te umiejętności będą fundamentem
+          pracy z API (fetch, Postman, Cypress) w kolejnych dniach.
+        </aside>
+      </section>
+
+      <!-- Slide 65: Co dalej? -->
+      <section>
+        <h2>Co dalej?</h2>
+        <h3>Dzień 4: Praca z DOM i przeglądarką</h3>
+        <ul>
+          <li>Jak JavaScript współpracuje z HTML</li>
+          <li>Selektory i manipulacja elementami</li>
+          <li>Zdarzenia (events) - kliknięcia, formularze</li>
+          <li>Podstawy testowania w przeglądarce</li>
+        </ul>
+        <div class="tip">
+          <h3>Zadanie domowe</h3>
+          <p>Napisz obiekt <code>testSuite</code> z tablicą testów, metodami do dodawania/usuwania testów,
+          filtrowania po statusie i generowania raportu (ile passed/failed/skipped).</p>
+        </div>
+        <aside class="notes">
+          Zapowiedz dzień 4. Zadanie domowe łączy wszystko z dnia 3 - tablice, obiekty, metody, iterację.
+          Zachęć do eksperymentowania w konsoli przeglądarki.
+        </aside>
+      </section>
+
+    </div><!-- .slides -->
+  </div><!-- .reveal -->
+
+  <script src="../node_modules/reveal.js/dist/reveal.js"></script>
+  <script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+  <script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      view: 'scroll',
+      scrollProgress: true,
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+</body>
+</html>
