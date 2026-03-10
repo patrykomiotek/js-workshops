@@ -49,24 +49,24 @@
 }
 
 .reveal h1 {
-  font-size: 2.2em;
+  font-size: 1.8em;
   color: var(--rossmann-red);
 }
 
 .reveal h2 {
-  font-size: 1.6em;
+  font-size: 1.3em;
   color: #fff;
 }
 
 .reveal h3 {
-  font-size: 1.3em;
+  font-size: 1.1em;
   color: var(--rossmann-red-light);
 }
 
 .reveal p,
 .reveal li {
-  font-size: 0.85em;
-  line-height: 1.6;
+  font-size: 0.75em;
+  line-height: 1.5;
 }
 
 .reveal ul,
@@ -84,7 +84,7 @@
 
 /* === Title Slide === */
 .reveal .title-slide h1 {
-  font-size: 2.8em;
+  font-size: 2.2em;
   margin-bottom: 0.3em;
 }
 
@@ -112,7 +112,7 @@
 
 .reveal .section-slide h2 {
   color: var(--rossmann-red);
-  font-size: 2em;
+  font-size: 1.6em;
   border-bottom: 3px solid var(--rossmann-red);
   padding-bottom: 0.3em;
   display: inline-block;
@@ -138,11 +138,12 @@
 
 .reveal pre code {
   background: var(--code-bg);
-  padding: 1em;
-  font-size: 0.85em;
-  line-height: 1.5;
+  padding: 0.8em;
+  font-size: 0.7em;
+  line-height: 1.4;
   border-radius: 8px;
-  max-height: 500px;
+  max-height: 420px;
+  overflow-y: auto !important;
 }
 
 .reveal code {
@@ -166,14 +167,14 @@
   background: var(--exercise-bg);
   border-left: 4px solid var(--exercise-border);
   border-radius: 0 8px 8px 0;
-  padding: 1em 1.5em;
-  margin: 0.8em 0;
+  padding: 0.6em 1em;
+  margin: 0.5em 0;
 }
 
 .reveal .exercise h3 {
   color: var(--exercise-border);
-  margin: 0 0 0.5em 0;
-  font-size: 1.1em;
+  margin: 0 0 0.3em 0;
+  font-size: 0.85em;
 }
 
 .reveal .exercise h3::before {
@@ -191,15 +192,15 @@
   background: var(--quiz-bg);
   border-left: 4px solid var(--quiz-border);
   border-radius: 0 8px 8px 0;
-  padding: 1em 1.5em;
-  margin: 0.8em 0;
+  padding: 0.6em 1em;
+  margin: 0.5em 0;
   text-align: left;
 }
 
 .reveal .quiz h3 {
   color: var(--quiz-border);
-  margin: 0 0 0.5em 0;
-  font-size: 1.1em;
+  margin: 0 0 0.3em 0;
+  font-size: 0.85em;
 }
 
 .reveal .quiz h3::before {
@@ -212,15 +213,20 @@
   background: var(--tip-bg);
   border-left: 4px solid var(--tip-border);
   border-radius: 0 8px 8px 0;
-  padding: 0.8em 1.2em;
-  margin: 0.8em 0;
+  padding: 0.5em 1em;
+  margin: 0.5em 0;
   text-align: left;
 }
 
 .reveal .tip h3 {
   color: var(--tip-border);
-  margin: 0 0 0.3em 0;
-  font-size: 1em;
+  margin: 0 0 0.2em 0;
+  font-size: 0.8em;
+}
+
+.reveal .tip p,
+.reveal .tip li {
+  font-size: 0.7em;
 }
 
 .reveal .tip h3::before {
@@ -233,15 +239,20 @@
   background: var(--warning-bg);
   border-left: 4px solid var(--warning-border);
   border-radius: 0 8px 8px 0;
-  padding: 0.8em 1.2em;
-  margin: 0.8em 0;
+  padding: 0.5em 1em;
+  margin: 0.5em 0;
   text-align: left;
 }
 
 .reveal .warning h3 {
   color: var(--warning-border);
-  margin: 0 0 0.3em 0;
-  font-size: 1em;
+  margin: 0 0 0.2em 0;
+  font-size: 0.8em;
+}
+
+.reveal .warning p,
+.reveal .warning li {
+  font-size: 0.7em;
 }
 
 .reveal .warning h3::before {

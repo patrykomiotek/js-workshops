@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dzień 4 - Asynchroniczność i DOM | Rossmann JS Training</title>
+  <title>Dzień 4 - Testy E2E: Struktura i Selektory | Rossmann JS Training</title>
   <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css">
   <link rel="stylesheet" href="../node_modules/reveal.js/dist/theme/black.css">
   <link rel="stylesheet" href="../node_modules/reveal.js/plugin/highlight/monokai.css">
@@ -14,18 +14,19 @@
 <div class="slides">
 
   <!-- ============================================================
-       BLOCK 1: Powtórzenie dnia 3 (~0.5h, ~5 slides)
+       BLOCK 1: Powtórzenie dnia 3 (~30 min, ~5 slides)
        ============================================================ -->
 
   <!-- Slide 1: Title -->
   <section class="title-slide">
     <span class="day-number">Dzień 4</span>
-    <h1>Asynchroniczność i DOM</h1>
-    <p class="subtitle">Szkolenie JavaScript dla testerów manualnych</p>
+    <h1>Testy E2E - Struktura, Selektory i Dobre Praktyki</h1>
+    <p class="subtitle">Szkolenie JavaScript dla testerów - praktyka automatyzacji</p>
     <p><small>Rossmann - Bottega</small></p>
     <aside class="notes">
-      Powitanie uczestników. Dzień 4 to kluczowy dzień - łączymy pracę z przeglądarką (DOM) z asynchronicznością,
-      co jest fundamentem współczesnych aplikacji webowych i testów automatycznych.
+      Powitanie uczestników. Od dzisiaj przechodzimy na tematy stricte praktyczne - uczestnicy poprosili
+      o skupienie się na automatyzacji testów E2E. Dziś omówimy selektory, strukturę projektów testowych
+      i dobre praktyki. Jutro będziemy pisać testy hands-on.
     </aside>
   </section>
 
@@ -34,1907 +35,2125 @@
     <h2>Agenda</h2>
     <ul class="agenda">
       <li>Powtórzenie dnia 3 <span class="time">~30 min</span></li>
-      <li>DOM - Document Object Model <span class="time">~2h</span></li>
-      <li>Eventy - zdarzenia w przeglądarce <span class="time">~1h</span></li>
-      <li>Callbacki <span class="time">~30 min</span></li>
-      <li>Promise - obietnice <span class="time">~1h</span></li>
-      <li>async/await <span class="time">~1h</span></li>
-      <li>Fetch API - pobieranie danych <span class="time">~1h</span></li>
+      <li>async/await w kontekście testów <span class="time">~1h</span></li>
+      <li>Selektory w testach E2E <span class="time">~1.5h</span></li>
+      <li>Struktura projektu testów E2E <span class="time">~1.5h</span></li>
+      <li>Co testować automatycznie? <span class="time">~1h</span></li>
+      <li>Zarządzanie danymi i sekretami <span class="time">~45 min</span></li>
+      <li>Podsumowanie dnia 4 <span class="time">~15 min</span></li>
     </ul>
     <aside class="notes">
-      Omówienie planu dnia. To intensywny dzień - zaczynamy od pracy z przeglądarką,
-      potem przechodzimy do asynchroniczności. Przerwy będą co ~1.5h.
+      Prezentacja agendy. Dzisiejszy dzień jest bardzo gęsty - zaczynamy od krótkich powtórek z dnia 3,
+      potem przechodzimy do async/await (Cypress ukrywa asynchroniczność, ale Playwright wymaga tej składni), a następnie wchodzimy w tematy
+      stricte testowe: selektory, struktura projektu, co testować i jak zarządzać danymi.
     </aside>
   </section>
 
-  <!-- Slide 3: Powtórzenie - Quiz tablice -->
+  <!-- Slide 3: Quiz 1 - Tablice -->
   <section>
-    <h2>Powtórzenie dnia 3</h2>
     <div class="quiz">
       <h3>Quiz - Tablice</h3>
-      <p>Co zwróci poniższy kod?</p>
-      <pre><code data-trim data-noescape class="language-javascript">
-const fruits = ["apple", "banana", "cherry"];
-const result = fruits.filter(f => f.length > 5);
-console.log(result);
-      </code></pre>
-      <ol>
-        <li>A) <code>["apple", "banana", "cherry"]</code></li>
-        <li>B) <code>["banana", "cherry"]</code></li>
-        <li>C) <code>["banana"]</code></li>
-        <li>D) <code>["cherry"]</code></li>
-      </ol>
     </div>
-    <p class="fragment"><strong>Odpowiedź: B</strong> - "banana" (6 liter) i "cherry" (6 liter)</p>
+    <p>Co zwróci poniższy kod?</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+const prices = [9.99, 14.50, 3.20, 29.99];
+const expensive = prices.filter(p => p > 10);
+console.log(expensive.length);
+    </code></pre>
+    <p class="fragment"><strong>Odpowiedź:</strong> <code>2</code> - filter zwraca nową tablicę z elementami spełniającymi warunek (14.50 i 29.99)</p>
     <aside class="notes">
-      Rozgrzewka z dnia 3. Filter zwraca nową tablicę z elementami spełniającymi warunek.
-      "apple" ma 5 liter - nie przechodzi warunku &gt; 5.
+      Szybka powtórka z metod tablicowych. Przypomnij uczestnikom, że filter nie modyfikuje oryginalnej tablicy,
+      tylko tworzy nową z elementami, które przeszły test.
     </aside>
   </section>
 
-  <!-- Slide 4: Powtórzenie - Quiz obiekty -->
+  <!-- Slide 4: Quiz 2 - Obiekty -->
   <section>
-    <h2>Powtórzenie - Obiekty</h2>
+    <div class="quiz">
+      <h3>Quiz - Obiekty</h3>
+    </div>
+    <p>Co wyświetli się w konsoli?</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+const user = {
+  name: 'Anna',
+  role: 'tester',
+  skills: ['Cypress', 'Playwright']
+};
+
+user.skills.push('k6');
+console.log(user.skills.length);
+    </code></pre>
+    <p class="fragment"><strong>Odpowiedź:</strong> <code>3</code> - const nie blokuje modyfikacji właściwości obiektu, tylko zmianę referencji</p>
+    <aside class="notes">
+      Ważna zasada - const chroni referencje, nie zawartość obiektu. To częste źródło pomyłek.
+      Można modyfikować właściwości obiektu zadeklarowanego przez const.
+    </aside>
+  </section>
+
+  <!-- Slide 5: Quiz 3 - Destrukturyzacja -->
+  <section>
     <div class="quiz">
       <h3>Quiz - Destrukturyzacja</h3>
-      <p>Co wyświetli <code>console.log</code>?</p>
-      <pre><code data-trim data-noescape class="language-javascript">
-const user = { name: "Anna", age: 30, city: "Łódź" };
-const { name, ...rest } = user;
-console.log(rest);
-      </code></pre>
     </div>
-    <p class="fragment"><strong>Odpowiedź:</strong> <code>{ age: 30, city: "Łódź" }</code></p>
+    <p>Jak za pomocą destrukturyzacji wyciągnąć <code>email</code> i <code>city</code>?</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+const testData = {
+  email: 'test@rossmann.pl',
+  address: {
+    city: 'Lodz',
+    zip: '90-001'
+  }
+};
+    </code></pre>
+    <pre class="fragment"><code data-trim data-noescape class="language-javascript">
+const { email, address: { city } } = testData;
+console.log(email); // 'test@rossmann.pl'
+console.log(city);  // 'Lodz'
+    </code></pre>
     <aside class="notes">
-      Spread/rest operator w destrukturyzacji - zbiera pozostałe właściwości do nowego obiektu.
-      To ważny wzorzec, często spotykany w kodzie React.
-    </aside>
-  </section>
-
-  <!-- Slide 5: Powtórzenie - Quiz metody tablicowe -->
-  <section>
-    <h2>Powtórzenie - Metody tablicowe</h2>
-    <div class="quiz">
-      <h3>Quiz - map vs forEach</h3>
-      <p>Jaka jest różnica?</p>
-      <pre><code data-trim data-noescape class="language-javascript">
-const numbers = [1, 2, 3];
-
-// Wariant A
-const doubled = numbers.map(n => n * 2);
-
-// Wariant B
-const result = [];
-numbers.forEach(n => result.push(n * 2));
-      </code></pre>
-    </div>
-    <div class="fragment tip">
-      <h3>Kluczowa różnica</h3>
-      <p><code>map()</code> <strong>zwraca nową tablicę</strong>, <code>forEach()</code> zwraca <code>undefined</code>.
-      Oba warianty dają ten sam efekt, ale <code>map</code> jest bardziej deklaratywny.</p>
-    </div>
-    <aside class="notes">
-      Przypomnienie kluczowej różnicy. W praktyce map jest preferowany gdy chcemy transformować dane,
-      forEach gdy chcemy wykonać efekt uboczny.
+      Destrukturyzacja zagnieżdżona - bardzo przydatna przy pracy z odpowiedziami API, fixture'ami
+      i danymi testowymi. Warto podkreślić, że address nie jest dostępne jako zmienna po takiej destrukturyzacji.
     </aside>
   </section>
 
   <!-- ============================================================
-       BLOCK 2: DOM - Document Object Model (~2h, ~15-18 slides)
+       BLOCK 2: async/await w kontekście testów (~1h, ~12 slides)
        ============================================================ -->
 
-  <!-- Slide 6: Section divider -->
+  <!-- Slide 6: Section -->
   <section class="section-slide">
-    <span class="section-number">01</span>
-    <h2>DOM - Document Object Model</h2>
-    <p>Praca z dokumentem HTML w JavaScript</p>
+    <span class="section-number">1</span>
+    <h2>async/await w kontekście testów</h2>
+    <p>Dlaczego asynchroniczność jest kluczowa w automatyzacji</p>
     <aside class="notes">
-      Przechodzimy do pierwszego dużego bloku - DOM. To fundament pracy testera automatycznego.
-      Zrozumienie DOM pozwoli lepiej pisać selektory w Cypress czy Playwright.
+      Zaczynamy od async/await, bo Playwright wymaga tej składni w każdym teście.
+      Cypress ukrywa asynchroniczność za łańcuchami komend, ale warto rozumieć co się dzieje pod spodem.
     </aside>
   </section>
 
-  <!-- Slide 7: Czym jest DOM? -->
+  <!-- Slide 7: Dlaczego async? -->
   <section>
-    <h2>Czym jest DOM?</h2>
+    <h2>Dlaczego asynchroniczność?</h2>
+    <p>W świecie testów E2E prawie wszystko trwa jakiś czas:</p>
+    <ul>
+      <li class="fragment">Ładowanie strony</li>
+      <li class="fragment">Kliknięcie przycisku i oczekiwanie na odpowiedź serwera</li>
+      <li class="fragment">Pojawienie się elementu na stronie</li>
+      <li class="fragment">Zapytanie do API</li>
+      <li class="fragment">Zapis/odczyt pliku</li>
+    </ul>
+    <p class="fragment">JavaScript nie może "czekać" - musi być poinformowany, kiedy operacja się skończy.</p>
+    <aside class="notes">
+      Wytłumacz analogia - wyobraź sobie, że zamawiasz jedzenie na dowóz. Nie stoisz przy drzwiach
+      i czekasz - robisz inne rzeczy, a kiedy kurier przyjdzie, reagujesz. Tak samo działa JS.
+    </aside>
+  </section>
+
+  <!-- Slide 8: Synchroniczny vs asynchroniczny -->
+  <section>
+    <h2>Kod synchroniczny vs asynchroniczny</h2>
     <div class="columns">
       <div class="col">
-        <ul>
-          <li><strong>DOM</strong> = Document Object Model</li>
-          <li>Przeglądarka zamienia HTML na <strong>drzewo obiektów</strong></li>
-          <li>JavaScript może to drzewo <strong>czytać i modyfikować</strong></li>
-          <li>Każdy tag HTML = <strong>węzeł</strong> (node) w drzewie</li>
-        </ul>
-      </div>
-      <div class="col">
-        <pre><code data-trim data-noescape class="language-html">
-&lt;html&gt;
-  &lt;body&gt;
-    &lt;h1&gt;Tytuł&lt;/h1&gt;
-    &lt;p&gt;Tekst&lt;/p&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
+        <h3>Synchroniczny</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+const a = 1 + 2;
+const b = a * 3;
+console.log(b); // 9
+// kazda linia czeka na poprzednia
         </code></pre>
-        <p style="font-size:0.7em; text-align:center;">
-          document → html → body → h1, p
-        </p>
+      </div>
+      <div class="col">
+        <h3>Asynchroniczny</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// to trwa - musimy "poczekac"
+const response = await fetch('/api');
+const data = await response.json();
+console.log(data);
+        </code></pre>
       </div>
     </div>
     <aside class="notes">
-      DOM to interfejs programistyczny do dokumentów HTML. Przeglądarka parsuje HTML i tworzy
-      drzewo obiektów, po którym możemy nawigować i które możemy modyfikować z poziomu JS.
+      Zwróć uwagę na słowo kluczowe await - to ono mówi "poczekaj na wynik tej operacji zanim przejdziesz dalej".
+      Bez await dostaniemy obiekt Promise zamiast prawdziwych danych.
     </aside>
   </section>
 
-  <!-- Slide 8: Wizualizacja drzewa DOM -->
+  <!-- Slide 9: Callback - koncept -->
   <section>
-    <h2>Drzewo DOM - wizualizacja</h2>
-    <pre><code data-trim data-noescape class="language-html">
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;title&gt;Moja strona&lt;/title&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id="app"&gt;
-      &lt;h1 class="title"&gt;Witaj!&lt;/h1&gt;
-      &lt;ul&gt;
-        &lt;li&gt;Punkt 1&lt;/li&gt;
-        &lt;li&gt;Punkt 2&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/div&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
+    <h2>Callback - funkcja zwrotna</h2>
+    <p>Najprostszy sposób obsługi asynchroniczności - przekazanie funkcji do wywołania "później":</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+// przyklad z zycia - setTimeout
+setTimeout(() => {
+  console.log('To pojawi sie po 2 sekundach');
+}, 2000);
+
+console.log('To pojawi sie natychmiast');
     </code></pre>
-    <div class="tip">
-      <h3>DevTools</h3>
-      <p>Otwórz <kbd>F12</kbd> → zakładka <strong>Elements</strong>, aby zobaczyć drzewo DOM na żywo.</p>
+    <div class="console-output">
+      <pre>To pojawi się natychmiast
+// ...po 2 sekundach...
+To pojawi się po 2 sekundach</pre>
     </div>
     <aside class="notes">
-      Pokaz na żywo w DevTools - jak drzewo DOM odpowiada kodowi HTML.
-      Warto pokazać, że zmiany w DOM są natychmiastowe i widoczne.
+      Callbacki to najprostsza forma asynchroniczności. Problem pojawia się kiedy mamy wiele
+      zagnieżdżonych callbacków - tzw. "callback hell". Dlatego wymyślono Promise i async/await.
     </aside>
   </section>
 
-  <!-- Slide 9: querySelector -->
+  <!-- Slide 10: Promise - koncept -->
   <section>
-    <h2><code>document.querySelector()</code></h2>
-    <p>Znajduje <strong>pierwszy</strong> element pasujący do selektora CSS</p>
+    <h2>Promise - obietnica</h2>
+    <p>Promise to obiekt reprezentujący przyszły wynik operacji:</p>
     <pre><code data-trim data-noescape class="language-javascript">
-// Szukanie po tagu
-const heading = document.querySelector("h1");
+// Promise moze byc w jednym z 3 stanow:
+// - pending   (oczekujacy)
+// - fulfilled (spelniony - sukces)
+// - rejected  (odrzucony - blad)
 
-// Szukanie po klasie
-const title = document.querySelector(".title");
+const promise = fetch('https://api.example.com/data');
 
-// Szukanie po ID
-const app = document.querySelector("#app");
+promise
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Blad:', error));
+    </code></pre>
+    <aside class="notes">
+      Promise to "pudełko na przyszły wynik". Metoda then() obsługuje sukces, catch() obsługuje błąd.
+      Można je łańcuchowo łączyć. Ale my będziemy używać ładniejszej składni - async/await.
+    </aside>
+  </section>
 
-// Szukanie po atrybucie
-const input = document.querySelector('[data-testid="email"]');
+  <!-- Slide 11: async/await - skladnia -->
+  <section>
+    <h2>async/await - czytelna skladnia</h2>
+    <p><code>async/await</code> to "cukier składniowy" nad Promise - ten sam mechanizm, ładniejszy zapis:</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+// funkcja oznaczona jako async
+async function fetchUserData(userId) {
+  // await "czeka" na wynik Promise
+  const response = await fetch(`/api/users/${userId}`);
+  const user = await response.json();
+  return user;
+}
 
-// Zagnieżdżony selektor
-const firstItem = document.querySelector("ul > li:first-child");
+// uzycie
+const user = await fetchUserData(42);
+console.log(user.name);
     </code></pre>
     <div class="tip">
-      <h3>Selektor CSS = Selektor Cypress</h3>
-      <p><code>cy.get('.title')</code> działa dokładnie tak samo jak <code>querySelector('.title')</code></p>
+      <h3>Zasada</h3>
+      <p><code>await</code> może być użyte tylko wewnątrz funkcji <code>async</code></p>
     </div>
     <aside class="notes">
-      querySelector to najczęściej używana metoda. Przyjmuje dowolny selektor CSS.
-      Zwraca pierwszy pasujący element lub null jeśli nie znajdzie. Podkreśl związek z Cypress.
+      Słowo kluczowe async przed funkcją mówi JS, że ta funkcja jest asynchroniczna i będzie zwracać Promise.
+      Słowo kluczowe await wewnątrz takiej funkcji "zatrzymuje" wykonanie do momentu rozwiązania Promise.
+      To tak jakby pisać kod synchroniczny, ale z magicznym czekaniem na wyniki.
     </aside>
   </section>
 
-  <!-- Slide 10: querySelectorAll -->
+  <!-- Slide 12: Obsługa błędów z try/catch -->
   <section>
-    <h2><code>document.querySelectorAll()</code></h2>
-    <p>Znajduje <strong>wszystkie</strong> elementy pasujące do selektora</p>
+    <h2>Obsługa błędów - try/catch</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// Zwraca NodeList (podobny do tablicy)
-const items = document.querySelectorAll("li");
+async function fetchProduct(productId) {
+  try {
+    const response = await fetch(`/api/products/${productId}`);
 
-console.log(items.length); // np. 5
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
-// Iteracja po elementach
-items.forEach(item => {
-  console.log(item.textContent);
+    const product = await response.json();
+    return product;
+
+  } catch (error) {
+    console.error('Nie udalo sie pobrac produktu:', error.message);
+    return null;
+  }
+}
+    </code></pre>
+    <aside class="notes">
+      try/catch to standardowy sposób obsługi błędów w async/await. Bez try/catch błąd w await
+      "poleci" w górę i może zatrzymać cały test. W testach E2E błędy są często oczekiwane -
+      np. testujemy, że strona zwraca 404.
+    </aside>
+  </section>
+
+  <!-- Slide 13: Cypress - przyklad testu -->
+  <section>
+    <h2>Cypress - kolejkowanie komend</h2>
+    <p>Cypress ukrywa asynchroniczność za łańcuchami komend:</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+it('should login successfully', () => {
+  cy.visit('/login');
+  cy.get('[data-testid="email"]').type('user@test.pl');
+  cy.get('[data-testid="password"]').type('Test1234');
+  cy.get('[data-testid="login-btn"]').click();
+  cy.url().should('include', '/dashboard');
 });
-
-// Konwersja na tablicę (jeśli potrzebujemy map/filter)
-const itemsArray = [...items];
-const longItems = itemsArray.filter(i => i.textContent.length > 10);
-    </code></pre>
-    <div class="warning">
-      <h3>Uwaga</h3>
-      <p><code>NodeList</code> to <strong>nie tablica</strong> - ma <code>forEach</code>, ale nie ma <code>map</code> ani <code>filter</code>. Użyj spread: <code>[...nodeList]</code></p>
-    </div>
-    <aside class="notes">
-      querySelectorAll zwraca NodeList. Ważne - to nie jest pełna tablica.
-      Ma forEach, ale żeby użyć map/filter, trzeba najpierw zamienić na tablicę operatorem spread.
-    </aside>
-  </section>
-
-  <!-- Slide 11: getElementById -->
-  <section>
-    <h2><code>document.getElementById()</code></h2>
-    <p>Szybkie szukanie po atrybucie <code>id</code></p>
-    <pre><code data-trim data-noescape class="language-javascript">
-// HTML: &lt;div id="login-form"&gt;...&lt;/div&gt;
-
-const form = document.getElementById("login-form");
-
-// Równoważne z:
-const formAlt = document.querySelector("#login-form");
-    </code></pre>
-    <div class="columns">
-      <div class="col">
-        <h3 style="color: var(--exercise-border);">getElementById</h3>
-        <ul>
-          <li>Szuka tylko po <code>id</code></li>
-          <li>Nieco szybszy</li>
-          <li>Starsze API</li>
-        </ul>
-      </div>
-      <div class="col">
-        <h3 style="color: var(--tip-border);">querySelector</h3>
-        <ul>
-          <li>Dowolny selektor CSS</li>
-          <li>Bardziej elastyczny</li>
-          <li>Nowoczesne API</li>
-        </ul>
-      </div>
-    </div>
-    <aside class="notes">
-      getElementById to starsze API, ale nadal popularne. W praktyce querySelector jest
-      bardziej elastyczny i zalecany. Warto znać oba, bo spotkacie je w kodzie.
-    </aside>
-  </section>
-
-  <!-- Slide 12: textContent i innerHTML -->
-  <section>
-    <h2>Manipulacja tekstem</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const heading = document.querySelector("h1");
-
-// Odczyt tekstu
-console.log(heading.textContent); // "Witaj!"
-
-// Zmiana tekstu
-heading.textContent = "Nowy tytuł";
-
-// innerHTML - pozwala wstawiać HTML
-const container = document.querySelector("#app");
-container.innerHTML = "&lt;strong&gt;Pogrubiony&lt;/strong&gt; tekst";
-    </code></pre>
-    <div class="warning">
-      <h3>Bezpieczeństwo</h3>
-      <p><code>innerHTML</code> może być niebezpieczny (XSS), jeśli wstawiamy dane od użytkownika.
-      Preferuj <code>textContent</code> gdy nie potrzebujesz HTML.</p>
-    </div>
-    <aside class="notes">
-      textContent to bezpieczny sposób na manipulację tekstem. innerHTML pozwala wstawić HTML,
-      ale uwaga na XSS - nigdy nie wstawiamy niezaufanych danych przez innerHTML.
-      Jako testerzy powinniście to sprawdzać!
-    </aside>
-  </section>
-
-  <!-- Slide 13: Manipulacja stylami -->
-  <section>
-    <h2>Manipulacja stylami</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const box = document.querySelector(".box");
-
-// Bezpośrednia zmiana stylu
-box.style.backgroundColor = "red";
-box.style.fontSize = "24px";
-box.style.display = "none"; // ukrywanie elementu
-
-// Lepsze podejście - klasy CSS
-box.classList.add("active");       // dodaj klasę
-box.classList.remove("active");    // usuń klasę
-box.classList.toggle("active");    // przełącz (dodaj/usuń)
-box.classList.contains("active");  // sprawdź: true/false
     </code></pre>
     <div class="tip">
-      <h3>Dobra praktyka</h3>
-      <p>Zamiast zmieniać style bezpośrednio, <strong>dodawaj/usuwaj klasy CSS</strong>.
-      Łatwiej testować i utrzymywać.</p>
+      <h3>Zauważ</h3>
+      <p>Cypress kolejkuje komendy automatycznie - nie potrzebujemy async/await</p>
     </div>
     <aside class="notes">
-      Dwa podejścia do stylów. style.property zmienia inline, classList operuje na klasach CSS.
-      classList jest preferowany, bo separuje logikę od prezentacji. Dla testerów ważne - klasy
-      są dobrymi selektorami.
+      Cypress ma własny system kolejkowania komend. Nie używamy async/await - komendy są dodawane
+      do kolejki i wykonywane po kolei. To prostsze do napisania, ale może być mylące - ten kod
+      NIE wykonuje się synchronicznie, choć tak wygląda. Cypress sam zarządza czekaniem.
     </aside>
   </section>
 
-  <!-- Slide 14: Atrybuty -->
+  <!-- Slide 14: Playwright - porownanie -->
   <section>
-    <h2>Atrybuty elementów</h2>
+    <h2>A w Playwright - async/await</h2>
+    <p>Playwright wymaga jawnego uzycia async/await:</p>
     <pre><code data-trim data-noescape class="language-javascript">
-const link = document.querySelector("a");
-
-// Odczyt atrybutu
-const href = link.getAttribute("href");
-console.log(href); // "https://example.com"
-
-// Ustawienie atrybutu
-link.setAttribute("target", "_blank");
-
-// Sprawdzenie czy atrybut istnieje
-link.hasAttribute("rel"); // true/false
-
-// Usunięcie atrybutu
-link.removeAttribute("target");
-
-// data-* atrybuty (specjalne API)
-const card = document.querySelector('[data-product-id="123"]');
-console.log(card.dataset.productId); // "123"
-    </code></pre>
-    <aside class="notes">
-      Atrybuty HTML są dostępne przez get/set/has/removeAttribute. Specjalne data-* atrybuty
-      mają wygodne API przez dataset. W testach data-testid jest bardzo popularny.
-    </aside>
-  </section>
-
-  <!-- Slide 15: Tworzenie elementów -->
-  <section>
-    <h2>Tworzenie elementów</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// 1. Utwórz element
-const newItem = document.createElement("li");
-
-// 2. Dodaj treść
-newItem.textContent = "Nowy punkt";
-
-// 3. Dodaj klasy
-newItem.classList.add("item", "new");
-
-// 4. Dodaj do dokumentu
-const list = document.querySelector("ul");
-list.appendChild(newItem);
-
-// Wstawienie przed innym elementem
-const firstItem = list.querySelector("li");
-list.insertBefore(newItem, firstItem);
-
-// Nowoczesna metoda: append (przyjmuje tekst i elementy)
-list.append(newItem, " - dodano!");
-    </code></pre>
-    <aside class="notes">
-      Tworzenie elementów to trzy kroki: createElement, ustawienie właściwości, appendChild/append.
-      insertBefore pozwala wstawić w konkretne miejsce. append to nowoczesna wersja appendChild.
-    </aside>
-  </section>
-
-  <!-- Slide 16: Usuwanie elementów -->
-  <section>
-    <h2>Usuwanie elementów</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Nowoczesny sposób - metoda remove()
-const item = document.querySelector(".old-item");
-item.remove();
-
-// Starszy sposób - przez rodzica
-const parent = document.querySelector("ul");
-const child = parent.querySelector("li:last-child");
-parent.removeChild(child);
-
-// Usunięcie wszystkich dzieci
-const container = document.querySelector("#list");
-container.innerHTML = ""; // szybki sposób
+test('should login successfully', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[data-testid="email"]', 'user@test.pl');
+  await page.fill('[data-testid="password"]', 'Test1234');
+  await page.click('[data-testid="login-btn"]');
+  await expect(page).toHaveURL('/dashboard');
+});
     </code></pre>
     <div class="tip">
-      <h3>Podpowiedź</h3>
-      <p><code>.remove()</code> jest prostsze i bardziej czytelne. Starsze podejście z <code>removeChild</code>
-      spotkacie w starszym kodzie.</p>
+      <h3>Roznica</h3>
+      <p>Każda interakcja z przeglądarka wymaga <code>await</code> - bo trwa jakiś czas</p>
     </div>
     <aside class="notes">
-      Usuwanie elementów - dwa podejścia. remove() jest nowoczesne i proste.
-      removeChild to starsze API, ale nadal spotykane. innerHTML = "" to szybki sposób na wyczyszczenie kontenera.
+      To jest prawdziwy test Playwright. Zwróć uwagę: async w deklaracji funkcji testowej,
+      await przed każda komenda. Gdybyśmy pominęli await, komendy nie wykonałyby się po kolei
+      i test by się nie powiódł. Playwright automatycznie czeka na elementy - ale await jest potrzebne
+      do prawidłowej kolejności operacji.
     </aside>
   </section>
 
-  <!-- Slide 17: Nawigacja po DOM -->
+  <!-- Slide 15: Porownanie Playwright vs Cypress -->
   <section>
-    <h2>Nawigacja po DOM</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const item = document.querySelector("li.active");
-
-// Rodzic
-item.parentElement;          // &lt;ul&gt;
-
-// Dzieci
-item.parentElement.children; // HTMLCollection [li, li, li]
-
-// Rodzeństwo
-item.nextElementSibling;     // następny &lt;li&gt;
-item.previousElementSibling; // poprzedni &lt;li&gt;
-
-// Pierwsze/ostatnie dziecko
-const list = document.querySelector("ul");
-list.firstElementChild;      // pierwszy &lt;li&gt;
-list.lastElementChild;       // ostatni &lt;li&gt;
-
-// Najbliższy przodek pasujący do selektora
-item.closest("div.container"); // szuka w górę drzewa
-    </code></pre>
+    <h2>Cypress vs Playwright - podsumowanie różnic</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Cecha</th>
+          <th>Cypress</th>
+          <th>Playwright</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>async/await</td>
+          <td>Nie używane</td>
+          <td>Wymagane</td>
+        </tr>
+        <tr>
+          <td>Oczekiwanie na elementy</td>
+          <td>Auto-retry</td>
+          <td>Auto-wait + await</td>
+        </tr>
+        <tr>
+          <td>Wiele zakładek</td>
+          <td>Ograniczone</td>
+          <td>Tak</td>
+        </tr>
+        <tr>
+          <td>Język testów</td>
+          <td>JS/TS</td>
+          <td>JS/TS/Python/C#/Java</td>
+        </tr>
+        <tr>
+          <td>Przeglądarki</td>
+          <td>Chrome, Firefox, Edge</td>
+          <td>Chromium, Firefox, WebKit</td>
+        </tr>
+      </tbody>
+    </table>
     <aside class="notes">
-      Nawigacja po drzewie DOM pozwala poruszać się między elementami bez ponownego wyszukiwania.
-      closest() jest szczególnie przydatne - szuka w górę drzewa. Często używane w delegacji zdarzeń.
+      Nie chodzi o to, który jest lepszy - oba mają swoje zastosowania. Ważne jest, żeby rozumieć
+      różnice w modelu działania. W Rossmann możecie używać obu narzędzi w różnych projektach.
     </aside>
   </section>
 
-  <!-- Slide 18: Dlaczego DOM jest ważny dla testerów? -->
+  <!-- Slide 16: Czekanie na elementy -->
   <section>
-    <h2>DOM a testowanie</h2>
-    <p>Dlaczego tester powinien rozumieć DOM?</p>
+    <h2>Czekanie na elementy w testach</h2>
     <div class="columns">
       <div class="col">
         <h3>Cypress</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-// Selektory CSS
-cy.get('[data-testid="login"]');
-cy.get('.btn-primary');
-cy.get('#email');
+// automatycznie czeka (4s)
+cy.get('.modal')
+  .should('be.visible');
 
-// Nawigacja
-cy.get('li').first();
-cy.get('li').eq(2);
-cy.get('.item').parent();
+// czeka az tekst sie pojawi
+cy.get('.alert')
+  .should('have.text', 'Sukces!');
+
+// zmiana timeout
+cy.get('.loader',
+  { timeout: 10000 })
+  .should('exist');
         </code></pre>
       </div>
       <div class="col">
-        <h3>DOM (JavaScript)</h3>
+        <h3>Playwright</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-// Te same selektory!
-querySelector('[data-testid="login"]');
-querySelector('.btn-primary');
-querySelector('#email');
+// czeka az element bedzie widoczny
+await page.locator('.modal')
+  .waitFor();
 
-// Nawigacja
-querySelector('li:first-child');
-querySelectorAll('li')[2];
-querySelector('.item').parentElement;
+// czeka az tekst sie pojawi
+await expect(
+  page.locator('.alert')
+).toHaveText('Sukces!');
+
+// timeout - max czas czekania
+await page.locator('.loader')
+  .waitFor({ timeout: 10000 });
         </code></pre>
       </div>
     </div>
-    <div class="tip">
-      <h3>Kluczowy wniosek</h3>
-      <p>Cypress używa <strong>tych samych selektorów CSS</strong> co DOM. Umiejętność pracy z DOM = lepsza praca z Cypress!</p>
-    </div>
     <aside class="notes">
-      To kluczowy slajd motywacyjny. Selektory CSS z DOM to dokładnie te same selektory używane
-      w Cypress. Zrozumienie DOM jest bezpośrednio przekładalne na lepsze testy.
+      Oba narzędzia mają wbudowane mechanizmy czekania. Nie używajcie sleep/wait z ustalonym czasem -
+      to prowadzi do wolnych i niestabilnych testów. Zamiast tego czekajcie na konkretne warunki.
     </aside>
   </section>
 
-  <!-- Slide 19: Praktyczny przykład DOM -->
+  <!-- Slide 17: Exercise -->
   <section>
-    <h2>Praktyczny przykład</h2>
-    <p>Scenariusz: weryfikacja formularza logowania</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Znajdź elementy formularza
-const emailInput = document.querySelector('#email');
-const passwordInput = document.querySelector('#password');
-const submitBtn = document.querySelector('button[type="submit"]');
-const errorMsg = document.querySelector('.error-message');
-
-// Sprawdź czy przycisk jest wyłączony
-console.log(submitBtn.disabled); // true
-
-// Wypełnij pola
-emailInput.value = "test@rossmann.pl";
-passwordInput.value = "secret123";
-
-// Sprawdź komunikat błędu
-console.log(errorMsg.textContent);        // ""
-console.log(errorMsg.classList.contains("hidden")); // true
-    </code></pre>
-    <aside class="notes">
-      Przykład bliski pracy testera - weryfikacja formularza logowania.
-      Pokazujemy jak odczytywać wartości pól, sprawdzać stan disabled, czytać komunikaty błędów.
-    </aside>
-  </section>
-
-  <!-- Slide 20: Ćwiczenie DOM - manipulacja listą -->
-  <section>
-    <h2>Ćwiczenie: Manipulacja DOM</h2>
     <div class="exercise">
-      <h3>Ćwiczenie 4.1 - Lista zakupów</h3>
-      <p>Otwórz konsolę przeglądarki na dowolnej stronie i wykonaj:</p>
-      <ol>
-        <li>Utwórz element <code>&lt;ul&gt;</code> i dodaj go do <code>document.body</code></li>
-        <li>Utwórz 3 elementy <code>&lt;li&gt;</code> z tekstem: "Szampon", "Krem", "Pasta"</li>
-        <li>Dodaj wszystkie <code>&lt;li&gt;</code> do <code>&lt;ul&gt;</code></li>
-        <li>Zmień kolor tekstu drugiego elementu na czerwony</li>
-        <li>Usuń ostatni element z listy</li>
-        <li>Dodaj klasę <code>"done"</code> do pierwszego elementu</li>
-      </ol>
+      <h3>Ćwiczenie - async/await</h3>
     </div>
-    <aside class="notes">
-      Ćwiczenie praktyczne w konsoli przeglądarki. Daj uczestnikom 10-15 minut.
-      Pomagaj tym, którzy mają problemy. Po zakończeniu omów rozwiązanie wspólnie.
-    </aside>
-  </section>
-
-  <!-- Slide 21: Rozwiązanie ćwiczenia DOM -->
-  <section>
-    <h2>Rozwiązanie 4.1</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// 1. Utwórz &lt;ul&gt;
-const list = document.createElement("ul");
-document.body.appendChild(list);
-
-// 2-3. Utwórz &lt;li&gt; i dodaj do listy
-const products = ["Szampon", "Krem", "Pasta"];
-products.forEach(name => {
-  const item = document.createElement("li");
-  item.textContent = name;
-  list.appendChild(item);
-});
-
-// 4. Zmień kolor drugiego elementu
-list.children[1].style.color = "red";
-
-// 5. Usuń ostatni element
-list.lastElementChild.remove();
-
-// 6. Dodaj klasę do pierwszego elementu
-list.firstElementChild.classList.add("done");
-    </code></pre>
-    <aside class="notes">
-      Omówienie rozwiązania krok po kroku. Zwróć uwagę na children[1] - indeksowanie od 0.
-      Pokaż w DevTools jak wygląda wynik.
-    </aside>
-  </section>
-
-  <!-- Slide 22: Ćwiczenie DOM - selektory -->
-  <section>
-    <h2>Ćwiczenie: Selektory DOM</h2>
-    <div class="exercise">
-      <h3>Ćwiczenie 4.2 - Selektory na żywej stronie</h3>
-      <p>Otwórz stronę <code>rossmann.pl</code> w przeglądarce, potem konsolę (<kbd>F12</kbd>):</p>
-      <ol>
-        <li>Znajdź logo strony za pomocą <code>querySelector</code></li>
-        <li>Policz ile jest linków (<code>&lt;a&gt;</code>) na stronie za pomocą <code>querySelectorAll</code></li>
-        <li>Znajdź wszystkie elementy z klasą zawierającą "product" lub "item"</li>
-        <li>Użyj <code>closest()</code> na dowolnym elemencie, aby znaleźć jego kontener</li>
-      </ol>
-    </div>
-    <div class="tip">
-      <h3>Wskazówka</h3>
-      <p>W DevTools: zaznacz element → prawy klik → "Copy selector" daje gotowy selektor CSS!</p>
-    </div>
-    <aside class="notes">
-      Ćwiczenie na żywej stronie - uczestnicy pracują z prawdziwym DOM-em.
-      Pokaż trik z "Copy selector" w DevTools. To przydatne narzędzie przy pisaniu testów.
-    </aside>
-  </section>
-
-  <!-- ============================================================
-       BLOCK 3: Eventy (~1h, ~8-10 slides)
-       ============================================================ -->
-
-  <!-- Slide 23: Section divider -->
-  <section class="section-slide">
-    <span class="section-number">02</span>
-    <h2>Eventy</h2>
-    <p>Zdarzenia w przeglądarce</p>
-    <aside class="notes">
-      Przechodzimy do zdarzeń - to mechanizm, dzięki któremu strony reagują na akcje użytkownika.
-      Kliknięcia, wpisywanie tekstu, wysyłanie formularzy - to wszystko eventy.
-    </aside>
-  </section>
-
-  <!-- Slide 24: Czym jest event? -->
-  <section>
-    <h2>Czym jest event?</h2>
-    <ul>
-      <li><strong>Event</strong> = zdarzenie, które zachodzi w przeglądarce</li>
-      <li>Użytkownik klika przycisk → event <code>"click"</code></li>
-      <li>Użytkownik wpisuje tekst → event <code>"input"</code></li>
-      <li>Strona się załadowała → event <code>"load"</code></li>
-      <li>Formularz wysłany → event <code>"submit"</code></li>
-    </ul>
-    <h3>Popularne typy eventów</h3>
-    <table>
-      <thead>
-        <tr><th>Typ</th><th>Kiedy?</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>click</code></td><td>Kliknięcie elementu</td></tr>
-        <tr><td><code>input</code></td><td>Zmiana wartości pola (na bieżąco)</td></tr>
-        <tr><td><code>change</code></td><td>Zmiana wartości pola (po opuszczeniu)</td></tr>
-        <tr><td><code>submit</code></td><td>Wysłanie formularza</td></tr>
-        <tr><td><code>keydown</code></td><td>Naciśnięcie klawisza</td></tr>
-        <tr><td><code>mouseover</code></td><td>Najechanie myszką</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      Przegląd najczęstszych eventów. Dla testerów kluczowe: click, input, change, submit.
-      To te same zdarzenia, które Cypress symuluje w testach.
-    </aside>
-  </section>
-
-  <!-- Slide 25: addEventListener -->
-  <section>
-    <h2><code>addEventListener()</code></h2>
-    <p>Nasłuchiwanie na zdarzenia</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-const button = document.querySelector("#myButton");
-
-// Dodaj nasłuchiwanie na kliknięcie
-button.addEventListener("click", function() {
-  console.log("Przycisk kliknięty!");
-});
-
-// Z arrow function
-button.addEventListener("click", () => {
-  console.log("Kliknięto!");
-});
-
-// Nazwana funkcja (łatwiej usunąć)
-function handleClick() {
-  console.log("Kliknięto!");
-}
-
-button.addEventListener("click", handleClick);
-button.removeEventListener("click", handleClick);
-    </code></pre>
-    <aside class="notes">
-      addEventListener to podstawowy sposób dodawania obsługi zdarzeń.
-      Pierwszy argument to typ zdarzenia (string), drugi to funkcja callback.
-      Warto wspomnieć o removeEventListener - wymaga tej samej referencji do funkcji.
-    </aside>
-  </section>
-
-  <!-- Slide 26: Event object -->
-  <section>
-    <h2>Obiekt Event</h2>
-    <p>Każdy handler otrzymuje obiekt zdarzenia z informacjami</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-button.addEventListener("click", function(event) {
-  // Na jakim elemencie kliknięto?
-  console.log(event.target);       // &lt;button id="myButton"&gt;
-
-  // Jaki typ zdarzenia?
-  console.log(event.type);         // "click"
-
-  // Pozycja myszy
-  console.log(event.clientX);      // 150
-  console.log(event.clientY);      // 300
-
-  // Modyfikatory klawiszy
-  console.log(event.ctrlKey);      // true/false
-  console.log(event.shiftKey);     // true/false
-});
-    </code></pre>
-    <div class="tip">
-      <h3>event.target</h3>
-      <p><code>event.target</code> to element, który <strong>faktycznie</strong> wywołał zdarzenie.
-      Niezwykle przydatne przy delegacji zdarzeń.</p>
-    </div>
-    <aside class="notes">
-      Event object zawiera mnóstwo informacji. Najważniejsze: target (kto wywołał),
-      type (jaki typ), oraz metody jak preventDefault i stopPropagation.
-    </aside>
-  </section>
-
-  <!-- Slide 27: Click events - praktyczny przykład -->
-  <section>
-    <h2>Click events - przykład</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Licznik kliknięć
-let count = 0;
-const counter = document.querySelector("#counter");
-const button = document.querySelector("#increment");
-
-button.addEventListener("click", () => {
-  count++;
-  counter.textContent = `Kliknięć: ${count}`;
-});
-
-// Toggle widoczności
-const toggleBtn = document.querySelector("#toggle");
-const panel = document.querySelector("#panel");
-
-toggleBtn.addEventListener("click", () => {
-  panel.classList.toggle("hidden");
-  toggleBtn.textContent = panel.classList.contains("hidden")
-    ? "Pokaż"
-    : "Ukryj";
-});
-    </code></pre>
-    <aside class="notes">
-      Dwa praktyczne przykłady: licznik kliknięć i toggle widoczności panelu.
-      Oba wzorce są bardzo popularne w aplikacjach webowych.
-    </aside>
-  </section>
-
-  <!-- Slide 28: Input events -->
-  <section>
-    <h2>Input events</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const searchInput = document.querySelector("#search");
-const results = document.querySelector("#results");
-
-// "input" - reaguje na KAŻDĄ zmianę (w trakcie pisania)
-searchInput.addEventListener("input", (event) => {
-  const query = event.target.value;
-  results.textContent = `Szukasz: "${query}"`;
-});
-
-// "change" - reaguje PO opuszczeniu pola
-const selectBox = document.querySelector("#category");
-
-selectBox.addEventListener("change", (event) => {
-  console.log(`Wybrano: ${event.target.value}`);
-});
-    </code></pre>
-    <div class="warning">
-      <h3>input vs change</h3>
-      <p><code>input</code> - odpala się przy każdym znaku (na bieżąco).<br>
-      <code>change</code> - odpala się po opuszczeniu pola lub wybraniu z listy.</p>
-    </div>
-    <aside class="notes">
-      Kluczowa różnica: input odpala się na bieżąco (każdy keystroke), change dopiero po blur.
-      Dla pól select, change odpala się od razu po wyborze opcji.
-    </aside>
-  </section>
-
-  <!-- Slide 29: Form events + preventDefault -->
-  <section>
-    <h2>Form events i <code>preventDefault()</code></h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const form = document.querySelector("#loginForm");
-
-form.addEventListener("submit", (event) => {
-  // Zapobiega domyślnemu zachowaniu (wysłanie formularza + przeładowanie)
-  event.preventDefault();
-
-  // Pobierz dane z formularza
-  const email = form.querySelector("#email").value;
-  const password = form.querySelector("#password").value;
-
-  // Walidacja
-  if (!email.includes("@")) {
-    alert("Nieprawidłowy email!");
-    return;
-  }
-
-  console.log("Logowanie:", { email, password });
-  // Tu normalnie: fetch() do API...
-});
-    </code></pre>
-    <div class="tip">
-      <h3>preventDefault()</h3>
-      <p>Blokuje domyślne zachowanie przeglądarki. Bez niego formularz przeładowałby stronę!</p>
-    </div>
-    <aside class="notes">
-      preventDefault to jedna z najważniejszych metod event object. Przy formularzach
-      jest niezbędne, bo domyślnie przeglądarka przeładowuje stronę.
-      W testach Cypress robi to automatycznie.
-    </aside>
-  </section>
-
-  <!-- Slide 30: Delegacja zdarzeń -->
-  <section>
-    <h2>Delegacja zdarzeń</h2>
-    <p>Zamiast nasłuchiwać na <strong>każdym</strong> elemencie - nasłuchuj na <strong>rodzicu</strong></p>
-    <div class="columns">
-      <div class="col">
-        <h3 style="color: var(--warning-border);">Bez delegacji</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
-// 100 przycisków = 100 listenerów!
-document.querySelectorAll(".btn")
-  .forEach(btn => {
-    btn.addEventListener("click",
-      () => {
-        console.log("Klik!");
-      });
-  });
-        </code></pre>
-      </div>
-      <div class="col">
-        <h3 style="color: var(--exercise-border);">Z delegacją</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
-// 1 listener na rodzicu!
-document.querySelector("#list")
-  .addEventListener("click",
-    (event) => {
-      if (event.target
-          .matches(".btn")) {
-        console.log("Klik!");
-      }
-    });
-        </code></pre>
-      </div>
-    </div>
-    <div class="tip">
-      <h3>Dlaczego to ważne?</h3>
-      <p>Delegacja działa nawet dla elementów <strong>dodanych dynamicznie</strong>.
-      Jeden listener zamiast setek = lepsza wydajność.</p>
-    </div>
-    <aside class="notes">
-      Delegacja zdarzeń to zaawansowana technika, ale warto ją znać. Zdarzenia "bąbelkują" w górę drzewa DOM,
-      więc możemy nasłuchiwać na rodzicu. Działa też dla elementów dodanych dynamicznie.
-    </aside>
-  </section>
-
-  <!-- Slide 31: Ćwiczenie Eventy -->
-  <section>
-    <h2>Ćwiczenie: Eventy</h2>
-    <div class="exercise">
-      <h3>Ćwiczenie 4.3 - Interaktywna strona</h3>
-      <p>Utwórz plik HTML z następującymi elementami i dodaj obsługę zdarzeń:</p>
-      <ol>
-        <li>Przycisk "Zmień kolor" - po kliknięciu zmienia kolor tła <code>&lt;body&gt;</code> na losowy</li>
-        <li>Pole tekstowe - pod nim wyświetla się podgląd wpisywanego tekstu (event <code>input</code>)</li>
-        <li>Formularz z polem "imię" - po submit wyświetla alert z powitaniem (pamiętaj o <code>preventDefault</code>!)</li>
-      </ol>
-      <p><strong>Podpowiedź:</strong> losowy kolor: <code>`#${Math.random().toString(16).slice(2,8)}`</code></p>
-    </div>
-    <aside class="notes">
-      Ćwiczenie na 15-20 minut. Uczestnicy powinni stworzyć prosty plik HTML i dodać skrypt.
-      Pomagaj tym, którzy mają problemy z selektorami lub addEventListener.
-    </aside>
-  </section>
-
-  <!-- Slide 32: Rozwiązanie ćwiczenia Eventy -->
-  <section>
-    <h2>Rozwiązanie 4.3</h2>
-    <pre><code data-trim data-noescape class="language-html">
-&lt;button id="colorBtn"&gt;Zmień kolor&lt;/button&gt;
-&lt;input id="preview-input" placeholder="Wpisz tekst..."&gt;
-&lt;p id="preview"&gt;&lt;/p&gt;
-&lt;form id="greetForm"&gt;
-  &lt;input id="nameField" placeholder="Imię"&gt;
-  &lt;button type="submit"&gt;Wyślij&lt;/button&gt;
-&lt;/form&gt;
-    </code></pre>
-    <pre><code data-trim data-noescape class="language-javascript">
-document.querySelector("#colorBtn").addEventListener("click", () => {
-  document.body.style.backgroundColor =
-    `#${Math.random().toString(16).slice(2, 8)}`;
-});
-
-document.querySelector("#preview-input").addEventListener("input", (e) => {
-  document.querySelector("#preview").textContent = e.target.value;
-});
-
-document.querySelector("#greetForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = document.querySelector("#nameField").value;
-  alert(`Cześć, ${name}!`);
-});
-    </code></pre>
-    <aside class="notes">
-      Omów rozwiązanie. Zwróć uwagę na preventDefault w obsłudze submit.
-      Pokaż działanie na żywo.
-    </aside>
-  </section>
-
-  <!-- ============================================================
-       BLOCK 4: Callbacki (~0.5h, ~4-5 slides)
-       ============================================================ -->
-
-  <!-- Slide 33: Section divider -->
-  <section class="section-slide">
-    <span class="section-number">03</span>
-    <h2>Callbacki</h2>
-    <p>Funkcje jako argumenty</p>
-    <aside class="notes">
-      Teraz przechodzimy od DOM do asynchroniczności. Zaczynamy od callbacków - najprostszego
-      mechanizmu obsługi operacji asynchronicznych w JS.
-    </aside>
-  </section>
-
-  <!-- Slide 34: Callback pattern -->
-  <section>
-    <h2>Funkcje jako argumenty</h2>
-    <p>W JavaScript funkcje to <strong>wartości</strong> - można je przekazywać jako argumenty</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Callback = funkcja przekazana jako argument do innej funkcji
-function greet(name, callback) {
-  const message = `Cześć, ${name}!`;
-  callback(message);
-}
-
-// Użycie
-greet("Anna", function(msg) {
-  console.log(msg); // "Cześć, Anna!"
-});
-
-// Z arrow function
-greet("Jan", (msg) => console.log(msg));
-
-// Już to znamy!
-const numbers = [3, 1, 2];
-numbers.sort((a, b) => a - b);  // (a, b) => a - b to callback
-numbers.forEach(n => console.log(n)); // n => console.log(n) to callback
-    </code></pre>
-    <aside class="notes">
-      Callback to po prostu funkcja przekazana jako argument. Uczestnicy już je znają
-      z metod tablicowych - forEach, map, filter - wszystkie używają callbacków.
-    </aside>
-  </section>
-
-  <!-- Slide 35: setTimeout i setInterval -->
-  <section>
-    <h2><code>setTimeout</code> i <code>setInterval</code></h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// setTimeout - wykonaj RAZ po opóźnieniu
-console.log("Start");
-
-setTimeout(() => {
-  console.log("Minęły 2 sekundy!");
-}, 2000); // czas w milisekundach
-
-console.log("Koniec");
-// Wypisze: "Start", "Koniec", (po 2s) "Minęły 2 sekundy!"
-    </code></pre>
-    <pre><code data-trim data-noescape class="language-javascript">
-// setInterval - wykonuj CO OKREŚLONY CZAS
-let seconds = 0;
-const timer = setInterval(() => {
-  seconds++;
-  console.log(`Upłynęło: ${seconds}s`);
-
-  if (seconds >= 5) {
-    clearInterval(timer); // Zatrzymaj!
-  }
-}, 1000);
-    </code></pre>
-    <aside class="notes">
-      setTimeout i setInterval to podstawowe funkcje asynchroniczne. Kluczowe obserwacje:
-      console.log("Koniec") wypisze się PRZED "Minęły 2 sekundy" - to jest asynchroniczność!
-      clearInterval/clearTimeout pozwalają anulować odliczanie.
-    </aside>
-  </section>
-
-  <!-- Slide 36: Asynchroniczność - wizualizacja -->
-  <section>
-    <h2>Asynchroniczność w akcji</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-console.log("1. Zaczynam");
-
-setTimeout(() => {
-  console.log("2. Timeout 0ms");
-}, 0);
-
-console.log("3. Kończę");
-    </code></pre>
-    <div class="console-output">
-      1. Zaczynam<br>
-      3. Kończę<br>
-      2. Timeout 0ms
-    </div>
-    <div class="warning">
-      <h3>Zaskoczenie!</h3>
-      <p>Nawet z opóźnieniem <code>0ms</code>, callback z <code>setTimeout</code> wykonuje się
-      <strong>po</strong> bieżącym kodzie. JavaScript najpierw kończy to, co robi, potem sprawdza
-      kolejkę zadań.</p>
-    </div>
-    <aside class="notes">
-      To kluczowy moment zrozumienia asynchroniczności. Nawet setTimeout z 0ms nie jest synchroniczny.
-      JS ma event loop - najpierw wykonuje cały synchroniczny kod, potem sprawdza kolejkę callbacków.
-    </aside>
-  </section>
-
-  <!-- Slide 37: Callback hell -->
-  <section>
-    <h2>Callback Hell</h2>
-    <p>Co się stanie, gdy mamy wiele operacji zależnych od siebie?</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-// "Piramida zagłady" - callback hell
-fetchUser(userId, (user) => {
-  fetchOrders(user.id, (orders) => {
-    fetchOrderDetails(orders[0].id, (details) => {
-      fetchProduct(details.productId, (product) => {
-        console.log(product.name);
-        // ...i to może iść dalej
-      }, (error) => { console.error(error); });
-    }, (error) => { console.error(error); });
-  }, (error) => { console.error(error); });
-}, (error) => { console.error(error); });
-    </code></pre>
-    <div class="warning">
-      <h3>Problemy</h3>
-      <ul>
-        <li>Kod jest trudny do czytania</li>
-        <li>Obsługa błędów jest powtarzalna</li>
-        <li>Trudno debugować</li>
-      </ul>
-    </div>
-    <p class="fragment"><strong>Rozwiązanie?</strong> Promise!</p>
-    <aside class="notes">
-      Callback hell to klasyczny problem - zagnieżdżone callbacki tworzą "piramidę zagłady".
-      Kod staje się nieczytelny i trudny do utrzymania. To motywacja do nauki Promise.
-    </aside>
-  </section>
-
-  <!-- ============================================================
-       BLOCK 5: Promise (~1h, ~8-10 slides)
-       ============================================================ -->
-
-  <!-- Slide 38: Section divider -->
-  <section class="section-slide">
-    <span class="section-number">04</span>
-    <h2>Promise</h2>
-    <p>Obietnica wyniku w przyszłości</p>
-    <aside class="notes">
-      Promise to mechanizm, który rozwiązuje problem callback hell.
-      Pozwala pisać asynchroniczny kod w sposób bardziej liniowy i czytelny.
-    </aside>
-  </section>
-
-  <!-- Slide 39: Czym jest Promise? -->
-  <section>
-    <h2>Czym jest Promise?</h2>
-    <p><strong>Promise</strong> = obietnica, że operacja zakończy się w przyszłości</p>
-    <div class="columns">
-      <div class="col">
-        <h3>Analogia z życia</h3>
-        <ul>
-          <li>Zamawiasz pizzę online</li>
-          <li class="fragment">Dostajesz <strong>numer zamówienia</strong> (Promise)</li>
-          <li class="fragment">Pizza jeszcze nie gotowa (<strong>pending</strong>)</li>
-          <li class="fragment">Pizza dostarczona (<strong>fulfilled</strong>)</li>
-          <li class="fragment">Albo: restauracja zamknięta (<strong>rejected</strong>)</li>
-        </ul>
-      </div>
-      <div class="col">
-        <h3>Trzy stany</h3>
-        <table>
-          <thead>
-            <tr><th>Stan</th><th>Opis</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>pending</code></td><td>Oczekiwanie na wynik</td></tr>
-            <tr><td><code>fulfilled</code></td><td>Sukces - mamy dane</td></tr>
-            <tr><td><code>rejected</code></td><td>Błąd - coś poszło nie tak</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <aside class="notes">
-      Użyj analogii z pizzą - uczestnicy łatwiej zapamiętają. Promise to jak paragon z numerem
-      zamówienia - obiecuje wynik w przyszłości. Trzy stany: pending, fulfilled, rejected.
-    </aside>
-  </section>
-
-  <!-- Slide 40: Tworzenie Promise -->
-  <section>
-    <h2>Tworzenie Promise</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const myPromise = new Promise((resolve, reject) => {
-  // Symulacja operacji asynchronicznej
-  const success = true;
-
-  setTimeout(() => {
-    if (success) {
-      resolve("Dane pobrane!"); // Sukces → fulfilled
-    } else {
-      reject("Błąd połączenia"); // Błąd → rejected
-    }
-  }, 1000);
-});
-
-console.log(myPromise); // Promise { &lt;pending&gt; }
-    </code></pre>
-    <div class="tip">
-      <h3>Kluczowe</h3>
-      <ul>
-        <li><code>resolve(wartość)</code> - "obietnica spełniona, oto wynik"</li>
-        <li><code>reject(powód)</code> - "obietnica odrzucona, oto przyczyna"</li>
-      </ul>
-    </div>
-    <aside class="notes">
-      Konstruktor Promise przyjmuje funkcję executor z dwoma parametrami: resolve i reject.
-      Wewnątrz wykonujemy operację asynchroniczną i wywołujemy odpowiednią funkcję.
-      W praktyce rzadko tworzymy Promise ręcznie - częściej używamy funkcji, które je zwracają (np. fetch).
-    </aside>
-  </section>
-
-  <!-- Slide 41: .then() -->
-  <section>
-    <h2><code>.then()</code> - obsługa sukcesu</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-const myPromise = new Promise((resolve, reject) => {
-  setTimeout(() => {
-    resolve({ name: "Anna", age: 30 });
-  }, 1000);
-});
-
-// .then() - co zrobić gdy Promise się spełni
-myPromise.then((data) => {
-  console.log("Sukces!");
-  console.log(data.name); // "Anna"
-});
-
-// Bardziej życiowy przykład
-function fetchUser(id) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ id, name: "Jan", email: "jan@rossmann.pl" });
-    }, 500);
-  });
-}
-
-fetchUser(1).then(user => {
-  console.log(`Witaj, ${user.name}!`);
-});
-    </code></pre>
-    <aside class="notes">
-      .then() rejestruje funkcję, która wykona się gdy Promise przejdzie do stanu fulfilled.
-      Argument callbacka to wartość przekazana do resolve().
-    </aside>
-  </section>
-
-  <!-- Slide 42: .catch() -->
-  <section>
-    <h2><code>.catch()</code> - obsługa błędu</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-function fetchData(shouldFail) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (shouldFail) {
-        reject(new Error("Serwer niedostępny!"));
-      } else {
-        resolve({ data: "OK" });
-      }
-    }, 500);
-  });
-}
-
-// Obsługa sukcesu i błędu
-fetchData(false)
-  .then(result => {
-    console.log("Dane:", result.data); // "Dane: OK"
-  })
-  .catch(error => {
-    console.error("Błąd:", error.message);
-  });
-
-// Z błędem
-fetchData(true)
-  .then(result => console.log(result))   // pomijane!
-  .catch(error => console.error(error.message)); // "Serwer niedostępny!"
-    </code></pre>
-    <aside class="notes">
-      .catch() łapie błędy z Promise (reject) oraz błędy rzucone wewnątrz .then().
-      Zawsze dodawaj .catch() - bez niego błędy mogą zostać "połknięte" bez informacji.
-    </aside>
-  </section>
-
-  <!-- Slide 43: Chainowanie -->
-  <section>
-    <h2>Chainowanie Promise</h2>
-    <p>Każde <code>.then()</code> zwraca <strong>nowy Promise</strong> - można je łączyć w łańcuch</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-fetchUser(1)
-  .then(user => {
-    console.log(`Użytkownik: ${user.name}`);
-    return fetchOrders(user.id); // zwraca nowy Promise
-  })
-  .then(orders => {
-    console.log(`Zamówień: ${orders.length}`);
-    return fetchOrderDetails(orders[0].id); // kolejny Promise
-  })
-  .then(details => {
-    console.log(`Produkt: ${details.productName}`);
-  })
-  .catch(error => {
-    // Łapie błąd z DOWOLNEGO kroku!
-    console.error("Coś poszło nie tak:", error.message);
-  });
-    </code></pre>
-    <div class="tip">
-      <h3>Porównaj z callback hell</h3>
-      <p>Ten sam kod, ale <strong>płaski</strong> zamiast zagnieżdżony. Jeden <code>.catch()</code>
-      obsługuje błędy z całego łańcucha.</p>
-    </div>
-    <aside class="notes">
-      Chainowanie to kluczowa zaleta Promise nad callbackami. Kod jest liniowy, a nie zagnieżdżony.
-      Jeden catch na końcu łapie błędy z dowolnego kroku - ogromne uproszczenie.
-    </aside>
-  </section>
-
-  <!-- Slide 44: Promise.all -->
-  <section>
-    <h2><code>Promise.all()</code></h2>
-    <p>Czekanie na <strong>wiele</strong> Promise jednocześnie</p>
-    <pre><code data-trim data-noescape class="language-javascript">
-const promise1 = fetch("/api/users").then(r => r.json());
-const promise2 = fetch("/api/products").then(r => r.json());
-const promise3 = fetch("/api/orders").then(r => r.json());
-
-// Czekaj na WSZYSTKIE
-Promise.all([promise1, promise2, promise3])
-  .then(([users, products, orders]) => {
-    console.log("Użytkownicy:", users.length);
-    console.log("Produkty:", products.length);
-    console.log("Zamówienia:", orders.length);
-  })
-  .catch(error => {
-    // Jeśli KTÓRYKOLWIEK się nie uda
-    console.error("Błąd:", error.message);
-  });
-    </code></pre>
-    <div class="warning">
-      <h3>Uwaga</h3>
-      <p>Jeśli <strong>jakikolwiek</strong> Promise zostanie odrzucony, cały <code>Promise.all</code>
-      jest odrzucony. Użyj <code>Promise.allSettled()</code> jeśli chcesz wyniki niezależnie od błędów.</p>
-    </div>
-    <aside class="notes">
-      Promise.all uruchamia wiele Promise równolegle i czeka na wszystkie. Szybsze niż
-      sekwencyjne wykonanie. Ale uwaga - fail-fast: jeden błąd odrzuca całość.
-    </aside>
-  </section>
-
-  <!-- Slide 45: Ćwiczenie Promise -->
-  <section>
-    <h2>Ćwiczenie: Promise</h2>
-    <div class="exercise">
-      <h3>Ćwiczenie 4.4 - Symulacja API</h3>
-      <p>Napisz funkcje symulujące pobieranie danych:</p>
-      <ol>
-        <li>Funkcja <code>getUser(id)</code> - zwraca Promise z obiektem <code>{ id, name }</code> po 500ms</li>
-        <li>Funkcja <code>getAge(name)</code> - zwraca Promise z liczbą (wiek) po 300ms</li>
-        <li>Połącz obie za pomocą chainowania <code>.then().then()</code></li>
-        <li>Dodaj <code>.catch()</code> na wypadek błędu</li>
-        <li><strong>Bonus:</strong> niech <code>getUser</code> losowo zwraca reject (symulacja błędu serwera)</li>
-      </ol>
-    </div>
-    <aside class="notes">
-      Ćwiczenie na 10-15 minut. Uczestnicy ćwiczą tworzenie i chainowanie Promise.
-      Bonus motywuje szybszych uczestników. Po czasie omów rozwiązanie.
-    </aside>
-  </section>
-
-  <!-- Slide 46: Rozwiązanie Promise -->
-  <section>
-    <h2>Rozwiązanie 4.4</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-function getUser(id) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (Math.random() > 0.3) {
-        resolve({ id, name: "Anna" });
-      } else {
-        reject(new Error("Serwer niedostępny"));
-      }
-    }, 500);
-  });
-}
-
-function getAge(name) {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(30), 300);
-  });
-}
-
-// Chainowanie
-getUser(1)
-  .then(user => {
-    console.log("Użytkownik:", user.name);
-    return getAge(user.name);
-  })
-  .then(age => {
-    console.log("Wiek:", age);
-  })
-  .catch(error => {
-    console.error("Błąd:", error.message);
-  });
-    </code></pre>
-    <aside class="notes">
-      Omów rozwiązanie krok po kroku. Zwróć uwagę na return w .then() - bez niego
-      chainowanie nie działa poprawnie. Math.random() symuluje losowy błąd serwera.
-    </aside>
-  </section>
-
-  <!-- ============================================================
-       BLOCK 6: async/await (~1h, ~6-8 slides)
-       ============================================================ -->
-
-  <!-- Slide 47: Section divider -->
-  <section class="section-slide">
-    <span class="section-number">05</span>
-    <h2>async/await</h2>
-    <p>Asynchroniczny kod, który wygląda jak synchroniczny</p>
-    <aside class="notes">
-      async/await to składnia cukrowa nad Promise. Pozwala pisać asynchroniczny kod
-      w sposób, który wygląda jak zwykły, synchroniczny kod.
-    </aside>
-  </section>
-
-  <!-- Slide 48: async function -->
-  <section>
-    <h2><code>async function</code></h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Funkcja oznaczona "async" ZAWSZE zwraca Promise
-async function greet(name) {
-  return `Cześć, ${name}!`;
-}
-
-// To jest równoważne z:
-function greetPromise(name) {
-  return Promise.resolve(`Cześć, ${name}!`);
-}
-
-// Użycie - tak samo jak Promise
-greet("Anna").then(msg => console.log(msg));
-// "Cześć, Anna!"
-
-// Arrow function też może być async
-const fetchData = async () => {
-  return { data: "OK" };
-};
-    </code></pre>
-    <div class="tip">
-      <h3>Kluczowa zasada</h3>
-      <p>Słowo <code>async</code> przed funkcją sprawia, że <strong>automatycznie zwraca Promise</strong>.</p>
-    </div>
-    <aside class="notes">
-      async to modyfikator funkcji. Każda funkcja async automatycznie zwraca Promise.
-      Wartość zwrócona przez return jest opakowywana w Promise.resolve().
-    </aside>
-  </section>
-
-  <!-- Slide 49: await -->
-  <section>
-    <h2><code>await</code> - czekanie na Promise</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// await "rozpakowuje" Promise - czeka na wynik
-async function loadUser() {
-  console.log("Pobieram użytkownika...");
-
-  const user = await getUser(1); // czeka na Promise
-  console.log("Użytkownik:", user.name);
-
-  const age = await getAge(user.name); // czeka na następny Promise
-  console.log("Wiek:", age);
-
-  return user;
-}
-
-loadUser();
-    </code></pre>
-    <div class="warning">
-      <h3>Ważne</h3>
-      <p><code>await</code> można używać <strong>tylko wewnątrz</strong> funkcji <code>async</code>!</p>
-    </div>
-    <aside class="notes">
-      await pauzuje wykonanie funkcji async do momentu, gdy Promise się rozwiąże.
-      Kod wygląda jak synchroniczny, ale jest asynchroniczny pod spodem.
-      Kluczowe ograniczenie: await działa tylko wewnątrz async function.
-    </aside>
-  </section>
-
-  <!-- Slide 50: try/catch z async/await -->
-  <section>
-    <h2>Obsługa błędów: <code>try/catch</code></h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function loadUserSafe() {
+    <p>Napisz asynchroniczna funkcje <code>getUser</code>, która:</p>
+    <ol>
+      <li>Pobiera dane z <code>https://jsonplaceholder.typicode.com/users/1</code></li>
+      <li>Parsuje odpowiedź jako JSON</li>
+      <li>Zwraca obiekt z polami <code>name</code> i <code>email</code></li>
+      <li>Obsługuje błędy za pomocą try/catch</li>
+    </ol>
+    <pre class="fragment"><code data-trim data-noescape class="language-javascript">
+async function getUser() {
   try {
-    const user = await getUser(1);
-    console.log("Użytkownik:", user.name);
-
-    const age = await getAge(user.name);
-    console.log("Wiek:", age);
-
-  } catch (error) {
-    // Łapie rejected Promise (jak .catch())
-    console.error("Błąd:", error.message);
-
-  } finally {
-    // Wykonuje się ZAWSZE (opcjonalne)
-    console.log("Zakończono pobieranie danych");
-  }
-}
-
-loadUserSafe();
-    </code></pre>
-    <div class="tip">
-      <h3>try/catch = .catch()</h3>
-      <p>To odpowiednik <code>.catch()</code> z łańcucha Promise. Łapie błędy z dowolnego <code>await</code>
-      w bloku <code>try</code>.</p>
-    </div>
-    <aside class="notes">
-      try/catch to naturalna obsługa błędów w async/await, analogiczna do .catch() w Promise.
-      finally wykonuje się niezależnie od wyniku - przydatne np. do ukrycia loadera.
-    </aside>
-  </section>
-
-  <!-- Slide 51: Porównanie .then() vs async/await -->
-  <section>
-    <h2>Porównanie stylów</h2>
-    <div class="columns">
-      <div class="col">
-        <h3>Promise .then()</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
-function loadData() {
-  return getUser(1)
-    .then(user => {
-      console.log(user.name);
-      return getOrders(user.id);
-    })
-    .then(orders => {
-      console.log(orders.length);
-      return orders;
-    })
-    .catch(err => {
-      console.error(err);
-    });
-}
-        </code></pre>
-      </div>
-      <div class="col">
-        <h3>async/await</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
-async function loadData() {
-  try {
-    const user = await getUser(1);
-    console.log(user.name);
-
-    const orders =
-      await getOrders(user.id);
-    console.log(orders.length);
-
-    return orders;
-  } catch (err) {
-    console.error(err);
-  }
-}
-        </code></pre>
-      </div>
-    </div>
-    <div class="tip">
-      <h3>Co wybrać?</h3>
-      <p>Oba podejścia są poprawne. <code>async/await</code> jest zazwyczaj czytelniejszy, szczególnie
-      przy wielu sekwencyjnych operacjach. W nowym kodzie preferuj <code>async/await</code>.</p>
-    </div>
-    <aside class="notes">
-      Ten sam kod w dwóch stylach. async/await jest bardziej czytelny i łatwiejszy do zrozumienia.
-      Warto znać oba, bo stary kod często używa .then(). Nowy kod - preferuj async/await.
-    </aside>
-  </section>
-
-  <!-- Slide 52: Ćwiczenie async/await -->
-  <section>
-    <h2>Ćwiczenie: async/await</h2>
-    <div class="exercise">
-      <h3>Ćwiczenie 4.5 - Przepisz na async/await</h3>
-      <p>Przepisz poniższy kod z <code>.then()</code> na <code>async/await</code>:</p>
-      <pre><code data-trim data-noescape class="language-javascript">
-function processOrder(orderId) {
-  return fetchOrder(orderId)
-    .then(order => {
-      console.log("Zamówienie:", order.id);
-      return fetchProduct(order.productId);
-    })
-    .then(product => {
-      console.log("Produkt:", product.name);
-      return calculateDiscount(product.price);
-    })
-    .then(discount => {
-      console.log("Rabat:", discount);
-    })
-    .catch(error => {
-      console.error("Błąd:", error.message);
-    });
-}
-      </code></pre>
-    </div>
-    <aside class="notes">
-      Ćwiczenie konwersji. To typowe zadanie na rozmowach rekrutacyjnych i w codziennej pracy.
-      Daj 5-10 minut, potem omów rozwiązanie.
-    </aside>
-  </section>
-
-  <!-- Slide 53: Rozwiązanie async/await -->
-  <section>
-    <h2>Rozwiązanie 4.5</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function processOrder(orderId) {
-  try {
-    const order = await fetchOrder(orderId);
-    console.log("Zamówienie:", order.id);
-
-    const product = await fetchProduct(order.productId);
-    console.log("Produkt:", product.name);
-
-    const discount = await calculateDiscount(product.price);
-    console.log("Rabat:", discount);
-
-  } catch (error) {
-    console.error("Błąd:", error.message);
-  }
-}
-    </code></pre>
-    <div class="tip">
-      <h3>Kroki konwersji</h3>
-      <ol>
-        <li>Dodaj <code>async</code> przed <code>function</code></li>
-        <li>Zamień <code>.then(x => ...)</code> na <code>const x = await ...</code></li>
-        <li>Zamień <code>.catch()</code> na <code>try/catch</code></li>
-      </ol>
-    </div>
-    <aside class="notes">
-      Trzy proste kroki konwersji. Zwróć uwagę, że logika jest identyczna - zmieniła się
-      tylko składnia. async/await to cukier składniowy nad Promise.
-    </aside>
-  </section>
-
-  <!-- ============================================================
-       BLOCK 7: Fetch API (~1h, ~8-10 slides)
-       ============================================================ -->
-
-  <!-- Slide 54: Section divider -->
-  <section class="section-slide">
-    <span class="section-number">06</span>
-    <h2>Fetch API</h2>
-    <p>Pobieranie danych z serwera</p>
-    <aside class="notes">
-      Ostatni duży blok dnia - Fetch API. Tu łączymy wszystko: DOM, eventy, async/await i Promise.
-      Fetch to sposób, w jaki przeglądarka komunikuje się z serwerem.
-    </aside>
-  </section>
-
-  <!-- Slide 55: Czym jest Fetch API? -->
-  <section>
-    <h2>Czym jest Fetch API?</h2>
-    <ul>
-      <li><strong>Fetch</strong> = wbudowana funkcja do komunikacji z serwerem</li>
-      <li>Wysyła żądania HTTP (GET, POST, PUT, DELETE...)</li>
-      <li>Zwraca <strong>Promise</strong> z odpowiedzią serwera</li>
-      <li>Zastąpił starszego <code>XMLHttpRequest</code></li>
-    </ul>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Najprostsze użycie
-fetch("https://jsonplaceholder.typicode.com/users/1")
-  .then(response => response.json())
-  .then(data => console.log(data));
-    </code></pre>
-    <div class="tip">
-      <h3>Dla testerów</h3>
-      <p>Fetch to ta sama technologia, którą aplikacja używa "pod spodem".
-      Zrozumienie fetch = zrozumienie komunikacji klient-serwer.</p>
-    </div>
-    <aside class="notes">
-      Fetch to natywne API przeglądarki do żądań HTTP. Zwraca Promise, więc idealnie
-      pasuje do tego, czego się właśnie nauczyliśmy. jsonplaceholder to darmowe API do testów.
-    </aside>
-  </section>
-
-  <!-- Slide 56: GET request -->
-  <section>
-    <h2>GET request - pobieranie danych</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-// Wersja z .then()
-fetch("https://jsonplaceholder.typicode.com/users")
-  .then(response => {
-    console.log("Status:", response.status); // 200
-    console.log("OK?", response.ok);         // true
-    return response.json(); // parsuj JSON (też zwraca Promise!)
-  })
-  .then(users => {
-    console.log("Liczba użytkowników:", users.length);
-    users.forEach(u => console.log(u.name));
-  });
-
-// Wersja z async/await (czytelniejsza!)
-async function getUsers() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/users");
-  const users = await response.json();
-  console.log(users);
-}
-    </code></pre>
-    <div class="warning">
-      <h3>Dwuetapowy proces</h3>
-      <p><code>fetch()</code> zwraca <code>Response</code>, nie dane! Trzeba wywołać <code>.json()</code>
-      aby wyciągnąć dane (i to też jest Promise).</p>
-    </div>
-    <aside class="notes">
-      Ważne: fetch zwraca obiekt Response, nie dane. Trzeba wywołać .json() aby sparsować
-      odpowiedź. To dwuetapowy proces - oba kroki zwracają Promise.
-    </aside>
-  </section>
-
-  <!-- Slide 57: Response object -->
-  <section>
-    <h2>Obiekt Response</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function inspectResponse() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts/1");
-
-  // Właściwości
-  console.log(response.status);     // 200 (kod HTTP)
-  console.log(response.ok);         // true (status 200-299)
-  console.log(response.statusText); // "OK"
-  console.log(response.url);        // pełny URL
-  console.log(response.headers);    // nagłówki odpowiedzi
-
-  // Metody parsowania (używamy JEDNEJ)
-  const json = await response.json();   // jako JSON (najczęściej)
-  // const text = await response.text(); // jako tekst
-  // const blob = await response.blob(); // jako plik binarny
-}
-    </code></pre>
-    <table>
-      <thead><tr><th>Status</th><th>Znaczenie</th><th>response.ok</th></tr></thead>
-      <tbody>
-        <tr><td>200</td><td>Sukces</td><td>true</td></tr>
-        <tr><td>201</td><td>Utworzono</td><td>true</td></tr>
-        <tr><td>404</td><td>Nie znaleziono</td><td>false</td></tr>
-        <tr><td>500</td><td>Błąd serwera</td><td>false</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      Obiekt Response zawiera informacje o odpowiedzi serwera. status, ok i metody parsowania
-      są najważniejsze. Uwaga: .json(), .text(), .blob() można wywołać tylko RAZ na danym Response.
-    </aside>
-  </section>
-
-  <!-- Slide 58: Obsługa błędów w fetch -->
-  <section>
-    <h2>Obsługa błędów w fetch</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function fetchSafe(url) {
-  try {
-    const response = await fetch(url);
-
-    // UWAGA: fetch NIE rzuca błędu przy 404/500!
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
+    const response = await fetch(
+      'https://jsonplaceholder.typicode.com/users/1'
+    );
     const data = await response.json();
-    return data;
-
+    return { name: data.name, email: data.email };
   } catch (error) {
-    // Łapie: brak sieci, błąd parsowania JSON, nasz throw
-    console.error("Błąd pobierania:", error.message);
+    console.error('Blad pobierania:', error.message);
     return null;
   }
 }
-
-// Użycie
-const user = await fetchSafe("https://jsonplaceholder.typicode.com/users/999");
-// HTTP 404 → "Błąd pobierania: HTTP 404: Not Found"
-    </code></pre>
-    <div class="warning">
-      <h3>Pułapka fetch!</h3>
-      <p><code>fetch</code> <strong>nie rzuca błędu</strong> przy kodach 4xx/5xx. Rzuca błąd tylko przy
-      problemach sieciowych. Musisz ręcznie sprawdzać <code>response.ok</code>!</p>
-    </div>
-    <aside class="notes">
-      To najczęstszy błąd z fetch - ludzie zakładają, że 404 rzuci wyjątek, ale NIE.
-      fetch rzuca wyjątek tylko przy problemach sieciowych (brak połączenia, CORS).
-      Zawsze sprawdzaj response.ok!
-    </aside>
-  </section>
-
-  <!-- Slide 59: POST request -->
-  <section>
-    <h2>POST request - wysyłanie danych</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function createPost(title, body) {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      title: title,
-      body: body,
-      userId: 1
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
-  const newPost = await response.json();
-  console.log("Utworzono post:", newPost);
-  return newPost;
-}
-
-// Użycie
-await createPost("Mój tytuł", "Treść posta...");
-// → { id: 101, title: "Mój tytuł", body: "Treść posta...", userId: 1 }
     </code></pre>
     <aside class="notes">
-      POST request wymaga obiektu opcji z method, headers i body.
-      JSON.stringify zamienia obiekt JS na string JSON - serwer oczekuje stringa, nie obiektu.
-      Content-Type mówi serwerowi, że wysyłamy JSON.
-    </aside>
-  </section>
-
-  <!-- Slide 60: Ćwiczenie Fetch -->
-  <section>
-    <h2>Ćwiczenie: Fetch API</h2>
-    <div class="exercise">
-      <h3>Ćwiczenie 4.6 - Pobierz dane z API</h3>
-      <p>Użyj API: <code>https://jsonplaceholder.typicode.com</code></p>
-      <ol>
-        <li>Pobierz listę użytkowników (<code>/users</code>) i wyświetl ich imiona</li>
-        <li>Pobierz posty użytkownika o <code>id=1</code> (<code>/posts?userId=1</code>)</li>
-        <li>Wyświetl tytuły postów</li>
-        <li>Dodaj obsługę błędów (<code>try/catch</code> + sprawdzenie <code>response.ok</code>)</li>
-        <li><strong>Bonus:</strong> użyj <code>Promise.all</code> aby pobrać użytkowników i posty jednocześnie</li>
-      </ol>
-    </div>
-    <aside class="notes">
-      Ćwiczenie na 15 minut. Uczestnicy mogą pracować w konsoli przeglądarki.
-      jsonplaceholder to darmowe API, nie wymaga kluczy. Bonus dla zaawansowanych.
-    </aside>
-  </section>
-
-  <!-- Slide 61: Rozwiązanie Fetch -->
-  <section>
-    <h2>Rozwiązanie 4.6</h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-async function main() {
-  try {
-    // 1. Pobierz użytkowników
-    const usersResp = await fetch("https://jsonplaceholder.typicode.com/users");
-    if (!usersResp.ok) throw new Error(`HTTP ${usersResp.status}`);
-    const users = await usersResp.json();
-    console.log("Użytkownicy:");
-    users.forEach(u => console.log(`- ${u.name}`));
-
-    // 2-3. Pobierz posty użytkownika 1
-    const postsResp = await fetch(
-      "https://jsonplaceholder.typicode.com/posts?userId=1"
-    );
-    if (!postsResp.ok) throw new Error(`HTTP ${postsResp.status}`);
-    const posts = await postsResp.json();
-    console.log("\nPosty użytkownika 1:");
-    posts.forEach(p => console.log(`- ${p.title}`));
-
-  } catch (error) {
-    console.error("Błąd:", error.message);
-  }
-}
-
-main();
-    </code></pre>
-    <aside class="notes">
-      Omów rozwiązanie. Pokaż jak wygląda odpowiedź w konsoli. Opcjonalnie pokaż
-      wersję z Promise.all dla bonusu.
-    </aside>
-  </section>
-
-  <!-- Slide 62: Mini-projekt: Data Fetcher -->
-  <section>
-    <h2>Mini-projekt: Data Fetcher</h2>
-    <div class="exercise">
-      <h3>Projekt - Przeglądarka użytkowników</h3>
-      <p>Stwórz stronę HTML, która:</p>
-      <ol>
-        <li>Ma przycisk <strong>"Pobierz użytkowników"</strong></li>
-        <li>Po kliknięciu pobiera dane z <code>jsonplaceholder.typicode.com/users</code></li>
-        <li>Wyświetla listę użytkowników (imię + email) w elemencie <code>&lt;ul&gt;</code></li>
-        <li>Pokazuje komunikat "Ładowanie..." podczas pobierania</li>
-        <li>Obsługuje błędy - wyświetla komunikat jeśli fetch się nie uda</li>
-      </ol>
-      <p><strong>Łączysz tu:</strong> DOM + Eventy + async/await + Fetch!</p>
-    </div>
-    <aside class="notes">
-      Mini-projekt łączący wszystkie zagadnienia dnia. Daj 20-25 minut. To ćwiczenie
-      integrujące - DOM, eventy, fetch, async/await. Pomagaj, ale nie dawaj gotowego rozwiązania od razu.
-    </aside>
-  </section>
-
-  <!-- Slide 63: Rozwiązanie mini-projektu -->
-  <section>
-    <h2>Rozwiązanie mini-projektu</h2>
-    <pre><code data-trim data-noescape class="language-html">
-&lt;button id="loadBtn"&gt;Pobierz użytkowników&lt;/button&gt;
-&lt;p id="status"&gt;&lt;/p&gt;
-&lt;ul id="userList"&gt;&lt;/ul&gt;
-    </code></pre>
-    <pre><code data-trim data-noescape class="language-javascript">
-const btn = document.querySelector("#loadBtn");
-const status = document.querySelector("#status");
-const list = document.querySelector("#userList");
-
-btn.addEventListener("click", async () => {
-  status.textContent = "Ładowanie...";
-  list.innerHTML = "";
-  btn.disabled = true;
-
-  try {
-    const resp = await fetch(
-      "https://jsonplaceholder.typicode.com/users"
-    );
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const users = await resp.json();
-
-    users.forEach(user => {
-      const li = document.createElement("li");
-      li.textContent = `${user.name} - ${user.email}`;
-      list.appendChild(li);
-    });
-    status.textContent = `Załadowano ${users.length} użytkowników`;
-  } catch (error) {
-    status.textContent = `Błąd: ${error.message}`;
-  } finally {
-    btn.disabled = false;
-  }
-});
-    </code></pre>
-    <aside class="notes">
-      Omów rozwiązanie. Zwróć uwagę na: disabled na przycisku (UX), czyszczenie listy
-      przed kolejnym ładowaniem, finally do odblokowania przycisku. To wzorzec spotykany
-      w prawdziwych aplikacjach.
+      Daj uczestnikom 10-15 minut na to ćwiczenie. Mogą używać konsoli przeglądarki.
+      Podpowiedź: fetch() zwraca Promise, response.json() też zwraca Promise - oba potrzebują await.
     </aside>
   </section>
 
   <!-- ============================================================
-       Summary / Key Takeaways
+       BLOCK 3: Selektory w testach E2E (~1.5h, ~18 slides)
        ============================================================ -->
 
-  <!-- Slide 64: Podsumowanie dnia -->
+  <!-- Slide 18: Section -->
+  <section class="section-slide">
+    <span class="section-number">2</span>
+    <h2>Selektory w testach E2E</h2>
+    <p>Jak wybierać elementy stabilnie i czytelnie</p>
+    <aside class="notes">
+      To jest kluczowa sekcja dzisiejszego dnia. Uczestnicy prosili o ten temat - selekcja elementów
+      to fundament każdego testu E2E. Źle selektory = niestabilne testy.
+    </aside>
+  </section>
+
+  <!-- Slide 19: CSS Selectors recap -->
   <section>
-    <h2>Podsumowanie dnia 4</h2>
+    <h2>Przypomnienie - selektory CSS</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Selektor</th>
+          <th>Przykład</th>
+          <th>Opis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Element</td>
+          <td><code>button</code></td>
+          <td>Wszystkie przyciski</td>
+        </tr>
+        <tr>
+          <td>Klasa</td>
+          <td><code>.btn-primary</code></td>
+          <td>Element z klasa</td>
+        </tr>
+        <tr>
+          <td>ID</td>
+          <td><code>#login-form</code></td>
+          <td>Element z ID</td>
+        </tr>
+        <tr>
+          <td>Atrybut</td>
+          <td><code>[type="submit"]</code></td>
+          <td>Element z atrybutem</td>
+        </tr>
+        <tr>
+          <td>Potomek</td>
+          <td><code>.form input</code></td>
+          <td>input wewnątrz .form</td>
+        </tr>
+        <tr>
+          <td>Dziecko</td>
+          <td><code>.form &gt; input</code></td>
+          <td>Bezpośrednie dziecko</td>
+        </tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Szybkie przypomnienie selektorów CSS. Większość uczestników zna te selektory z pracy testerskiej.
+      Ważne jest, żeby rozumieć różnice między potomkiem a bezpośrednim dzieckiem.
+    </aside>
+  </section>
+
+  <!-- Slide 20: Hierarchia selektorów -->
+  <section>
+    <h2>Hierarchia strategii selekcji</h2>
+    <p>Od najlepszej do najgorszej:</p>
+    <ol>
+      <li class="fragment"><strong>data-testid</strong> - najbardziej stabilny</li>
+      <li class="fragment"><strong>Role-based</strong> (getByRole) - semantyczny</li>
+      <li class="fragment"><strong>Tekst</strong> (getByText) - czytelny, ale kruchy</li>
+      <li class="fragment"><strong>CSS selektory</strong> (id, klasa) - kruchy</li>
+      <li class="fragment"><strong>XPath</strong> - unikaj</li>
+    </ol>
+    <aside class="notes">
+      To jest kluczowa zasada. data-testid to atrybut dodany specjalnie do celów testowych -
+      nie zmienia się przy zmianach CSS, nie zależy od tekstu (który może się zmienić w tłumaczeniu).
+      Role-based selektory są dobre bo testują dostępność. XPath jest kruchy i nieczytelny.
+    </aside>
+  </section>
+
+  <!-- Slide 21: data-testid -->
+  <section>
+    <h2>data-testid - zloty standard</h2>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- HTML w aplikacji --&gt;
+&lt;button
+  class="btn btn-primary mx-2 rounded-lg"
+  data-testid="add-to-cart-btn"
+&gt;
+  Dodaj do koszyka
+&lt;/button&gt;
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress
+cy.get('[data-testid="add-to-cart-btn"]').click();
+
+// Playwright
+await page.locator('[data-testid="add-to-cart-btn"]').click();
+    </code></pre>
+    <div class="tip">
+      <h3>Dlaczego data-testid?</h3>
+      <p>Nie zmienia się przy zmianach CSS, nie zależy od tekstu, jest dedykowany do testów</p>
+    </div>
+    <aside class="notes">
+      data-testid to atrybut HTML, który nie wpływa na wyglad ani działanie strony.
+      Służy wyłącznie do identyfikacji elementów w testach. Deweloperzy dodają go do kluczowych elementów.
+      Konwencja: kebab-case, opisowa nazwa.
+    </aside>
+  </section>
+
+  <!-- Slide 22: Konwencje data-testid -->
+  <section>
+    <h2>Konwencje nazewnictwa data-testid</h2>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- Dobre nazwy --&gt;
+&lt;input data-testid="login-email-input" /&gt;
+&lt;button data-testid="submit-order-btn" /&gt;
+&lt;div data-testid="product-card" /&gt;
+&lt;span data-testid="cart-item-count" /&gt;
+
+&lt;!-- Zle nazwy --&gt;
+&lt;input data-testid="input1" /&gt;
+&lt;button data-testid="btn" /&gt;
+&lt;div data-testid="div123" /&gt;
+    </code></pre>
+    <div class="warning">
+      <h3>Uwaga</h3>
+      <p>Nazwy powinny opisywać <em>co</em> to jest, nie <em>jak</em> wygląda</p>
+    </div>
+    <aside class="notes">
+      Dobre nazwy pomagają zrozumieć test bez patrzenia na stronę. "login-email-input" mówi
+      dokładnie co to za element. "input1" nie mówi nic. Ustalcie konwencje z deweloperami w zespole.
+    </aside>
+  </section>
+
+  <!-- Slide 23: Role-based selectors -->
+  <section>
+    <h2>Selektory oparte na rolach</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress z Testing Library
+cy.findByRole('button', { name: 'Zaloguj' }).click();
+cy.findByRole('textbox', { name: 'Email' }).type('a@b.pl');
+
+// Playwright - getByRole
+await page.getByRole('button', { name: 'Zaloguj' }).click();
+await page.getByRole('textbox', { name: 'Email' }).fill('a@b.pl');
+await page.getByRole('heading', { name: 'Dashboard' }).isVisible();
+await page.getByRole('link', { name: 'Produkty' }).click();
+    </code></pre>
+    <div class="tip">
+      <h3>Bonus</h3>
+      <p>Selektory oparte na rolach testują równocześnie dostępność (a11y) aplikacji</p>
+    </div>
+    <aside class="notes">
+      Role-based selektory to podejście Playwright i Testing Library. Używają rol ARIA -
+      button, textbox, heading, link itd. Nazwa pochodzi z aria-label, tekstu wewnątrz elementu,
+      lub atrybutu label. Dobre podejście, bo testuje też czy strona jest dostępna.
+    </aside>
+  </section>
+
+  <!-- Slide 24: Text-based selectors -->
+  <section>
+    <h2>Selektory oparte na tekście</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress
+cy.contains('Dodaj do koszyka').click();
+cy.contains('button', 'Zaloguj').click();
+
+// Playwright
+await page.getByText('Dodaj do koszyka').click();
+await page.getByLabel('Adres email').fill('a@b.pl');
+await page.getByPlaceholder('Wyszukaj produkt...').fill('szampon');
+    </code></pre>
+    <div class="warning">
+      <h3>Uwaga</h3>
+      <p>Tekst może się zmienić przy tłumaczeniu lub redesignie - używaj ostrożnie</p>
+    </div>
+    <aside class="notes">
+      Selektory tekstowe są bardzo czytelne - od razu widać co test robi. Ale mają wady:
+      jeśli ktoś zmieni tekst przycisku z "Zaloguj" na "Zaloguj się", test się zepsuje.
+      W projektach wielojęzycznych tekst zmienia się często. Dobre dla elementów, które
+      raczej nie zmienia tekstu.
+    </aside>
+  </section>
+
+  <!-- Slide 25: Problem - dynamiczne klasy CSS -->
+  <section>
+    <h2>Problem: dynamiczne klasy CSS</h2>
+    <p>Współczesne aplikację generują nazwy klas automatycznie:</p>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- CSS Modules --&gt;
+&lt;button class="Button_primary__x7k2m9"&gt;Kup&lt;/button&gt;
+
+&lt;!-- Styled Components --&gt;
+&lt;button class="sc-bdnxRM jRqWYa"&gt;Kup&lt;/button&gt;
+
+&lt;!-- Tailwind + build hash --&gt;
+&lt;button class="bg-blue-500 hover:bg-blue-700 text-white
+  font-bold py-2 px-4 rounded"&gt;Kup&lt;/button&gt;
+    </code></pre>
+    <p class="fragment"><strong>Te klasy mogą się zmienić przy każdym buildzie!</strong></p>
+    <aside class="notes">
+      To jest częsty problem - klasy CSS są generowane przez narzędzia budujące (Webpack, Vite)
+      i zmieniają się między deployami. Test oparty na klasie "Button_primary__x7k2m9" zepsuje
+      się przy następnym buildzie. Dlatego data-testid jest tak ważne.
+    </aside>
+  </section>
+
+  <!-- Slide 26: Problem wizualizacja -->
+  <section>
+    <h2>Dzisiejszy build vs jutrzejszy</h2>
     <div class="columns">
       <div class="col">
-        <h3>DOM i Eventy</h3>
+        <h3>Build #142</h3>
+        <pre><code data-trim data-noescape class="language-html">
+&lt;button class="btn-x7k2m9"&gt;
+  Kup teraz
+&lt;/button&gt;
+        </code></pre>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Ten selektor dziala dzis
+cy.get('.btn-x7k2m9').click();
+        </code></pre>
+      </div>
+      <div class="col">
+        <h3>Build #143</h3>
+        <pre><code data-trim data-noescape class="language-html">
+&lt;button class="btn-a3p1q8"&gt;
+  Kup teraz
+&lt;/button&gt;
+        </code></pre>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Ten sam selektor - FAIL!
+cy.get('.btn-x7k2m9').click();
+        </code></pre>
+      </div>
+    </div>
+    <p class="fragment" style="text-align: center; color: #4CAF50;">Rozwiązanie: <code>[data-testid="buy-now-btn"]</code> - stabilne między buildami</p>
+    <aside class="notes">
+      Namaluj ten scenariusz jasno - deweloper nic nie zmienił w logice, tylko zbudował ponownie
+      aplikację i klasy CSS się zmieniły. data-testid nie zmienia się między buildami.
+    </aside>
+  </section>
+
+  <!-- Slide 27: Problem - component libraries -->
+  <section>
+    <h2>Problem: biblioteki komponentów</h2>
+    <p>Material UI, Ant Design - generują złożony DOM:</p>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- Prosty HTML button --&gt;
+&lt;button&gt;Wyslij&lt;/button&gt;
+
+&lt;!-- Material UI Button - wygenerowany DOM --&gt;
+&lt;button class="MuiButtonBase-root MuiButton-root
+  MuiButton-contained MuiButton-containedPrimary
+  MuiButton-sizeMedium css-1hw9j7s"&gt;
+  &lt;span class="MuiButton-startIcon
+    MuiButton-iconSizeMedium css-1d6wzja"&gt;
+    &lt;svg&gt;...&lt;/svg&gt;
+  &lt;/span&gt;
+  &lt;span class="MuiButton-label"&gt;Wyslij&lt;/span&gt;
+  &lt;span class="MuiTouchRipple-root css-w0pj6f"&gt;&lt;/span&gt;
+&lt;/button&gt;
+    </code></pre>
+    <aside class="notes">
+      Material UI generuje dużo dodatkowego kodu HTML. Klasy MUI mogą się zmienić między wersjami
+      biblioteki. Nigdy nie opierajcie selektorów na wewnętrznych klasach biblioteki komponentów.
+    </aside>
+  </section>
+
+  <!-- Slide 28: Rozwiązania dla component libraries -->
+  <section>
+    <h2>Rozwiązania</h2>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- 1. data-testid na wrapperze --&gt;
+&lt;button data-testid="submit-btn"
+  class="MuiButton-root ..."&gt;
+  Wyslij
+&lt;/button&gt;
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// 2. Cypress - contains (szuka tekstu)
+cy.contains('button', 'Wyslij').click();
+
+// 3. Playwright - getByRole (ignoruje wewnetrzna strukture)
+await page.getByRole('button', { name: 'Wyslij' }).click();
+
+// 4. Playwright - getByText
+await page.getByText('Wyslij').click();
+    </code></pre>
+    <aside class="notes">
+      Najlepsze rozwiązanie to data-testid, ale jeśli nie macie możliwości dodać atrybutów do kodu
+      (np. aplikacja zewnętrzna), używajcie getByRole lub getByText. Te selektory nie zależą od
+      wewnętrznej struktury DOM generowanej przez biblioteki.
+    </aside>
+  </section>
+
+  <!-- Slide 29: Przykład z rossmann-test-app 1 -->
+  <section>
+    <h2>Praktyka - jak wybrać ten element?</h2>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;form id="login-form"&gt;
+  &lt;div class="form-group mb-3"&gt;
+    &lt;label for="email"&gt;Email&lt;/label&gt;
+    &lt;input
+      type="email"
+      id="email"
+      class="form-control"
+      data-testid="login-email"
+      placeholder="Wpisz email"
+    /&gt;
+  &lt;/div&gt;
+&lt;/form&gt;
+    </code></pre>
+    <p>Jak najlepiej wybrać to pole email?</p>
+    <ul>
+      <li class="fragment"><code>[data-testid="login-email"]</code> - najlepszy</li>
+      <li class="fragment"><code>getByRole('textbox', { name: 'Email' })</code> - również dobry</li>
+      <li class="fragment"><code>#email</code> - akceptowalny (ID jest stabilne)</li>
+      <li class="fragment"><code>.form-control</code> - zly (wiele elementów z ta klasa)</li>
+    </ul>
+    <aside class="notes">
+      Interaktywne ćwiczenie - zapytaj uczestników zanim pokażesz odpowiedzi (fragmenty).
+      Wytłumacz dlaczego każda opcja jest lepsza lub gorsza.
+    </aside>
+  </section>
+
+  <!-- Slide 30: Przykład z rossmann-test-app 2 -->
+  <section>
+    <h2>Praktyka - lista produktów</h2>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;div class="product-grid"&gt;
+  &lt;div class="card" data-testid="product-card"&gt;
+    &lt;img src="shampoo.jpg" alt="Szampon" /&gt;
+    &lt;h3 data-testid="product-name"&gt;Szampon Isana&lt;/h3&gt;
+    &lt;span data-testid="product-price"&gt;12.99 zl&lt;/span&gt;
+    &lt;button data-testid="add-to-cart"&gt;Dodaj&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="card" data-testid="product-card"&gt;
+    &lt;!-- kolejny produkt --&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+    </code></pre>
+    <p>Jak dodać do koszyka <strong>pierwszy</strong> produkt?</p>
+    <pre class="fragment"><code data-trim data-noescape class="language-javascript">
+// Cypress - .first()
+cy.get('[data-testid="add-to-cart"]').first().click();
+
+// Playwright - .first()
+await page.locator('[data-testid="add-to-cart"]').first().click();
+    </code></pre>
+    <aside class="notes">
+      Częste pytanie - co robić jeśli jest wiele elementów z tym samym data-testid?
+      Używamy .first(), .last(), .nth(n) lub zawężamy kontekst do rodzica.
+      Można też użyć bardziej specyficznego data-testid, np. data-testid="add-to-cart-szampon-isana".
+    </aside>
+  </section>
+
+  <!-- Slide 31: Kontekst selektora -->
+  <section>
+    <h2>Zawężanie kontekstu selektora</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - within
+cy.get('[data-testid="product-card"]').first().within(() => {
+  cy.get('[data-testid="add-to-cart"]').click();
+});
+
+// Cypress - contains wewnatrz
+cy.contains('[data-testid="product-card"]', 'Szampon Isana')
+  .find('[data-testid="add-to-cart"]').click();
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Playwright - szukaj wewnatrz konkretnego elementu
+const firstCard = page.locator('[data-testid="product-card"]').first();
+await firstCard.locator('[data-testid="add-to-cart"]').click();
+
+// Playwright - filter po tekscie
+await page.locator('[data-testid="product-card"]')
+  .filter({ hasText: 'Szampon Isana' })
+  .locator('[data-testid="add-to-cart"]')
+  .click();
+    </code></pre>
+    <aside class="notes">
+      Zawężanie kontekstu to potężna technika. Zamiast szukać globalnie na całej stronie,
+      najpierw znajdź rodzica (np. karte produktu), a potem szukaj wewnątrz niego.
+      To sprawia, że selektory są precyzyjne i odporne na zmiany.
+    </aside>
+  </section>
+
+  <!-- Slide 32: Cypress selectors cheatsheet -->
+  <section>
+    <h2>Cypress - przegląd selektorów</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// CSS selector
+cy.get('[data-testid="email"]')
+cy.get('#email')
+cy.get('.btn-primary')
+
+// Szukanie po tekscie
+cy.contains('Zaloguj')
+cy.contains('button', 'Zaloguj')
+
+// Kombinowanie
+cy.get('[data-testid="product-card"]').first()
+cy.get('[data-testid="product-card"]').eq(2) // trzeci element
+
+// Wewnatrz elementu
+cy.get('.modal').find('[data-testid="close-btn"]')
+cy.get('.form').within(() => {
+  cy.get('input').first().type('tekst');
+});
+    </code></pre>
+    <aside class="notes">
+      Cypress jest prostszy - głównie cy.get() z selektorami CSS i cy.contains() do tekstu.
+      eq() to odpowiednik nth() w Playwright. within() ogranicza kontekst wyszukiwania.
+    </aside>
+  </section>
+
+  <!-- Slide 33: Playwright locators cheatsheet -->
+  <section>
+    <h2>Playwright - przegląd lokatorów</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// CSS selector
+page.locator('[data-testid="email"]')
+page.locator('#email')
+page.locator('.btn-primary')
+
+// Wbudowane lokatory
+page.getByRole('button', { name: 'Zaloguj' })
+page.getByText('Witaj, Anna')
+page.getByLabel('Email')
+page.getByPlaceholder('Szukaj...')
+page.getByTestId('submit-btn')  // skrot dla data-testid
+
+// Filtrowanie
+page.locator('button').filter({ hasText: 'Zapisz' })
+page.locator('.card').filter({ has: page.locator('.badge') })
+    </code></pre>
+    <aside class="notes">
+      To jest ściąga z najczęściej używanych lokatorów Playwright. getByTestId to skrot -
+      domyślnie szuka atrybutu data-testid, ale można to skonfigurować w playwright.config.ts.
+      Warto wydrukować te ściągę uczestnikom.
+    </aside>
+  </section>
+
+  <!-- Slide 34: Checklist stabilności -->
+  <section>
+    <div class="tip">
+      <h3>Checklist stabilności selektorów</h3>
+    </div>
+    <ul>
+      <li class="fragment">Czy selektor przetrwa zmianę styli CSS?</li>
+      <li class="fragment">Czy selektor przetrwa zmianę tekstu na stronie?</li>
+      <li class="fragment">Czy selektor jest unikalny na stronie? (sprawdź w DevTools)</li>
+      <li class="fragment">Czy selektor jest czytelny dla innego testera?</li>
+      <li class="fragment">Czy selektor zależy od głębokość struktury DOM?</li>
+    </ul>
+    <p class="fragment">Przed każdym selektorem zadaj sobie pytanie: <strong>"Czy to się zepsuje przy następnym deployie?"</strong></p>
+    <aside class="notes">
+      Ten checklist powinien być w głowie każdego testera piszącego testy automatyczne.
+      Jeśli selektor jest długi i zagłębia się w wiele poziomów DOM - to czerwona flaga.
+    </aside>
+  </section>
+
+  <!-- Slide 35: Exercise selektory -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie - napisz najlepszy selektor</h3>
+    </div>
+    <p>Dla każdego fragmentu HTML napisz optymalny selektor:</p>
+    <pre><code data-trim data-noescape class="language-html">
+&lt;!-- 1 --&gt;
+&lt;a href="/cart" class="nav-link active"
+  data-testid="nav-cart"&gt;
+  Koszyk (3)
+&lt;/a&gt;
+
+&lt;!-- 2 --&gt;
+&lt;input type="search" placeholder="Szukaj produktu..."
+  class="search-input form-control" /&gt;
+
+&lt;!-- 3 --&gt;
+&lt;div class="sc-1x2y3z alert-success"&gt;
+  &lt;p&gt;Zamowienie zostalo zlozone pomyslnie!&lt;/p&gt;
+&lt;/div&gt;
+    </code></pre>
+    <aside class="notes">
+      Odpowiedzi: 1) [data-testid="nav-cart"] - najlepsza opcja.
+      2) Brak data-testid - getByPlaceholder('Szukaj produktu...') lub getByRole('searchbox').
+      Poproś deweloperów o dodanie data-testid.
+      3) Klasa dynamiczna! Użyj getByText('Zamowienie zostalo zlozone pomyslnie!') lub poproś o data-testid.
+    </aside>
+  </section>
+
+  <!-- Slide 36: Exercise DevTools -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie - DevTools i selektory</h3>
+    </div>
+    <ol>
+      <li>Otwórz rossmann-test-app w przeglądarce</li>
+      <li>Otwórz DevTools (F12 lub Ctrl+Shift+I)</li>
+      <li>Użyj narzędzia do inspekcji elementów (Ctrl+Shift+C)</li>
+      <li>Dla każdego z poniższych elementów znajdź najlepszy selektor:
         <ul>
-          <li><code>querySelector</code> / <code>querySelectorAll</code></li>
-          <li><code>textContent</code>, <code>classList</code>, atrybuty</li>
-          <li>Tworzenie i usuwanie elementów</li>
-          <li><code>addEventListener</code></li>
-          <li><code>event.preventDefault()</code></li>
+          <li>Pole logowania (email)</li>
+          <li>Przycisk "Zaloguj"</li>
+          <li>Logo strony</li>
+          <li>Komunikat o błędzie logowania</li>
+        </ul>
+      </li>
+      <li>Przetestuj selektory w konsoli: <code>document.querySelector('[data-testid="..."]')</code></li>
+    </ol>
+    <aside class="notes">
+      Praktyczne ćwiczenie z DevTools. Pokaż uczestnikom jak użyć zakładki Elements, jak kliknąć
+      element i zobaczyć jego atrybuty. Pokaż też jak testować selektory w konsoli przeglądarki.
+      To umiejętność, która będą używać codziennie.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 4: Struktura projektu testów E2E (~1.5h, ~15 slides)
+       ============================================================ -->
+
+  <!-- Slide 37: Section -->
+  <section class="section-slide">
+    <span class="section-number">3</span>
+    <h2>Struktura projektu testów E2E</h2>
+    <p>Organizacja kodu, Page Object Model i klasy</p>
+    <aside class="notes">
+      Teraz pokażemy jak organizować projekt testowy. To ważne od samego początku -
+      dobrze zorganizowany projekt jest łatwiejszy do utrzymania i rozbudowy.
+    </aside>
+  </section>
+
+  <!-- Slide 38: Folder structure -->
+  <section>
+    <h2>Typowa struktura projektu</h2>
+    <pre><code data-trim data-noescape class="language-text">
+tests/
+  e2e/
+    pages/              # Page Object files
+      LoginPage.ts
+      DashboardPage.ts
+      ProductPage.ts
+    specs/              # Test files
+      login.spec.ts
+      dashboard.spec.ts
+      products.spec.ts
+    fixtures/           # Test data
+      users.json
+      products.json
+    support/            # Helpers, custom commands
+      helpers.ts
+      commands.ts
+  cypress.config.js     # Konfiguracja
+  .env                  # Zmienne srodowiskowe (NIE commituj!)
+  .env.example          # Szablon zmiennych
+    </code></pre>
+    <aside class="notes">
+      To jest standardowa struktura, która sprawdza się w większości projektów. Kluczowe katalogi:
+      pages - Page Objecty, specs - testy, fixtures - dane testowe, support - helpery.
+      Omowimy każdy z tych elementów.
+    </aside>
+  </section>
+
+  <!-- Slide 39: Co to jest Page Object Model? -->
+  <section>
+    <h2>Page Object Model - co i dlaczego?</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Bez POM</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// test1.spec.ts
+await page.fill(
+  '[data-testid="email"]',
+  'a@b.pl'
+);
+await page.fill(
+  '[data-testid="password"]',
+  'x'
+);
+await page.click(
+  '[data-testid="login-btn"]'
+);
+
+// test2.spec.ts
+// te same selektory ZNOWU!
+await page.fill(
+  '[data-testid="email"]',
+  'c@d.pl'
+);
+        </code></pre>
+      </div>
+      <div class="col">
+        <h3>Z POM</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// test1.spec.ts
+const login = new LoginPage(page);
+await login.login('a@b.pl', 'x');
+
+// test2.spec.ts
+const login = new LoginPage(page);
+await login.login('c@d.pl', 'y');
+
+// Selektor zmieniony?
+// Zmien w JEDNYM miejscu!
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Page Object Model to wzorzec projektowy. Zamiast powielać selektory w wielu testach,
+      tworzymy klasę, która reprezentuje stronę i zawiera wszystkie selektory i akcje.
+      Jeśli selektor się zmieni - aktualizujemy w jednym miejscu.
+    </aside>
+  </section>
+
+  <!-- Slide 40: Klasy w JS - wprowadzenie -->
+  <section>
+    <h2>Klasy w JavaScript</h2>
+    <p>Klasa to "szablon" do tworzenia obiektów z tymi samymi właściwościami i metodami:</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+class Animal {
+  constructor(name, sound) {
+    this.name = name;
+    this.sound = sound;
+  }
+
+  speak() {
+    return `${this.name} mowi: ${this.sound}!`;
+  }
+}
+
+const dog = new Animal('Burek', 'Hau');
+console.log(dog.speak()); // "Burek mowi: Hau!"
+
+const cat = new Animal('Mruczek', 'Miau');
+console.log(cat.speak()); // "Mruczek mowi: Miau!"
+    </code></pre>
+    <aside class="notes">
+      Klasy to nowy temat - nie omawialiśmy ich wcześniej bo czekaliśmy na kontekst POM.
+      Constructor to specjalna metoda, która uruchamia się przy tworzeniu obiektu (new).
+      this odnosi się do konkretnej instancji obiektu.
+    </aside>
+  </section>
+
+  <!-- Slide 41: Klasy - więcej szczegółów -->
+  <section>
+    <h2>Klasy - kluczowe elementy</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+class Product {
+  // constructor - ustawia poczatkowe wartosci
+  constructor(name, price) {
+    this.name = name;
+    this.price = price;
+    this.inCart = false;
+  }
+
+  // metoda - funkcja nalezaca do klasy
+  addToCart() {
+    this.inCart = true;
+    return `${this.name} dodano do koszyka`;
+  }
+
+  // metoda z parametrem
+  applyDiscount(percent) {
+    this.price = this.price * (1 - percent / 100);
+    return this.price;
+  }
+}
+
+const shampoo = new Product('Szampon Isana', 12.99);
+shampoo.applyDiscount(10); // 11.691
+    </code></pre>
+    <aside class="notes">
+      Pokazujemy klasę z metodami. this to referencja do bieżącego obiektu.
+      Metody mogą modyfikować stan obiektu i zwracać wartości.
+      Za chwile zobaczymy jak to wygląda w Page Object Model.
+    </aside>
+  </section>
+
+  <!-- Slide 42: POM Cypress -->
+  <section>
+    <h2>Page Object - Cypress (bez klas)</h2>
+    <p>W Cypress częściej używamy obiektów z funkcjami zamiast klas:</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+// pages/loginPage.js
+export const loginPage = {
+  visit: () => cy.visit('/login'),
+
+  fillEmail: (email) =>
+    cy.get('[data-testid="email"]').type(email),
+
+  fillPassword: (pwd) =>
+    cy.get('[data-testid="password"]').type(pwd),
+
+  submit: () =>
+    cy.get('[data-testid="login-btn"]').click(),
+
+  login: (email, pwd) => {
+    loginPage.visit();
+    loginPage.fillEmail(email);
+    loginPage.fillPassword(pwd);
+    loginPage.submit();
+  }
+};
+    </code></pre>
+    <aside class="notes">
+      Cypress nie wymaga klas - obiekty z funkcjami są prostsze i wystarczające.
+      Cypress ma swoj model asynchroniczności - nie używamy async/await.
+      Ten sam wzorzec - selektory w jednym miejscu, metody do akcji.
+    </aside>
+  </section>
+
+  <!-- Slide 43: POM Cypress użycie -->
+  <section>
+    <h2>Użycie Page Object w Cypress</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// specs/login.cy.js
+import { loginPage } from '../pages/loginPage';
+
+describe('Login', () => {
+
+  it('powinien zalogowac uzytkownika', () => {
+    loginPage.login('user@test.pl', 'Test1234');
+    cy.url().should('include', '/dashboard');
+  });
+
+  it('powinien pokazac blad dla zlego hasla', () => {
+    loginPage.login('user@test.pl', 'wrong');
+    cy.get('[data-testid="error-msg"]')
+      .should('contain', 'Nieprawidlowe dane');
+  });
+
+});
+    </code></pre>
+    <aside class="notes">
+      Test mówi CO robimy, a nie JAK. Page Object ukrywa szczegóły implementacji (selektory, kroki).
+    </aside>
+  </section>
+
+  <!-- Slide 44: POM Playwright -->
+  <section>
+    <h2>W Playwright (który wymaga async/await) wygląda to tak:</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// pages/LoginPage.ts
+class LoginPage {
+  constructor(page) {
+    this.page = page;
+    this.emailInput = page.locator('[data-testid="email"]');
+    this.passwordInput = page.locator('[data-testid="password"]');
+    this.loginButton = page.locator('[data-testid="login-btn"]');
+    this.errorMessage = page.locator('[data-testid="error-msg"]');
+  }
+
+  async goto() {
+    await this.page.goto('/login');
+  }
+
+  async login(email, password) {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.loginButton.click();
+  }
+
+  async getError() {
+    return await this.errorMessage.textContent();
+  }
+}
+    </code></pre>
+    <aside class="notes">
+      To jest kompletny Page Object dla strony logowania w Playwright.
+      Zwróć uwagę: selektory są w konstruktorze, akcje są metodami async.
+      W teście używamy this.emailInput zamiast powtarzać selektor.
+    </aside>
+  </section>
+
+  <!-- Slide 45: POM Playwright - użycie w teście -->
+  <section>
+    <h2>Użycie Page Object w teście Playwright</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// specs/login.spec.ts
+import { LoginPage } from '../pages/LoginPage';
+
+test.describe('Login', () => {
+
+  test('powinien zalogowac uzytkownika', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('user@test.pl', 'Test1234');
+    await expect(page).toHaveURL('/dashboard');
+  });
+
+  test('powinien pokazac blad dla zlego hasla', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('user@test.pl', 'wrong');
+    const error = await loginPage.getError();
+    expect(error).toContain('Nieprawidlowe dane');
+  });
+
+});
+    </code></pre>
+    <aside class="notes">
+      Zauważ jak czytelne są testy z Page Object. Nie ma selektorów w testach - test czyta się
+      jak instrukcja: "idz na stronę logowania, zaloguj się, sprawdź URL".
+      Jeśli selektor się zmieni - aktualizujesz LoginPage, a nie każdy test.
+    </aside>
+  </section>
+
+  <!-- Slide 46: Naming conventions -->
+  <section>
+    <h2>Konwencje nazewnictwa</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Konwencja</th>
+          <th>Przykład</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Plik testowy (PW)</td>
+          <td><code>nazwa.spec.ts</code></td>
+          <td><code>login.spec.ts</code></td>
+        </tr>
+        <tr>
+          <td>Plik testowy (CY)</td>
+          <td><code>nazwa.cy.js</code></td>
+          <td><code>login.cy.js</code></td>
+        </tr>
+        <tr>
+          <td>Page Object</td>
+          <td><code>NazwaPage.ts</code></td>
+          <td><code>LoginPage.ts</code></td>
+        </tr>
+        <tr>
+          <td>Fixture</td>
+          <td><code>nazwa.json</code></td>
+          <td><code>users.json</code></td>
+        </tr>
+        <tr>
+          <td>test/it opis</td>
+          <td>should + opis</td>
+          <td><code>'should login'</code></td>
+        </tr>
+        <tr>
+          <td>describe opis</td>
+          <td>Nazwa funkcjonalności</td>
+          <td><code>'Login Page'</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Konsekwentne nazewnictwo to podstawa. Ustalcie konwencje w zespole na początku projektu.
+      Opisy testów powinny być czytelne - "should login successfully" jest lepsze niż "test1".
+    </aside>
+  </section>
+
+  <!-- Slide 47: Konfiguracja Cypress -->
+  <section>
+    <h2>Konfiguracja - cypress.config.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress.config.js
+const { defineConfig } = require('cypress');
+
+module.exports = defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:3000',
+    specPattern: 'tests/e2e/specs/**/*.cy.js',
+    supportFile: 'tests/e2e/support/e2e.js',
+    viewportWidth: 1280,
+    viewportHeight: 720,
+    video: false,
+    screenshotOnRunFailure: true,
+    defaultCommandTimeout: 10000,
+  },
+});
+    </code></pre>
+    <aside class="notes">
+      Konfiguracja Cypress - kluczowe opcje: baseUrl, specPattern (gdzie szukać testów),
+      viewport (rozmiar okna), timeouty. Video jest domyślnie włączone w Cypress -
+      często się je wyłącza dla szybkości.
+    </aside>
+  </section>
+
+  <!-- Slide 48: Konfiguracja Playwright -->
+  <section>
+    <h2>Konfiguracja - playwright.config.ts</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests/e2e/specs',
+  timeout: 30000,
+  retries: 1,
+  use: {
+    baseURL: 'http://localhost:3000',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'firefox', use: { browserName: 'firefox' } },
+  ],
+});
+    </code></pre>
+    <aside class="notes">
+      Plik konfiguracyjny Playwright. Podobne opcje: testDir - gdzie są testy,
+      timeout - ile czekać na test, baseURL - adres aplikacji, projects - na jakich przeglądarkach.
+      screenshot i video - nagrywanie tylko przy failach, trace - do debugowania.
+    </aside>
+  </section>
+
+  <!-- Slide 49: Tip - selektory w POM -->
+  <section>
+    <div class="tip">
+      <h3>Zasada: selektory w Page Object, nie w testach</h3>
+    </div>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color: #E3000F;">Źle</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+it('login', () => {
+  cy.visit('/login');
+  cy.get('[data-testid="email"]')
+    .type('user@test.pl');
+  // selektor w tescie!
+});
+        </code></pre>
+      </div>
+      <div class="col">
+        <h3 style="color: #4CAF50;">Dobrze</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+it('login', () => {
+  loginPage.visit();
+  loginPage.fillEmail(
+    'user@test.pl'
+  );
+  // selektor w POM!
+});
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Jeśli selektor zmieni się z data-testid="email" na data-testid="login-email",
+      w złym podejściu musisz zmienić 15 testów. W dobrym - zmiana w jednym pliku Page Object.
+    </aside>
+  </section>
+
+  <!-- Slide 50: Warning - nie przesadzaj z abstrakcją -->
+  <section>
+    <div class="warning">
+      <h3>Nie przesadzaj z abstrakcją!</h3>
+    </div>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color: #E3000F;">Za dużo abstrakcji</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Co ten test robi?
+testHelper
+  .performAction(
+    'login',
+    userData,
+    config.options
+  );
+        </code></pre>
+      </div>
+      <div class="col">
+        <h3 style="color: #4CAF50;">W sam raz</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Jasne co sie dzieje
+loginPage.visit();
+loginPage.login(
+  'user@test.pl',
+  'Test1234'
+);
+        </code></pre>
+      </div>
+    </div>
+    <p>Test powinien czytać się jak instrukcja - nie musisz zaglądać do kodu pomocniczego, żeby go zrozumieć.</p>
+    <aside class="notes">
+      Częsty błąd - zbyt dużo warstw abstrakcji. Test powinien być czytelny bez znajomości
+      całego kodu pomocniczego. Jeśli musisz otworzyć 5 plików żeby zrozumieć test - coś jest nie tak.
+      Page Object to jeden poziom abstrakcji - to wystarczy w większości przypadków.
+    </aside>
+  </section>
+
+  <!-- Slide 51: Exercise POM -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie - zaprojektuj Page Object</h3>
+    </div>
+    <p>Zaprojektuj Page Object dla strony dashboard rossmann-test-app:</p>
+    <ul>
+      <li>Dashboard zawiera: liste produktów, koszyk, wyszukiwarkę, menu nawigacyjne</li>
+      <li>Zdefiniuj: selektory (lokatory), metody do kluczowych akcji</li>
+    </ul>
+    <pre class="fragment"><code data-trim data-noescape class="language-javascript">
+// pages/dashboardPage.js (Cypress)
+export const dashboardPage = {
+  searchProduct: (query) => {
+    cy.get('[data-testid="search-input"]').type(query);
+    cy.get('[data-testid="search-input"]').type('{enter}');
+  },
+
+  addProductToCart: (index = 0) => {
+    cy.get('[data-testid="product-card"]').eq(index)
+      .find('[data-testid="add-to-cart"]').click();
+  },
+
+  getCartCount: () => {
+    return cy.get('[data-testid="cart-badge"]');
+  }
+};
+    </code></pre>
+    <aside class="notes">
+      Daj uczestnikom 15 minut. Niech pracują w parach. Nie ma jednej poprawnej odpowiedzi -
+      ważne żeby selektory były w konstruktorze, akcje jako metody, i żeby nazwy były opisowe.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 5: Co testować automatycznie? (~1h, ~12 slides)
+       ============================================================ -->
+
+  <!-- Slide 52: Section -->
+  <section class="section-slide">
+    <span class="section-number">4</span>
+    <h2>Co testować automatycznie?</h2>
+    <p>Strategia wyboru testów E2E</p>
+    <aside class="notes">
+      Ważna sekcja - nie chodzi o to żeby automatyzować wszystko. Chodzi o to, żeby automatyzować
+      mądrze. Źle dobrane testy kosztują więcej niż dają.
+    </aside>
+  </section>
+
+  <!-- Slide 53: Piramida testów -->
+  <section>
+    <h2>Piramida testów</h2>
+    <pre><code data-trim data-noescape class="language-text">
+            /\
+           /  \         E2E (testy end-to-end)
+          / E2E\        - malo, ale kluczowe
+         /------\       - wolne, drogie w utrzymaniu
+        / Integ- \
+       / racyjne  \     Integracyjne
+      /------------\    - srednia ilosc
+     /    Testy     \
+    /  jednostkowe   \  Unit - duzo, szybkie, tanie
+   /------------------\
+    </code></pre>
+    <p>Testy E2E są na szczycie - powinno ich być <strong>najmniej</strong>, ale obejmują <strong>najważniejsze</strong> scenariusze.</p>
+    <aside class="notes">
+      Piramida testów mówi: większość testów powinna być jednostkowych (szybkie, tanie),
+      mniej integracyjnych, a najmniej E2E. Testy E2E są wolne, kruche i kosztowne
+      w utrzymaniu. Ale są niezbędne do testowania całych przepływów.
+    </aside>
+  </section>
+
+  <!-- Slide 54: Co warto automatyzować -->
+  <section>
+    <h2>Co przynosi wartość w E2E?</h2>
+    <ul>
+      <li class="fragment"><strong>Happy paths</strong> - główne ścieżki użytkownika (login, zakup, rejestracja)</li>
+      <li class="fragment"><strong>Krytyczne przepływy biznesowe</strong> - koszyk, płatność, zamówienie</li>
+      <li class="fragment"><strong>Obszary podatne na regresje</strong> - często psujące się funkcjonalności</li>
+      <li class="fragment"><strong>Smoke testy</strong> - czy kluczowe strony w ogóle się ładują?</li>
+      <li class="fragment"><strong>Cross-browser</strong> - czy działa na Chrome, Firefox, Safari?</li>
+    </ul>
+    <aside class="notes">
+      Happy path to scenariusz, w którym wszystko idzie dobrze - uzytkownik loguje się,
+      dodaje produkt, płaci i dostaje potwierdzenie. To powinno być przetestowane jako pierwsze.
+      Krytyczne przepływy to te, które bezpośrednio wpływają na przychód firmy.
+    </aside>
+  </section>
+
+  <!-- Slide 55: Co NIE warto automatyzować -->
+  <section>
+    <h2>Co często NIE przynosi wartości?</h2>
+    <ul>
+      <li class="fragment">Testowanie <strong>każdej walidacji</strong> formularza na poziomie E2E</li>
+      <li class="fragment">Testowanie <strong>pixel-perfect</strong> wyglądu (chyba że używasz visual regression)</li>
+      <li class="fragment">Testowanie <strong>wewnętrznej logiki komponentów</strong> zewnętrznych</li>
+      <li class="fragment">Testowanie <strong>każdego edge case</strong> na poziomie E2E</li>
+      <li class="fragment">Testowanie <strong>funkcji, które zmieniają się co sprint</strong></li>
+    </ul>
+    <div class="tip">
+      <h3>Zasada</h3>
+      <p>Jeśli coś można przetestować taniej (unit test, test API) - zrob to na niższym poziomie</p>
+    </div>
+    <aside class="notes">
+      Częsty błąd początkujących - automatyzacja wszystkiego na poziomie E2E. Test E2E dla
+      walidacji "hasło musi mieć min 8 znaków" to przesada - to powinien być unit test.
+      E2E powinno testować: "czy logowanie działa? czy błąd się wyświetla przy złym haśle?"
+    </aside>
+  </section>
+
+  <!-- Slide 56: Przykład - login scope -->
+  <section>
+    <h2>Przykład: zakres testów logowania</h2>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color: #4CAF50;">TAK - E2E</h3>
+        <ul>
+          <li>Poprawne logowanie</li>
+          <li>Logowanie ze złym hasłem</li>
+          <li>Przekierowanie po logowaniu</li>
+          <li>Wylogowanie</li>
         </ul>
       </div>
       <div class="col">
-        <h3>Asynchroniczność</h3>
+        <h3 style="color: #FF9800;">MOŻE</h3>
         <ul>
-          <li>Callbacki, <code>setTimeout</code></li>
-          <li>Promise: <code>.then()</code>, <code>.catch()</code></li>
-          <li><code>async/await</code> + <code>try/catch</code></li>
-          <li>Fetch API: GET i POST</li>
-          <li>Obsługa błędów HTTP</li>
+          <li>"Zapamiętaj mnie"</li>
+          <li>Toggle widoczności hasła</li>
+          <li>Logowanie przez Google</li>
         </ul>
       </div>
     </div>
-    <aside class="notes">
-      Szybkie podsumowanie - upewnij się, że uczestnicy zapamiętali kluczowe koncepcje.
-      Zapytaj czy są pytania. Pochwal za wytrwałość - to był intensywny dzień.
-    </aside>
   </section>
 
-  <!-- Slide 65: Kluczowe wnioski -->
+  <!-- Slide 56b: NIE na poziomie E2E -->
   <section>
-    <h2>Kluczowe wnioski</h2>
+    <h2>Przykład: zakres testów logowania</h2>
+    <h3 style="color: #E3000F;">NIE - na poziomie E2E</h3>
+    <ul>
+      <li>Walidacja długości hasła (min 8 znaków)</li>
+      <li>Walidacja formatu email</li>
+      <li>Walidacja znaków specjalnych</li>
+      <li>Każda kombinacja błędnych danych</li>
+    </ul>
     <div class="tip">
-      <h3>Zapamiętaj!</h3>
-      <ol>
-        <li><strong>DOM = drzewo dokumentu</strong> - JS może je czytać i modyfikować</li>
-        <li><strong>Selektory CSS</strong> działają tak samo w DOM i w Cypress</li>
-        <li><strong>addEventListener</strong> - jeden sposób na reakcję na akcje użytkownika</li>
-        <li><strong>Promise</strong> = obietnica wyniku w przyszłości (pending → fulfilled/rejected)</li>
-        <li><strong>async/await</strong> = czytelniejszy sposób na pracę z Promise</li>
-        <li><strong>fetch</strong> nie rzuca błędu przy 404/500 - sprawdzaj <code>response.ok</code>!</li>
-      </ol>
+      <h3>Zasada</h3>
+      <p>Te walidacje testuj na poziomie unit lub integracyjnym - szybciej i stabilniej.</p>
     </div>
     <aside class="notes">
-      To najważniejsze punkty z całego dnia. Punkt 6 to najczęstszy błąd - warto powtórzyć.
+      Konkretny przykład - logowanie. 4 testy E2E wystarczają. Szczegółowe walidacje
+      testujemy na poziomie unit (walidator emaila) lub integracyjnym (formularz).
+      "Może" zależy od kontekstu - jeśli "zapamiętaj mnie" jest kluczowe dla biznesu, testujemy.
     </aside>
   </section>
 
-  <!-- Slide 66: Co dalej? -->
-  <section class="title-slide">
-    <h1>Dzień 4 - zakończony!</h1>
-    <p class="subtitle">Jutro: Cypress - pierwsze testy automatyczne</p>
-    <p>Dzięki za udział i do zobaczenia!</p>
+  <!-- Slide 57: Flaky tests -->
+  <section>
+    <h2>Flaky tests - niestabilne testy</h2>
+    <p>Test, który raz przechodzi, raz nie - bez zmian w kodzie:</p>
+    <ul>
+      <li class="fragment"><strong>Przyczyna:</strong> czekanie na stały czas (<code>cy.wait(5000)</code>)</li>
+      <li class="fragment"><strong>Przyczyna:</strong> zależność od danych w bazie</li>
+      <li class="fragment"><strong>Przyczyna:</strong> zależność od kolejności testów</li>
+      <li class="fragment"><strong>Przyczyna:</strong> animacje i przejścia CSS</li>
+      <li class="fragment"><strong>Przyczyna:</strong> niestabilne selektory</li>
+      <li class="fragment"><strong>Przyczyna:</strong> timeouty przy wolnym CI/CD</li>
+    </ul>
     <aside class="notes">
-      Zakończenie dnia. Jutro Cypress - wszystko czego się nauczyliśmy będzie potrzebne.
-      Zachęć do powtórzenia materiału, szczególnie selektorów CSS i async/await.
+      Flaky testy to plaga automatyzacji. Zespol traci zaufanie do testów - "a, to się znowu
+      losowo zepsuło, puścimy jeszcze raz". To prowadzi do ignorowania prawdziwych błędów.
+      Ważne: każdy flaky test należy natychmiast naprawić lub wyłączyć.
+    </aside>
+  </section>
+
+  <!-- Slide 58: Zapobieganie flaky tests -->
+  <section>
+    <h2>Zapobieganie niestabilności</h2>
+    <div class="columns">
+      <div class="col">
+        <h3 style="color: #E3000F;">Źle</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Stale czekanie
+cy.wait(5000);
+cy.get('.btn').click();
+
+// Zalezy od danych
+cy.get('.product')
+  .should('have.length', 42);
+
+// Selektor na klasie CSS
+cy.get('.btn-x7k2').click();
+        </code></pre>
+      </div>
+      <div class="col">
+        <h3 style="color: #4CAF50;">Dobrze</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Czekaj na warunek
+cy.get('.btn')
+  .should('be.visible')
+  .click();
+
+// Sprawdz warunek ogolny
+cy.get('.product')
+  .should('have.length.gt', 0);
+
+// data-testid
+cy.get('[data-testid="buy"]')
+  .click();
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Kluczowe zasady: nigdy cy.wait() z ustalonym czasem, zawsze czekaj na warunek.
+      Nie zależaj od konkretnej ilości danych. Używaj stabilnych selektorów.
+      Każdy test powinien być niezależny - nie polegaj na wyniku poprzedniego testu.
+    </aside>
+  </section>
+
+  <!-- Slide 59: Niezależność testów -->
+  <section>
+    <h2>Każdy test musi być niezależny</h2>
+    <div class="warning">
+      <h3>Testy nie mogą zależeć od siebie!</h3>
+    </div>
+    <pre><code data-trim data-noescape class="language-javascript">
+// ZLE - test 2 zalezy od testu 1
+test('should create product', async ({ page }) => {
+  // tworzy produkt "Test Shampoo"
+});
+test('should edit product', async ({ page }) => {
+  // szuka "Test Shampoo" - FAIL jesli test 1 nie przeszedl!
+});
+
+// DOBRZE - kazdy test jest niezalezny
+test('should edit product', async ({ page }) => {
+  // najpierw tworzy produkt przez API (setup)
+  await apiHelper.createProduct({ name: 'Test Shampoo' });
+  // potem edytuje
+  await page.goto('/products');
+  // ...
+});
+    </code></pre>
+    <aside class="notes">
+      Jeśli test A tworzy dane, a test B je używa - to źle. Jeśli test A padnie, test B też padnie,
+      choć nie ma żadnego błędu w edycji produktu. Każdy test powinien przygotować swoje dane
+      (np. przez API) i posprzątać po sobie.
+    </aside>
+  </section>
+
+  <!-- Slide 60: Quiz - co automatyzować -->
+  <section>
+    <div class="quiz">
+      <h3>Które testy są warte automatyzacji E2E?</h3>
+    </div>
+    <ol>
+      <li>Proces składania zamówienia od koszyka do potwierdzenia</li>
+      <li>Walidacja, że email musi zawierać znak @</li>
+      <li>Sprawdzenie, że strona główna się ładuje</li>
+      <li>Testowanie 50 różnych kombinacji danych w formularzu</li>
+      <li>Logowanie i sprawdzenie, że imię użytkownika jest widoczne</li>
+    </ol>
+  </section>
+
+  <!-- Slide 60b: Quiz odpowiedzi -->
+  <section>
+    <h2>Odpowiedzi</h2>
+    <ul style="list-style: none;">
+      <li>1 - <span style="color: #4CAF50;">TAK</span> - kluczowy przepływ biznesowy</li>
+      <li>2 - <span style="color: #E3000F;">NIE</span> - unit test</li>
+      <li>3 - <span style="color: #4CAF50;">TAK</span> - smoke test</li>
+      <li>4 - <span style="color: #E3000F;">NIE</span> - za dużo, użyj testów na niższym poziomie</li>
+      <li>5 - <span style="color: #4CAF50;">TAK</span> - happy path logowania</li>
+    </ul>
+    <aside class="notes">
+      Interaktywne ćwiczenie - zapytaj uczestników zanim pokażesz odpowiedzi.
+      Dyskusja o każdym przypadku. Punkt 4 to częsty błąd - testowanie danych powinno być
+      na poziomie unit, a E2E testuje przepływ "czy formularz w ogóle działa".
+    </aside>
+  </section>
+
+  <!-- Slide 61: Quiz 2 -->
+  <section>
+    <div class="quiz">
+      <h3>Scenariusze z rossmann-test-app - co automatyzujesz?</h3>
+    </div>
+    <ol>
+      <li>Wyszukiwanie produktu i sprawdzenie wyników</li>
+      <li>Sprawdzenie, że tło przycisku ma dokładnie kolor #E3000F</li>
+      <li>Dodanie produktu do koszyka i sprawdzenie licznika</li>
+      <li>Sprawdzenie czy tooltip pojawia się po 300ms</li>
+      <li>Rejestracja nowego konta i potwierdzenie emailem</li>
+    </ol>
+  </section>
+
+  <!-- Slide 61b: Quiz 2 odpowiedzi -->
+  <section>
+    <h2>Odpowiedzi</h2>
+    <ul style="list-style: none;">
+      <li>1 - <span style="color: #4CAF50;">TAK</span> - kluczowa funkcjonalność</li>
+      <li>2 - <span style="color: #E3000F;">NIE</span> - visual regression tool</li>
+      <li>3 - <span style="color: #4CAF50;">TAK</span> - kluczowy przepływ</li>
+      <li>4 - <span style="color: #E3000F;">NIE</span> - zbyt kruchy i niskopoziomowy</li>
+      <li>5 - <span style="color: #FFC107;">ZALEŻY</span> - jeśli można zautomatyzować email</li>
+    </ul>
+    <aside class="notes">
+      Kontynuacja dyskusji. Punkt 2 - kolory testujemy narzędziem do visual regression (Percy, Chromatic),
+      nie ręcznym sprawdzaniem wartości CSS. Punkt 4 - timing-based testy są niestabilne.
+      Punkt 5 - email verification można obejść przez API lub Mailosaur/Mailtrap.
+    </aside>
+  </section>
+
+  <!-- Slide 62: Exercise priorytetyzacja -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie - priorytetyzacja testów</h3>
+    </div>
+    <p>Mając rossmann-test-app z funkcjami:</p>
+    <ol>
+      <li>Logowanie / Rejestracja</li>
+      <li>Przeglądanie produktów</li>
+      <li>Wyszukiwanie</li>
+      <li>Dodawanie do koszyka</li>
+      <li>Zmiana ilości w koszyku</li>
+      <li>Usuwanie z koszyka</li>
+      <li>Składanie zamówienia</li>
+      <li>Historia zamówień</li>
+      <li>Edycja profilu</li>
+      <li>Dark mode toggle</li>
+    </ol>
+    <p><strong>Zadanie:</strong> Uszereguj od najważniejszego. Dla top 5 napisz 1-zdaniowy opis testu.</p>
+    <aside class="notes">
+      15 minut na ćwiczenie w parach. Typowa poprawna kolejność: 1 (logowanie), 7 (zamówienie),
+      4 (koszyk), 2 (produkty), 3 (wyszukiwanie). Reszta to mniejszy priorytet.
+      Dark mode to zdecydowanie ostatnie. Omów odpowiedzi po ćwiczeniu.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 6: Zarządzanie danymi i sekretami (~45 min, ~10 slides)
+       ============================================================ -->
+
+  <!-- Slide 63: Section -->
+  <section class="section-slide">
+    <span class="section-number">5</span>
+    <h2>Zarządzanie danymi i sekretami</h2>
+    <p>Bezpieczeństwo i organizacja danych testowych</p>
+    <aside class="notes">
+      Ostatni blok merytoryczny. Bardzo ważny temat - uczestnicy często commitują hasla
+      do repozytoriów. Pokażemy jak tego uniknąć i jak zarządzać danymi testowymi.
+    </aside>
+  </section>
+
+  <!-- Slide 64: Nigdy nie commituj sekretów -->
+  <section>
+    <h2>Złota zasada</h2>
+    <div class="warning">
+      <h3>NIGDY nie commituj haseł, tokenów ani kluczy API do gita!</h3>
+    </div>
+    <pre><code data-trim data-noescape class="language-javascript">
+// ZLE - haslo w kodzie!
+const password = 'SuperTajneHaslo123!';
+await page.fill('#password', password);
+
+// ZLE - token w kodzie!
+const apiKey = 'sk-abc123xyz789';
+await fetch('/api', {
+  headers: { 'Authorization': apiKey }
+});
+    </code></pre>
+    <p class="fragment">Każdy z dostępem do repozytorium widzi te dane - nawet po ich usunieciu (historia gita)!</p>
+    <aside class="notes">
+      To jest absolutna zasada. Nawet jeśli usuniesz hasło z kodu w następnym ustawieniu - ono
+      zostaje w historii gita na zawsze. Boty skanują publiczne repozytoria w poszukiwaniu kluczy API.
+      W firmie to może oznaczać wyciek danych klientów.
+    </aside>
+  </section>
+
+  <!-- Slide 65: .env -->
+  <section>
+    <h2>Plik .env - zmienne środowiskowe</h2>
+    <pre><code data-trim data-noescape class="language-text">
+# .env - NIE commituj tego pliku!
+BASE_URL=http://localhost:3000
+TEST_USER_EMAIL=tester@rossmann.pl
+TEST_USER_PASSWORD=TestPass123!
+API_KEY=sk-abc123xyz789
+    </code></pre>
+    <div class="tip">
+      <h3>.gitignore</h3>
+      <p>Dodaj <code>.env</code> do pliku <code>.gitignore</code> - git nie będzie go śledził</p>
+    </div>
+    <aside class="notes">
+      Plik .env przechowuje zmienne lokalne. Każdy deweloper ma swoją kopię.
+      Plik .env MUSI być w .gitignore.
+    </aside>
+  </section>
+
+  <!-- Slide 65b: Użycie .env w testach -->
+  <section>
+    <h2>Użycie .env w testach</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - env ustawiane w cypress.config.js lub cypress.env.json
+it('login', () => {
+  cy.visit(Cypress.env('BASE_URL') + '/login');
+  cy.get('#email').type(Cypress.env('TEST_USER_EMAIL'));
+  cy.get('#password').type(Cypress.env('TEST_USER_PASSWORD'));
+});
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Playwright - uzycie process.env
+test('login', async ({ page }) => {
+  await page.goto(process.env.BASE_URL + '/login');
+  await page.fill('#email', process.env.TEST_USER_EMAIL);
+  await page.fill('#password', process.env.TEST_USER_PASSWORD);
+});
+    </code></pre>
+    <aside class="notes">
+      process.env to obiekt w Node.js, który daje dostęp do zmiennych środowiskowych.
+      Cypress ma własny system env - Cypress.env().
+    </aside>
+  </section>
+
+  <!-- Slide 66: .env.example -->
+  <section>
+    <h2>.env.example - szablon</h2>
+    <pre><code data-trim data-noescape class="language-text">
+# .env.example - TEN plik commituj do gita!
+# Skopiuj jako .env i uzupelnij wartosci
+
+BASE_URL=http://localhost:3000
+TEST_USER_EMAIL=
+TEST_USER_PASSWORD=
+API_KEY=
+    </code></pre>
+    <p>Nowy członek zespołu:</p>
+    <ol>
+      <li class="fragment">Klonuje repozytorium</li>
+      <li class="fragment">Kopiuje <code>.env.example</code> jako <code>.env</code></li>
+      <li class="fragment">Uzupełnia wartości (dostaje od team leada)</li>
+      <li class="fragment">Gotowe!</li>
+    </ol>
+    <aside class="notes">
+      .env.example to wzorzec - mówi jakie zmienne są potrzebne, ale nie zawiera prawdziwych wartości.
+      Ten plik commitujemy do gita. Nowa osoba w zespole wie dokładnie jakie zmienne ustawić.
+    </aside>
+  </section>
+
+  <!-- Slide 67: CI/CD -->
+  <section>
+    <h2>Sekrety w CI/CD</h2>
+    <p>W pipeline'ach CI/CD zmienne ustawiamy w konfiguracji serwera:</p>
+    <pre><code data-trim data-noescape class="language-yaml">
+# GitHub Actions - .github/workflows/tests.yml
+name: E2E Tests
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npx playwright test
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    </code></pre>
+    <p>Sekrety ustawia się w Settings > Secrets w GitHubie/GitLabie.</p>
+    <aside class="notes">
+      W CI/CD nie mamy pliku .env - zmienne są ustawiane w panelu administracyjnym serwera CI.
+      W GitHubie to Settings > Secrets and variables > Actions. Nigdy nie drukuj sekretów w logach!
+    </aside>
+  </section>
+
+  <!-- Slide 68: Fixtures -->
+  <section>
+    <h2>Fixtures - dane testowe w plikach</h2>
+    <pre><code data-trim data-noescape class="language-json">
+// fixtures/users.json
+{
+  "validUser": {
+    "email": "tester@rossmann.pl",
+    "password": "Test1234",
+    "name": "Anna Testerska"
+  },
+  "adminUser": {
+    "email": "admin@rossmann.pl",
+    "password": "Admin1234",
+    "name": "Jan Admin"
+  }
+}
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - wbudowana obsluga fixtures
+it('should login with fixture data', () => {
+  cy.fixture('users.json').then((users) => {
+    loginPage.login(
+      users.validUser.email,
+      users.validUser.password
+    );
+  });
+});
+    </code></pre>
+    <aside class="notes">
+      Fixtures to pliki JSON z danymi testowymi. Trzymamy je oddzielnie od testów -
+      łatwiej aktualizować dane bez dotykania logiki testów. W Cypress fixtures są wbudowane
+      i ładowane przez cy.fixture().
+    </aside>
+  </section>
+
+  <!-- Slide 69: Fixtures - więcej przykładów -->
+  <section>
+    <h2>Fixtures - więcej przykładów</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - alternatywnie z beforeEach
+describe('Login', () => {
+  beforeEach(function() {
+    cy.fixture('users.json').as('users');
+  });
+
+  it('should login', function() {
+    loginPage.login(
+      this.users.validUser.email,
+      this.users.validUser.password
+    );
+  });
+});
+
+// Playwright - import fixture
+import users from '../fixtures/users.json';
+
+test('login as valid user', async ({ page }) => {
+  await loginPage.login(
+    users.validUser.email,
+    users.validUser.password
+  );
+});
+    </code></pre>
+    <aside class="notes">
+      Cypress ma wbudowaną obsługę fixtures - plik musi być w cypress/fixtures/.
+      cy.fixture() automatycznie parsuje JSON. Można użyć aliasu (.as) do przechowania danych.
+      Uwaga na function() vs arrow function - this nie działa z arrow functions w Mocha.
+      W Playwright importujemy JSON bezpośrednio.
+    </aside>
+  </section>
+
+  <!-- Slide 70: Strategie danych testowych -->
+  <section>
+    <h2>Strategie zarzadzania danymi</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Strategia</th>
+          <th>Kiedy używać</th>
+          <th>Przykład</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Statyczne fixture</td>
+          <td>Proste, stałe dane</td>
+          <td>users.json</td>
+        </tr>
+        <tr>
+          <td>Faker.js</td>
+          <td>Unikalne dane per test</td>
+          <td>losowy email, imię</td>
+        </tr>
+        <tr>
+          <td>API seeding</td>
+          <td>Przygotowanie stanu</td>
+          <td>Utwórz usera przez API</td>
+        </tr>
+        <tr>
+          <td>DB seeding</td>
+          <td>Złożone scenariusze</td>
+          <td>Pełna baza testowa</td>
+        </tr>
+      </tbody>
+    </table>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Faker.js - generowanie unikalnych danych
+import { faker } from '@faker-js/faker';
+
+const testUser = {
+  name: faker.person.fullName(),
+  email: faker.internet.email(),
+  password: faker.internet.password({ length: 12 })
+};
+    </code></pre>
+    <aside class="notes">
+      Różne strategie pasują do różnych sytuacji. Statyczne fixture dla prostych testów,
+      faker.js kiedy potrzebujemy unikatowych danych (np. rejestracja - każdy test nowy email),
+      API seeding kiedy musimy przygotować stan (np. utworzyć użytkownika przed testem logowania).
+    </aside>
+  </section>
+
+  <!-- Slide 71: Warning - realne dane -->
+  <section>
+    <div class="warning">
+      <h3>Realne dane klientów w testach = ryzyko!</h3>
+    </div>
+    <ul>
+      <li class="fragment">Nigdy nie używaj prawdziwych danych klientów w testach</li>
+      <li class="fragment">Środowisko testowe powinno mieć anonimizowane dane</li>
+      <li class="fragment">RODO/GDPR - dane osobowe podlegają ochronie prawnej</li>
+      <li class="fragment">Używaj generowanych danych lub danych fikcyjnych</li>
+    </ul>
+    <p class="fragment">Repozytorium testów jest często dostępne dla wielu osób - dane klientów nie powinny tam trafić.</p>
+    <aside class="notes">
+      Bardzo ważne w kontekście Rossmanna - firma przetwarza dane milionów klientów.
+      Jeśli dane produkcyjne trafią do repozytorium testowego - to naruszenie RODO.
+      Zawsze używajcie danych fikcyjnych lub zanonimizowanych.
+    </aside>
+  </section>
+
+  <!-- Slide 72: Exercise .env.example -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie - .env.example</h3>
+    </div>
+    <p>Stwórz plik <code>.env.example</code> dla projektu testowego rossmann-test-app. Uwzględnij:</p>
+    <ul>
+      <li>URL aplikacji</li>
+      <li>Dane logowania testowego użytkownika</li>
+      <li>Dane logowania admina</li>
+      <li>Klucz API (jeśli aplikacja go używa)</li>
+      <li>Timeout dla testów</li>
+    </ul>
+    <pre class="fragment"><code data-trim data-noescape class="language-text">
+# Konfiguracja srodowiska testowego
+BASE_URL=http://localhost:3000
+
+# Uzytkownik testowy
+TEST_USER_EMAIL=
+TEST_USER_PASSWORD=
+
+# Administrator
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
+
+# API
+API_KEY=
+API_BASE_URL=http://localhost:3000/api
+
+# Ustawienia testow
+TEST_TIMEOUT=30000
+HEADLESS=true
+    </code></pre>
+    <aside class="notes">
+      Proste ćwiczenie na zakończenie bloku. Ważne: wartości wrażliwe (hasla, klucze) są puste -
+      każdy uzupełnia je lokalnie. Wartości niewrażliwe (URL localhost, timeout) mogą mieć domyślne wartości.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 7: Podsumowanie dnia 4 (~15 min, ~3 slides)
+       ============================================================ -->
+
+  <!-- Slide 73: Kluczowe wnioski -->
+  <section>
+    <h2>Podsumowanie dnia 4</h2>
+    <ol>
+      <li class="fragment"><strong>async/await</strong> - Cypress kolejkuje komendy, Playwright wymaga async/await</li>
+      <li class="fragment"><strong>Selektory</strong> - data-testid > role > tekst > CSS > XPath</li>
+      <li class="fragment"><strong>Page Object Model</strong> - selektory w jednym miejscu, czytelne testy</li>
+      <li class="fragment"><strong>Klasy JS</strong> - szablon do tworzenia Page Objectów</li>
+      <li class="fragment"><strong>Strategia testów</strong> - automatyzuj happy paths i krytyczne przepływy</li>
+      <li class="fragment"><strong>Dane testowe</strong> - .env dla sekretów, fixtures dla danych, nigdy prawdziwe dane</li>
+      <li class="fragment"><strong>Stabilność</strong> - unikaj flaky testów, czekaj na warunki zamiast na czas</li>
+    </ol>
+    <aside class="notes">
+      Podsumuj kluczowe wnioski. Zapytaj czy są pytania do każdego punktu.
+      Podkreśl, że jutro będziemy to wszystko łączyć w praktyce - pisanie testów od zera.
+    </aside>
+  </section>
+
+  <!-- Slide 74: Zapowiedz dnia 5 -->
+  <section>
+    <h2>Jutro - Dzień 5</h2>
+    <h3>Warsztat praktyczny: Piszemy testy E2E</h3>
+    <ul>
+      <li class="fragment">Konfiguracja projektu testowego od zera</li>
+      <li class="fragment">Pisanie testów dla rossmann-test-app</li>
+      <li class="fragment">Użycie Page Object Model w praktyce</li>
+      <li class="fragment">Uruchamianie testów i analiza wyników</li>
+      <li class="fragment">Debugowanie testów</li>
+      <li class="fragment">Podsumowanie całego szkolenia</li>
+    </ul>
+    <aside class="notes">
+      Jutro będziemy pracować hands-on. Każdy uczestnik będzie pisał testy.
+      Upewnij się, że wszyscy mają zainstalowane Node.js, VS Code i rossmann-test-app.
+      Poproś uczestników o przygotowanie środowiska dziś wieczorem.
+    </aside>
+  </section>
+
+  <!-- Slide 75: Q&A -->
+  <section>
+    <h2>Pytania i odpowiedzi</h2>
+    <p>Dziękuję za dzisiejszy dzień!</p>
+    <p>Materiały są dostępne w repozytorium szkoleniowym.</p>
+    <p><br></p>
+    <p><small>Do zobaczenia jutro na warsztacie praktycznym!</small></p>
+    <aside class="notes">
+      Czas na pytania. Jeśli uczestnicy nie mają pytań, możesz zapytać:
+      - Który temat był najtrudniejszy?
+      - Czy coś chcielibyście powtórzyć jutro?
+      - Czy macie gotowe środowisko do jutrzejszego warsztatu?
+      Przypomnij o przygotowaniu środowiska na jutro.
     </aside>
   </section>
 

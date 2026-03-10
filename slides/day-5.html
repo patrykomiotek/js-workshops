@@ -1,2156 +1,1925 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dzień 5 - Klasy, Moduły, TypeScript + Test | JS dla Testerów</title>
+  <title>Dzień 5 - Testy E2E: Warsztat Praktyczny | Rossmann JS Training</title>
   <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css">
   <link rel="stylesheet" href="../node_modules/reveal.js/dist/theme/black.css">
   <link rel="stylesheet" href="../node_modules/reveal.js/plugin/highlight/monokai.css">
   <link rel="stylesheet" href="../css/custom.css">
 </head>
 <body>
-  <div class="reveal">
-    <div class="slides">
+<div class="reveal">
+<div class="slides">
 
-      <!-- ============================================================
-           BLOCK 1: Powtórzenie dnia 4 (~5 slides)
-           ============================================================ -->
+  <!-- ============================================================
+       BLOCK 1: Powtórzenie dnia 4 (~30 min, ~5 slides)
+       ============================================================ -->
 
-      <!-- Slide 1: Title -->
-      <section class="title-slide">
-        <span class="day-number">Dzień 5</span>
-        <h1>JavaScript dla Testerów</h1>
-        <p class="subtitle">Klasy, Moduły, TypeScript + Test końcowy</p>
-        <p><small>Rossmann - Szkolenie 2026</small></p>
-        <aside class="notes">
-          Ostatni dzień szkolenia. Dziś klasy, moduły ES, obsługa błędów, wprowadzenie do TypeScript i test końcowy.
-          Przypominamy, że po teście będzie czas na pytania i podsumowanie.
-        </aside>
-      </section>
+  <!-- Slide 1: Title -->
+  <section class="title-slide">
+    <span class="day-number">Dzień 5</span>
+    <h1>Testy E2E - Warsztat Praktyczny</h1>
+    <p class="subtitle">Szkolenie JavaScript dla testerów manualnych</p>
+    <p><small>Rossmann - Bottega</small></p>
+    <aside class="notes">
+      Ostatni dzień szkolenia - dzień praktyczny! Dziś uczestnicy zastosują wszystko, czego nauczyli się
+      w ciągu ostatnich 4 dni. Główna część dnia to warsztat, w którym wspólnie zbudujemy testy E2E
+      dla aplikacji rossmann-test-app. Zachęć uczestników do aktywnego kodowania.
+    </aside>
+  </section>
 
-      <!-- Slide 2: Agenda -->
-      <section>
-        <h2>Agenda</h2>
-        <ul class="agenda">
-          <li>Powtórzenie dnia 4 <span class="time">~30 min</span></li>
-          <li>Klasy w JavaScript <span class="time">~1.5h</span></li>
-          <li>Moduły ES <span class="time">~30 min</span></li>
-          <li>Obsługa błędów (Error handling) <span class="time">~30 min</span></li>
-          <li>Wprowadzenie do TypeScript <span class="time">~1.5h</span></li>
-          <li>Test końcowy <span class="time">~1.5h</span></li>
-          <li>Podsumowanie i dalsze kroki <span class="time">~30 min</span></li>
-        </ul>
-        <aside class="notes">
-          Omów plan dnia. Podkreśl, że dziś jest test końcowy - nie egzamin, tylko sposób na sprawdzenie wiedzy.
-          Zachęć do zadawania pytań na bieżąco.
-        </aside>
-      </section>
+  <!-- Slide 2: Agenda -->
+  <section>
+    <h2>Agenda</h2>
+    <ul class="agenda">
+      <li>Powtórzenie dnia 4 <span class="time">~30 min</span></li>
+      <li>Testowanie dynamicznych danych <span class="time">~1h</span></li>
+      <li>Dobre praktyki programistyczne w testach <span class="time">~1h</span></li>
+      <li>Warsztat - Budujemy testy dla rossmann-test-app <span class="time">~3h</span></li>
+      <li>Podsumowanie szkolenia <span class="time">~30 min</span></li>
+    </ul>
+    <aside class="notes">
+      Omów plan dnia. Podkreśl, że dzisiejszy dzień jest w dużej mierze praktyczny.
+      Po krótkim powtórzeniu i dwóch blokach teorii z przykładami, przejdziemy do 3-godzinnego warsztatu.
+      Przerwy będą elastyczne - dostosowane do tempa grupy.
+    </aside>
+  </section>
 
-      <!-- Slide 3: Quiz powtórzeniowy - DOM -->
-      <section>
-        <div class="quiz">
-          <h3>Powtórzenie: DOM i Eventy</h3>
-          <p>Jaka metoda służy do znajdowania elementu po selektorze CSS?</p>
-          <ol>
-            <li><code>document.getElement()</code></li>
-            <li><code>document.querySelector()</code></li>
-            <li><code>document.findElement()</code></li>
-            <li><code>document.select()</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>document.querySelector()</code></p>
-        </div>
-        <aside class="notes">
-          Daj chwilę na odpowiedzi. querySelector przyjmuje dowolny selektor CSS.
-          Wspomnieć też o querySelectorAll dla wielu elementów.
-        </aside>
-      </section>
+  <!-- Slide 3: Quiz - Selektory -->
+  <section>
+    <div class="quiz">
+      <h3>Powtórzenie: Strategie selektorów</h3>
+      <p>Uszereguj selektory od najlepszego do najgorszego w kontekście testów:</p>
+      <ol>
+        <li><code>cy.get('.btn-primary')</code></li>
+        <li><code>cy.get('[data-testid="submit-btn"]')</code></li>
+        <li><code>cy.get('#app > div:nth-child(3) > button')</code></li>
+        <li><code>cy.get('button').contains('Wyślij')</code></li>
+      </ol>
+      <p class="fragment"><strong>Odpowiedź: 2, 4, 1, 3</strong> - data-testid jest najbardziej stabilny, zagnieżdżone selektory CSS są najgorsze</p>
+    </div>
+    <aside class="notes">
+      Przypomnij piramidę selektorów z dnia 4. data-testid to dedykowany atrybut testowy,
+      nie zmienia się przy refaktoryzacji UI. Tekst przycisku jest dobry, ale może się zmienić
+      przy tłumaczeniach. Klasa CSS może się zmienić przy redesignie. Zagnieżdżone selektory
+      są kruche - każda zmiana w strukturze HTML je psuje.
+    </aside>
+  </section>
 
-      <!-- Slide 4: Quiz powtórzeniowy - async/await -->
-      <section>
-        <div class="quiz">
-          <h3>Powtórzenie: async/await</h3>
-          <p>Co zwraca funkcja oznaczona słowem <code>async</code>?</p>
-          <ol>
-            <li>Zwykłą wartość</li>
-            <li>Zawsze <code>undefined</code></li>
-            <li>Obiekt <code>Promise</code></li>
-            <li>Obiekt <code>Response</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 3</strong> - Funkcja <code>async</code> zawsze zwraca <code>Promise</code></p>
-        </div>
-        <aside class="notes">
-          Kluczowa koncepcja - async zawsze opakowuje wynik w Promise.
-          await "rozpakuje" ten Promise i czeka na wartość.
-        </aside>
-      </section>
+  <!-- Slide 4: Quiz - Page Object Model -->
+  <section>
+    <div class="quiz">
+      <h3>Powtórzenie: Page Object Model</h3>
+      <p>Co jest główną zaletą wzorca Page Object Model?</p>
+      <ol>
+        <li>Testy działają szybciej</li>
+        <li>Nie trzeba pisać selektorów</li>
+        <li>Zmiana UI wymaga aktualizacji tylko w jednym miejscu</li>
+        <li>Testy automatycznie się naprawiają</li>
+      </ol>
+      <p class="fragment"><strong>Odpowiedź: 3</strong> - POM enkapsuluje selektory i akcje w jednym miejscu. Gdy zmieni się UI, aktualizujemy tylko Page Object.</p>
+    </div>
+    <aside class="notes">
+      POM to wzorzec projektowy, nie magiczne rozwiązanie. Wymaga pracy z góry, ale oszczędza
+      ogromną ilość czasu przy utrzymaniu testów. Każda strona/komponent ma swoją klasę z
+      selektorami i metodami akcji.
+    </aside>
+  </section>
 
-      <!-- Slide 5: Quiz powtórzeniowy - fetch -->
-      <section>
-        <div class="quiz">
-          <h3>Powtórzenie: Fetch API</h3>
-          <p>Jak pobrać dane JSON z API?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-const response = await fetch("https://api.example.com/data");
-const data = await response.???();
-          </code></pre>
-          <p class="fragment"><strong>Odpowiedź:</strong> <code>response.json()</code></p>
-        </div>
-        <aside class="notes">
-          response.json() parsuje ciało odpowiedzi jako JSON i zwraca Promise.
-          Inne metody: .text(), .blob(), .formData().
-        </aside>
-      </section>
+  <!-- Slide 5: Quiz - Co automatyzować -->
+  <section>
+    <div class="quiz">
+      <h3>Powtórzenie: Co automatyzować?</h3>
+      <p>Sklep internetowy Rossmann - który scenariusz jest NAJLEPSZYM kandydatem do automatyzacji?</p>
+      <ol>
+        <li>Sprawdzenie, czy nowy baner wygląda ładnie</li>
+        <li>Proces zakupowy: dodanie do koszyka - checkout - potwierdzenie</li>
+        <li>Jednorazowa migracja danych z innego systemu</li>
+        <li>Testowanie animacji po najechaniu na produkt</li>
+      </ol>
+      <p class="fragment"><strong>Odpowiedź: 2</strong> - Krytyczny, powtarzalny, stabilny scenariusz biznesowy - idealny kandydat do automatyzacji</p>
+    </div>
+    <aside class="notes">
+      Przypomnij kryteria: wysoka wartość biznesowa, powtarzalność, stabilność, możliwość weryfikacji.
+      Baner i animacje to testy wizualne (inne narzędzia). Jednorazowa migracja nie wymaga automatyzacji.
+      Proces zakupowy to rdzeń biznesu - musi działać zawsze.
+    </aside>
+  </section>
 
-      <!-- ============================================================
-           BLOCK 2: Klasy (~12-15 slides)
-           ============================================================ -->
+  <!-- ============================================================
+       BLOCK 2: Testowanie dynamicznych danych (~1h, ~12 slides)
+       ============================================================ -->
 
-      <!-- Slide 6: Section divider - Klasy -->
-      <section class="section-slide">
-        <span class="section-number">01</span>
-        <h2>Klasy w JavaScript</h2>
-        <p>Szablony do tworzenia obiektów</p>
-        <aside class="notes">
-          Klasy to jeden z fundamentów programowania obiektowego.
-          W kontekście testowania - klasy są podstawą wzorca Page Object Model.
-        </aside>
-      </section>
+  <!-- Slide 6: Section divider -->
+  <section class="section-slide">
+    <span class="section-number">01</span>
+    <h2>Testowanie dynamicznych danych</h2>
+    <p>Jak pisać stabilne testy, gdy dane się zmieniają?</p>
+    <aside class="notes">
+      To jeden z największych wyzwań w testach E2E. Dane dynamiczne to: daty, losowe ID,
+      spersonalizowane treści, ceny po promocjach, rekomendacje. Nauczymy się strategii
+      radzenia sobie z tymi problemami.
+    </aside>
+  </section>
 
-      <!-- Slide 7: Czym jest klasa? -->
-      <section>
-        <h2>Czym jest klasa?</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>Analogia</h3>
-            <p>Klasa to <strong>szablon</strong> (przepis), a obiekt to <strong>instancja</strong> (gotowe danie).</p>
-            <ul>
-              <li class="fragment">Klasa <code>User</code> - szablon użytkownika</li>
-              <li class="fragment">Obiekt <code>jan</code> - konkretny użytkownik</li>
-              <li class="fragment">Można tworzyć wiele instancji z jednej klasy</li>
-            </ul>
-          </div>
-          <div class="col fragment">
-            <pre><code data-trim data-noescape class="language-javascript">
-// Klasa = szablon
-class User {
-  // ...definicja
-}
+  <!-- Slide 7: Problem dynamicznych danych -->
+  <section>
+    <h2>Problem: dane się zmieniają</h2>
+    <p>Typowe źródła niestabilnych testów:</p>
+    <ul>
+      <li class="fragment">Daty i godziny - <code>"Dziś jest 07.03.2026"</code></li>
+      <li class="fragment">Losowe identyfikatory - <code>"ORD-48291"</code></li>
+      <li class="fragment">Spersonalizowane treści - rekomendacje, oferty</li>
+      <li class="fragment">Ceny i promocje - zmieniają się w czasie</li>
+      <li class="fragment">Dane z zewnętrznych API - mogą być niedostępne</li>
+    </ul>
+    <div class="warning fragment">
+      <h3>Uwaga</h3>
+      <p>Test, który przechodzi dzisiaj, a nie przechodzi jutro - to nie jest test, to loteria.</p>
+    </div>
+    <aside class="notes">
+      Poproś uczestników o przykłady z ich codziennej pracy - jakie dane się zmieniają w aplikacjach,
+      które testują? To pomoże im powiązać teorię z praktyką.
+    </aside>
+  </section>
 
-// Instancja = konkretny obiekt
-const jan = new User();
-const anna = new User();
-            </code></pre>
-          </div>
-        </div>
-        <aside class="notes">
-          Porównaj klasę do formularza - formularz to szablon, wypełniony formularz to instancja.
-          Do tej pory tworzyli obiekty literałami {}, teraz mamy szablon wielokrotnego użytku.
-        </aside>
-      </section>
-
-      <!-- Slide 8: Składnia class -->
-      <section>
-        <h2>Składnia <code>class</code></h2>
+  <!-- Slide 8: Daty i czasy - kruche asercje -->
+  <section>
+    <h2>Daty i czasy - kruche asercje</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Źle - kruche</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-class Product {
-  constructor(name, price) {
-    this.name = name;
-    this.price = price;
-  }
+// Cypress - nie rób tak!
+cy.get('[data-testid="date"]')
+  .should('have.text', '07.03.2026');
 
-  displayInfo() {
-    return `${this.name} - ${this.price} zł`;
-  }
-}
-
-const shampoo = new Product("Szampon", 12.99);
-console.log(shampoo.displayInfo());
-// "Szampon - 12.99 zł"
+// Playwright - nie rób tak!
+await expect(greeting).toHaveText(
+  'Witaj, Anna! Dzis jest 07.03.2026'
+);
         </code></pre>
-        <div class="tip">
-          <h3>Konwencja</h3>
-          <p>Nazwy klas zaczynamy <strong>wielką literą</strong> (PascalCase): <code>Product</code>, <code>User</code>, <code>TestPage</code>.</p>
-        </div>
-        <aside class="notes">
-          Omów każdą część: słowo kluczowe class, nazwa, ciało klasy w nawiasach klamrowych.
-          Zwróć uwagę na PascalCase - to standard w JS.
-        </aside>
-      </section>
-
-      <!-- Slide 9: Constructor -->
-      <section>
-        <h2><code>constructor()</code> - inicjalizacja</h2>
+      </div>
+      <div class="col fragment">
+        <h3>Dobrze - elastyczne</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-class User {
-  constructor(name, email, role) {
-    this.name = name;       // przypisanie do instancji
-    this.email = email;
-    this.role = role;
-    this.createdAt = new Date(); // wartość domyślna
-  }
-}
+// Cypress - regex na format daty
+cy.get('[data-testid="date"]')
+  .invoke('text')
+  .should('match', /\d{2}\.\d{2}\.\d{4}/);
 
-const admin = new User("Jan", "jan@rossmann.pl", "admin");
-console.log(admin.name);      // "Jan"
-console.log(admin.createdAt); // aktualna data
+// Playwright - partial match
+await expect(greeting)
+  .toContainText('Witaj, Anna!');
         </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Pokaż na żywo: uruchom test z hardkodowaną datą - przejdzie dziś, jutro nie.
+      Strategia: sprawdzaj format daty, nie konkretną wartość. Albo sprawdzaj tylko część tekstu,
+      która jest stała.
+    </aside>
+  </section>
+
+  <!-- Slide 9: Strategia: zakres dat -->
+  <section>
+    <h2>Strategia: zakresy dat i czasów</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - sprawdź timestamp w rozsądnym zakresie
+cy.get('[data-testid="order-time"]')
+  .invoke('attr', 'data-timestamp')
+  .then((timestamp) => {
+    const orderTime = new Date(Number(timestamp));
+    const now = new Date();
+    const diffMinutes = (now - orderTime) / 1000 / 60;
+    expect(diffMinutes).to.be.lessThan(5);
+  });
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Playwright - sprawdź, że data jest "dzisiejsza"
+test('should display today date', async ({ page }) => {
+  await page.goto('/dashboard');
+
+  const dateText = await page.getByTestId('current-date').textContent();
+  const today = new Date();
+  const expectedDay = String(today.getDate()).padStart(2, '0');
+  const expectedMonth = String(today.getMonth() + 1).padStart(2, '0');
+
+  expect(dateText).toContain(`${expectedDay}.${expectedMonth}`);
+});
+    </code></pre>
+    <aside class="notes">
+      Dwa podejścia: generuj oczekiwaną datę dynamicznie albo sprawdzaj zakres.
+      Unikaj hardkodowania dat - to najczęstsza przyczyna "zepsutych" testów w poniedziałek rano.
+    </aside>
+  </section>
+
+  <!-- Slide 10: Losowe identyfikatory -->
+  <section>
+    <h2>Losowe identyfikatory</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - sprawdzaj format, nie wartość
+cy.get('[data-testid="order-id"]')
+  .invoke('text')
+  .should('match', /^ORD-\d+$/);
+
+// Playwright - sprawdzaj format
+const orderId = await page.getByTestId('order-id').textContent();
+expect(orderId).toMatch(/^ORD-\d+$/);
+    </code></pre>
+    <div class="tip">
+      <h3>Regex w testach</h3>
+      <p><code>/^ORD-\d+$/</code> - zaczyna się od "ORD-", potem jedna lub więcej cyfr. Sprawdzamy format, nie wartość.</p>
+    </div>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Inne przydatne wzorce regex:
+/^[A-Z]{2}-\d{6}$/       // np. PL-123456
+/^\w+@\w+\.\w+$/         // prosty email
+/^\d{2}-\d{3}$/           // kod pocztowy
+/^[0-9a-f]{8}-[0-9a-f]{4}/ // UUID (początek)
+    </code></pre>
+    <aside class="notes">
+      Wyjaśnij regex krok po kroku: ^ - początek, ORD- - literalny tekst, \d+ - cyfry, $ - koniec.
+      Nie trzeba znać całego regex - wystarczy kilka podstawowych wzorców. Pokaż regex101.com
+      jako narzędzie do testowania wyrażeń regularnych.
+    </aside>
+  </section>
+
+  <!-- Slide 11: Spersonalizowane treści -->
+  <section>
+    <h2>Spersonalizowane treści</h2>
+    <p>Rekomendacje, oferty, propozycje - różne dla każdego użytkownika</p>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Źle - konkretny produkt może zniknąć z rekomendacji
+cy.get('[data-testid="recommendations"]')
+  .should('contain', 'Szampon XYZ');
+
+// Dobrze - sprawdzaj strukturę, nie treść
+cy.get('[data-testid="recommendations"]')
+  .should('exist')
+  .find('[data-testid="product-card"]')
+  .should('have.length.greaterThan', 0);
+
+// Dobrze - sprawdzaj, że każda karta ma wymagane elementy
+cy.get('[data-testid="product-card"]').first().within(() => {
+  cy.get('[data-testid="product-name"]').should('not.be.empty');
+  cy.get('[data-testid="product-price"]').should('not.be.empty');
+  cy.get('[data-testid="add-to-cart"]').should('be.visible');
+});
+    </code></pre>
+    <aside class="notes">
+      Klucz: testuj STRUKTURĘ, nie TREŚĆ dynamiczną. Sprawdź, że sekcja rekomendacji istnieje,
+      ma elementy, każdy element ma nazwę, cenę i przycisk. Nie sprawdzaj, JAKI konkretnie produkt jest wyświetlany.
+    </aside>
+  </section>
+
+  <!-- Slide 12: Ceny i formatowanie -->
+  <section>
+    <h2>Ceny i formatowanie walutowe</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Sprawdzaj format ceny, nie konkretną wartość
+cy.get('[data-testid="product-price"]')
+  .invoke('text')
+  .should('match', /^\d+,\d{2}\s?zl$/);
+
+// Playwright - sprawdzaj, że cena jest liczbą > 0
+const priceText = await page.getByTestId('product-price').textContent();
+const price = parseFloat(
+  priceText.replace(',', '.').replace(/[^\d.]/g, '')
+);
+expect(price).toBeGreaterThan(0);
+    </code></pre>
+    <div class="tip">
+      <h3>Kiedy sprawdzać konkretną cenę?</h3>
+      <p>Tylko gdy kontrolujesz dane testowe - np. przez mocki API lub fixtures.</p>
+    </div>
+    <aside class="notes">
+      Ceny mogą się zmieniać w wyniku promocji, przeliczania walut itp. Lepiej sprawdzać format
+      i zakres wartości niż konkretną cenę. Wyjątek: gdy mockujemy API - wtedy znamy dane.
+    </aside>
+  </section>
+
+  <!-- Slide 13: API mocking - wprowadzenie -->
+  <section>
+    <h2>Mockowanie API - kontrola nad danymi</h2>
+    <p>Zamiast testować z prawdziwym API, przechwytujemy żądania i zwracamy kontrolowane dane</p>
+    <div class="columns">
+      <div class="col">
+        <h3>Zalety</h3>
         <ul>
-          <li class="fragment"><code>constructor</code> wywoływany automatycznie przy <code>new</code></li>
-          <li class="fragment">Przyjmuje argumenty i inicjalizuje właściwości</li>
-          <li class="fragment">Każda klasa może mieć <strong>tylko jeden</strong> constructor</li>
+          <li class="fragment">Kontrolowane dane testowe</li>
+          <li class="fragment">Testy nie zależą od backendu</li>
+          <li class="fragment">Szybsze wykonanie</li>
+          <li class="fragment">Można testować edge cases</li>
         </ul>
-        <aside class="notes">
-          constructor to specjalna metoda - uruchamiana automatycznie przez operator new.
-          Służy do ustawiania początkowych wartości obiektu.
-          Pokaż, że createdAt jest ustawiana bez parametru - wartość domyślna.
-        </aside>
-      </section>
+      </div>
+      <div class="col">
+        <h3>Wady</h3>
+        <ul>
+          <li class="fragment">Nie testujemy prawdziwego API</li>
+          <li class="fragment">Mock może się rozjechać z realnym API</li>
+          <li class="fragment">Wymaga utrzymania mocków</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Wyjaśnij analogię: mock to jak dublerka w filmie. Wygląda jak prawdziwy aktor,
+      ale kontrolujemy co robi. Testy z mockami są stabilne, ale nie zastąpią testów integracyjnych.
+      Idealna strategia: większość testów z mockami + kilka smoke testów z prawdziwym API.
+    </aside>
+  </section>
 
-      <!-- Slide 10: Metody klasy -->
-      <section>
-        <h2>Metody klasy</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class Calculator {
-  constructor() {
-    this.result = 0;
-  }
+  <!-- Slide 14: Cypress - cy.intercept() -->
+  <section>
+    <h2>Cypress - <code>cy.intercept()</code></h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+describe('Products page', () => {
+  it('displays mocked products', () => {
+    cy.intercept('GET', '/api/products', {
+      body: [
+        { id: 1, name: 'Test Product', price: 29.99 },
+        { id: 2, name: 'Another Product', price: 49.99 }
+      ]
+    }).as('getProducts');
 
-  add(value) {
-    this.result += value;
-    return this; // umożliwia łańcuchowanie
-  }
+    cy.visit('/products');
+    cy.wait('@getProducts');
 
-  subtract(value) {
-    this.result -= value;
-    return this;
-  }
-
-  getResult() {
-    return this.result;
-  }
-}
-
-const calc = new Calculator();
-calc.add(10).add(5).subtract(3);
-console.log(calc.getResult()); // 12
-        </code></pre>
-        <aside class="notes">
-          Metody definiujemy bez słowa function - po prostu nazwa i nawiasy.
-          Zwracanie this umożliwia łańcuchowanie metod (method chaining).
-          Ten wzorzec jest używany np. w Cypress: cy.get().click().type().
-        </aside>
-      </section>
-
-      <!-- Slide 11: this - kontekst -->
-      <section>
-        <h2><code>this</code> - kontekst obiektu</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class User {
-  constructor(name) {
-    this.name = name;
-  }
-
-  greet() {
-    return `Cześć, jestem ${this.name}`;
-  }
-}
-
-const jan = new User("Jan");
-console.log(jan.greet()); // "Cześć, jestem Jan"
-
-const anna = new User("Anna");
-console.log(anna.greet()); // "Cześć, jestem Anna"
-        </code></pre>
-        <div class="tip">
-          <h3>Zapamiętaj</h3>
-          <p><code>this</code> odnosi się do <strong>bieżącej instancji</strong> - obiektu, na którym wywołujemy metodę.</p>
-        </div>
-        <aside class="notes">
-          this to referencja do aktualnego obiektu. Każda instancja ma swoje własne dane.
-          Porównaj: jan.greet() - this wskazuje na jan, anna.greet() - this wskazuje na anna.
-        </aside>
-      </section>
-
-      <!-- Slide 12: Tworzenie instancji -->
-      <section>
-        <h2>Tworzenie instancji: <code>new</code></h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class TestCase {
-  constructor(title, priority) {
-    this.title = title;
-    this.priority = priority;
-    this.status = "pending";
-  }
-
-  run() {
-    this.status = "running";
-    console.log(`Uruchamiam: ${this.title}`);
-  }
-}
-
-// Tworzenie instancji
-const test1 = new TestCase("Login test", "high");
-const test2 = new TestCase("Search test", "medium");
-
-test1.run(); // "Uruchamiam: Login test"
-console.log(test1.status); // "running"
-console.log(test2.status); // "pending"
-        </code></pre>
-        <aside class="notes">
-          Operator new tworzy nowy obiekt, wywołuje constructor i zwraca obiekt.
-          Każda instancja jest niezależna - zmiana w test1 nie wpływa na test2.
-        </aside>
-      </section>
-
-      <!-- Slide 13: Gettery i settery -->
-      <section>
-        <h2>Gettery i settery</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class Product {
-  constructor(name, netPrice) {
-    this.name = name;
-    this._netPrice = netPrice; // konwencja: _ = prywatne
-  }
-
-  get price() {
-    return this._netPrice * 1.23; // z VAT
-  }
-
-  set price(grossPrice) {
-    if (grossPrice < 0) {
-      throw new Error("Cena nie może być ujemna");
-    }
-    this._netPrice = grossPrice / 1.23;
-  }
-}
-
-const item = new Product("Krem", 10);
-console.log(item.price);   // 12.3 (get - jak właściwość)
-item.price = 24.60;        // set - jak przypisanie
-console.log(item._netPrice); // 20
-        </code></pre>
-        <aside class="notes">
-          Gettery i settery wyglądają jak zwykłe właściwości, ale pod spodem wykonują logikę.
-          Konwencja _ (underscore) oznacza, że pole jest "prywatne" - nie powinno się go używać bezpośrednio.
-        </aside>
-      </section>
-
-      <!-- Slide 14: Dziedziczenie - extends -->
-      <section>
-        <h2>Dziedziczenie: <code>extends</code></h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class Animal {
-  constructor(name) {
-    this.name = name;
-  }
-
-  speak() {
-    return `${this.name} wydaje dźwięk`;
-  }
-}
-
-class Dog extends Animal {
-  speak() {
-    return `${this.name} szczeka: Hau!`;
-  }
-}
-
-class Cat extends Animal {
-  speak() {
-    return `${this.name} miauczy: Miau!`;
-  }
-}
-
-const dog = new Dog("Burek");
-console.log(dog.speak()); // "Burek szczeka: Hau!"
-        </code></pre>
-        <aside class="notes">
-          extends tworzy relację rodzic-dziecko. Klasa potomna dziedziczy metody i właściwości.
-          Metody można nadpisywać (override) - jak speak() w Dog.
-        </aside>
-      </section>
-
-      <!-- Slide 15: super() -->
-      <section>
-        <h2><code>super()</code> - wywołanie rodzica</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class Person {
-  constructor(name, age) {
-    this.name = name;
-    this.age = age;
-  }
-
-  introduce() {
-    return `Jestem ${this.name}, mam ${this.age} lat`;
-  }
-}
-
-class Employee extends Person {
-  constructor(name, age, position) {
-    super(name, age); // wywołanie constructora rodzica
-    this.position = position;
-  }
-
-  introduce() {
-    return `${super.introduce()}, pracuję jako ${this.position}`;
-  }
-}
-
-const emp = new Employee("Jan", 30, "tester");
-console.log(emp.introduce());
-// "Jestem Jan, mam 30 lat, pracuję jako tester"
-        </code></pre>
-        <aside class="notes">
-          super() w constructorze musi być wywołane PRZED użyciem this.
-          super.metoda() pozwala wywołać wersję metody z klasy rodzica.
-        </aside>
-      </section>
-
-      <!-- Slide 16: Metody statyczne -->
-      <section>
-        <h2>Metody statyczne: <code>static</code></h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class MathHelper {
-  static add(a, b) {
-    return a + b;
-  }
-
-  static isEven(number) {
-    return number % 2 === 0;
-  }
-
-  static generateId() {
-    return `ID-${Date.now()}`;
-  }
-}
-
-// Wywołanie BEZ tworzenia instancji
-console.log(MathHelper.add(2, 3));      // 5
-console.log(MathHelper.isEven(4));      // true
-console.log(MathHelper.generateId());   // "ID-1709..."
-        </code></pre>
-        <div class="tip">
-          <h3>Kiedy static?</h3>
-          <p>Gdy metoda nie potrzebuje danych instancji - narzędziowe funkcje, fabryki, helpery.</p>
-        </div>
-        <aside class="notes">
-          Metody statyczne należą do klasy, nie do instancji. Nie mają dostępu do this.
-          Przykłady: Math.random(), Math.max(), Array.isArray().
-        </aside>
-      </section>
-
-      <!-- Slide 17: Klasy w testowaniu - Page Object Model -->
-      <section>
-        <h2>Klasy w testowaniu - POM</h2>
-        <p>Wzorzec <strong>Page Object Model</strong> - każda strona to osobna klasa:</p>
-        <pre><code data-trim data-noescape class="language-javascript">
-class LoginPage {
-  constructor() {
-    this.usernameInput = '#username';
-    this.passwordInput = '#password';
-    this.submitButton = '#login-btn';
-  }
-
-  visit() {
-    cy.visit('/login');
-  }
-
-  login(username, password) {
-    cy.get(this.usernameInput).type(username);
-    cy.get(this.passwordInput).type(password);
-    cy.get(this.submitButton).click();
-  }
-}
-
-// W teście:
-const loginPage = new LoginPage();
-loginPage.visit();
-loginPage.login("admin", "haslo123");
-        </code></pre>
-        <aside class="notes">
-          Page Object Model to najważniejszy wzorzec w automatyzacji testów UI.
-          Klasa enkapsuluje selektory i akcje dla jednej strony - łatwiejsze utrzymanie testów.
-          Gdy zmieni się selektor - zmieniamy w jednym miejscu, nie w dziesiątkach testów.
-        </aside>
-      </section>
-
-      <!-- Slide 18: Przykłady praktyczne -->
-      <section>
-        <h2>Praktyczne przykłady klas</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class Product {
-  constructor(name, price, category) {
-    this.name = name;
-    this.price = price;
-    this.category = category;
-  }
-
-  applyDiscount(percent) {
-    this.price = this.price * (1 - percent / 100);
-    return this;
-  }
-
-  toString() {
-    return `${this.name} (${this.category}) - ${this.price.toFixed(2)} zł`;
-  }
-}
-
-const products = [
-  new Product("Szampon", 15.99, "Włosy"),
-  new Product("Krem", 29.99, "Pielęgnacja"),
-  new Product("Pasta", 8.49, "Higiena")
-];
-
-products.forEach(p => console.log(p.toString()));
-        </code></pre>
-        <aside class="notes">
-          Pokaż, jak klasy łączą się z tym, czego nauczyli się wcześniej - tablice, forEach, template literals.
-          toString() jest automatycznie wywoływana przy konwersji do stringa.
-        </aside>
-      </section>
-
-      <!-- Slide 19: Ćwiczenie - Klasy -->
-      <section>
-        <h2>Ćwiczenie: Klasy</h2>
-        <div class="exercise">
-          <h3>Zadanie 1: Klasa User</h3>
-          <ol>
-            <li>Stwórz klasę <code>User</code> z polami: <code>name</code>, <code>email</code>, <code>role</code></li>
-            <li>Dodaj metodę <code>hasAdminAccess()</code> - zwraca <code>true</code> jeśli role === "admin"</li>
-            <li>Dodaj metodę <code>getInfo()</code> - zwraca string z danymi usera</li>
-            <li>Stwórz klasę <code>AdminUser extends User</code> - domyślna rola "admin"</li>
-            <li>Stwórz kilka instancji i przetestuj metody</li>
-          </ol>
-        </div>
-        <div class="exercise">
-          <h3>Zadanie 2: Klasa ShoppingCart</h3>
-          <ol>
-            <li>Stwórz klasę <code>ShoppingCart</code> z tablicą <code>items</code></li>
-            <li>Metody: <code>addItem(product, quantity)</code>, <code>getTotal()</code>, <code>getItemCount()</code></li>
-            <li>Dodaj metodę <code>removeItem(productName)</code></li>
-          </ol>
-        </div>
-        <aside class="notes">
-          Daj 15-20 minut na oba zadania. Pierwsze jest prostsze, drugie trudniejsze.
-          Pomagaj osobom, które mają trudności - niech zaczną od constructor i jednej metody.
-        </aside>
-      </section>
-
-      <!-- Slide 20: Rozwiązanie ćwiczenia -->
-      <section>
-        <h2>Rozwiązanie: ShoppingCart</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-class ShoppingCart {
-  constructor() {
-    this.items = [];
-  }
-
-  addItem(product, quantity = 1) {
-    this.items.push({ product, quantity });
-  }
-
-  getTotal() {
-    return this.items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity, 0
-    );
-  }
-
-  getItemCount() {
-    return this.items.reduce((count, item) => count + item.quantity, 0);
-  }
-
-  removeItem(productName) {
-    this.items = this.items.filter(
-      item => item.product.name !== productName
-    );
-  }
-}
-        </code></pre>
-        <aside class="notes">
-          Omów rozwiązanie krok po kroku. Zwróć uwagę na reduce - łączy się z dniem 3.
-          Pokaż, jak filter działa przy usuwaniu.
-        </aside>
-      </section>
-
-      <!-- ============================================================
-           BLOCK 3: Moduły (~5-6 slides)
-           ============================================================ -->
-
-      <!-- Slide 21: Section divider - Moduły -->
-      <section class="section-slide">
-        <span class="section-number">02</span>
-        <h2>Moduły ES</h2>
-        <p>Organizacja kodu w plikach</p>
-        <aside class="notes">
-          Moduły pozwalają dzielić kod na mniejsze, łatwiejsze do zarządzania pliki.
-          Każdy plik to osobny moduł ze swoim zakresem zmiennych.
-        </aside>
-      </section>
-
-      <!-- Slide 22: Czym są moduły? -->
-      <section>
-        <h2>Czym są moduły?</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>Bez modułów</h3>
-            <ul>
-              <li>Cały kod w jednym pliku</li>
-              <li>Konflikty nazw</li>
-              <li>Trudne utrzymanie</li>
-              <li>Brak enkapsulacji</li>
-            </ul>
-          </div>
-          <div class="col">
-            <h3>Z modułami</h3>
-            <ul>
-              <li>Każdy plik = osobny moduł</li>
-              <li>Izolowane zakresy zmiennych</li>
-              <li>Jawne importy/eksporty</li>
-              <li>Łatwe ponowne użycie</li>
-            </ul>
-          </div>
-        </div>
-        <aside class="notes">
-          Bez modułów: wyobraź sobie projekt z 50 plikami JS, gdzie każda zmienna globalna może kolidować z inną.
-          Moduły rozwiązują ten problem - eksportujesz tylko to, co chcesz udostępnić.
-        </aside>
-      </section>
-
-      <!-- Slide 23: export -->
-      <section>
-        <h2><code>export</code> - eksportowanie</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>Named export</h3>
-            <pre><code data-trim data-noescape class="language-javascript">
-// utils.js
-export function add(a, b) {
-  return a + b;
-}
-
-export const PI = 3.14159;
-
-export class Calculator {
-  // ...
-}
-            </code></pre>
-          </div>
-          <div class="col">
-            <h3>Default export</h3>
-            <pre><code data-trim data-noescape class="language-javascript">
-// User.js
-export default class User {
-  constructor(name) {
-    this.name = name;
-  }
-}
-
-// Tylko JEDEN default
-// export na plik
-            </code></pre>
-          </div>
-        </div>
-        <div class="tip">
-          <h3>Różnica</h3>
-          <p><strong>Named</strong> - wiele eksportów z pliku. <strong>Default</strong> - jeden główny eksport.</p>
-        </div>
-        <aside class="notes">
-          Named export - importujemy po nazwie w nawiasach klamrowych.
-          Default export - importujemy bez nawiasów, pod dowolną nazwą.
-          W praktyce: klasy często jako default, funkcje pomocnicze jako named.
-        </aside>
-      </section>
-
-      <!-- Slide 24: import -->
-      <section>
-        <h2><code>import</code> - importowanie</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-// Named imports - w nawiasach klamrowych
-import { add, PI } from './utils.js';
-
-// Default import - bez nawiasów
-import User from './User.js';
-
-// Alias - zmiana nazwy
-import { add as sum } from './utils.js';
-
-// Importowanie wszystkiego
-import * as Utils from './utils.js';
-console.log(Utils.add(2, 3)); // 5
-console.log(Utils.PI);        // 3.14159
-        </code></pre>
-        <div class="warning">
-          <h3>Ścieżka</h3>
-          <p>Zawsze podawaj ścieżkę: <code>'./plik.js'</code> lub <code>'../folder/plik.js'</code>. Bez <code>./</code> Node szuka w <code>node_modules</code>.</p>
-        </div>
-        <aside class="notes">
-          Pokaż różnicę między named a default import.
-          Alias przydatny gdy dwa moduły eksportują tę samą nazwę.
-          Import * - importuje wszystko jako obiekt namespace.
-        </aside>
-      </section>
-
-      <!-- Slide 25: Struktura projektu z modułami -->
-      <section>
-        <h2>Struktura projektu z modułami</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-// Typowa struktura projektu testowego:
-//
-// cypress/
-// ├── e2e/
-// │   ├── login.cy.js
-// │   └── search.cy.js
-// ├── pages/
-// │   ├── LoginPage.js      ← klasy Page Object
-// │   └── SearchPage.js
-// ├── fixtures/
-// │   └── users.json        ← dane testowe
-// └── support/
-//     ├── commands.js        ← komendy Cypress
-//     └── helpers.js         ← funkcje pomocnicze
-        </code></pre>
-        <aside class="notes">
-          Pokaż typową strukturę folderów w projekcie Cypress.
-          Każdy folder ma swoją odpowiedzialność - separacja obaw (separation of concerns).
-        </aside>
-      </section>
-
-      <!-- Slide 26: Moduły w Cypress -->
-      <section>
-        <h2>Moduły w Cypress / testach</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-// pages/LoginPage.js
-export default class LoginPage {
-  visit() { cy.visit('/login'); }
-  login(user, pass) {
-    cy.get('#username').type(user);
-    cy.get('#password').type(pass);
-    cy.get('#submit').click();
-  }
-}
-
-// e2e/login.cy.js
-import LoginPage from '../pages/LoginPage';
-
-describe('Login', () => {
-  const loginPage = new LoginPage();
-
-  it('should login with valid credentials', () => {
-    loginPage.visit();
-    loginPage.login('admin', 'pass123');
-    cy.url().should('include', '/dashboard');
+    cy.get('[data-testid="product-card"]')
+      .should('have.length', 2);
+    cy.contains('Test Product').should('be.visible');
+    cy.contains('29,99 zl').should('be.visible');
   });
 });
-        </code></pre>
-        <aside class="notes">
-          Pokaż, jak moduły i klasy współpracują w realnym projekcie testowym.
-          Page Object jest w osobnym pliku i importowany do testu.
-          To sprawia, że testy są czytelne i łatwe do utrzymania.
-        </aside>
-      </section>
+    </code></pre>
+    <aside class="notes">
+      cy.intercept() przechwytuje żądania HTTP pasujące do wzorca URL. .as() nadaje alias, którego
+      możemy użyć w cy.wait(). cy.wait('@getProducts') czeka na wykonanie żądania.
+      Dzięki temu testy są deterministyczne.
+    </aside>
+  </section>
 
-      <!-- ============================================================
-           BLOCK 4: Error handling (~5-6 slides)
-           ============================================================ -->
+  <!-- Slide 15: Playwright - page.route() -->
+  <section>
+    <h2>Playwright - <code>page.route()</code></h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+import { test, expect } from '@playwright/test';
 
-      <!-- Slide 27: Section divider - Error handling -->
-      <section class="section-slide">
-        <span class="section-number">03</span>
-        <h2>Obsługa błędów</h2>
-        <p>try / catch / finally / throw</p>
-        <aside class="notes">
-          Błędy są normalną częścią programowania. Ważne, żeby umieć je obsługiwać.
-          W testach - obsługa błędów pomaga tworzyć stabilniejsze scenariusze.
-        </aside>
-      </section>
+test('displays mocked products', async ({ page }) => {
+  // Przechwytujemy żądanie do API
+  await page.route('**/api/products', route => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([
+        { id: 1, name: 'Test Product', price: 29.99 },
+        { id: 2, name: 'Another Product', price: 49.99 }
+      ])
+    });
+  });
 
-      <!-- Slide 28: try/catch -->
-      <section>
-        <h2><code>try / catch</code> - łapanie błędów</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-try {
-  // Kod, który może rzucić błąd
-  const data = JSON.parse("{ nieprawidłowy JSON }");
-  console.log(data);
-} catch (error) {
-  // Obsługa błędu
-  console.log("Wystąpił błąd:", error.message);
-}
-// Program działa dalej!
-console.log("To się wykona");
-        </code></pre>
-        <div class="console-output">
-          Wystąpił błąd: Expected property name or '}' ...<br>
-          To się wykona
-        </div>
-        <aside class="notes">
-          Bez try/catch błąd zatrzymuje całe wykonanie programu.
-          Z try/catch - łapiemy błąd, obsługujemy go i program kontynuuje.
-        </aside>
-      </section>
+  await page.goto('/products');
 
-      <!-- Slide 29: finally -->
-      <section>
-        <h2><code>finally</code> - zawsze się wykona</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-function fetchData(url) {
-  console.log("Rozpoczynam pobieranie...");
-  try {
-    // próba pobrania danych
-    const response = fetch(url);
-    console.log("Dane pobrane!");
-  } catch (error) {
-    console.log("Błąd:", error.message);
-  } finally {
-    // Wykona się ZAWSZE - i po sukcesie, i po błędzie
-    console.log("Czyszczenie zasobów...");
-  }
-}
-        </code></pre>
-        <div class="tip">
-          <h3>Kiedy finally?</h3>
-          <p>Do zamykania połączeń, czyszczenia, logowania - operacji, które muszą się wykonać niezależnie od wyniku.</p>
-        </div>
-        <aside class="notes">
-          finally jest opcjonalny, ale bardzo przydatny.
-          Typowe zastosowanie: zamknięcie połączenia z bazą, zatrzymanie loadera, logowanie wyniku.
-        </aside>
-      </section>
+  // Teraz wiemy dokładnie, jakie dane zobaczymy
+  await expect(page.getByText('Test Product')).toBeVisible();
+  await expect(page.getByText('29,99 zl')).toBeVisible();
+});
+    </code></pre>
+    <aside class="notes">
+      W Playwright odpowiednikiem cy.intercept() jest page.route(). Używamy ** jako wildcard
+      dla dowolnego hosta. route.fulfill() zwraca kontrolowaną odpowiedź. Dzięki temu test
+      nie zależy od stanu bazy danych ani dostępności backendu.
+    </aside>
+  </section>
 
-      <!-- Slide 30: throw new Error() -->
-      <section>
-        <h2><code>throw new Error()</code> - rzucanie błędów</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-function validateAge(age) {
-  if (typeof age !== 'number') {
-    throw new TypeError("Wiek musi być liczbą");
-  }
-  if (age < 0 || age > 150) {
-    throw new RangeError("Wiek musi być między 0 a 150");
-  }
-  return true;
-}
-
-try {
-  validateAge("abc");
-} catch (error) {
-  console.log(error.name);    // "TypeError"
-  console.log(error.message); // "Wiek musi być liczbą"
-}
-        </code></pre>
-        <aside class="notes">
-          throw pozwala nam tworzyć własne błędy w kodzie.
-          Walidacja danych to typowe zastosowanie - sprawdzamy dane i rzucamy błąd jeśli są nieprawidłowe.
-        </aside>
-      </section>
-
-      <!-- Slide 31: Typy błędów -->
-      <section>
-        <h2>Typy błędów w JavaScript</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Typ błędu</th>
-              <th>Kiedy występuje</th>
-              <th>Przykład</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>TypeError</code></td>
-              <td>Operacja na złym typie</td>
-              <td><code>null.toString()</code></td>
-            </tr>
-            <tr>
-              <td><code>ReferenceError</code></td>
-              <td>Niezadeklarowana zmienna</td>
-              <td><code>console.log(xyz)</code></td>
-            </tr>
-            <tr>
-              <td><code>SyntaxError</code></td>
-              <td>Błąd składni</td>
-              <td><code>JSON.parse("{a}")</code></td>
-            </tr>
-            <tr>
-              <td><code>RangeError</code></td>
-              <td>Wartość poza zakresem</td>
-              <td><code>new Array(-1)</code></td>
-            </tr>
-          </tbody>
-        </table>
-        <aside class="notes">
-          Poznanie typów błędów pomaga w debugowaniu. Gdy widzisz TypeError - wiesz, że problem jest z typem danych.
-          W testach najczęściej spotkasz TypeError i ReferenceError.
-        </aside>
-      </section>
-
-      <!-- Slide 32: Error handling w testach -->
-      <section>
-        <h2>Error handling w testach</h2>
-        <pre><code data-trim data-noescape class="language-javascript">
-// Testowanie czy funkcja rzuca błąd
-function divide(a, b) {
-  if (b === 0) throw new Error("Dzielenie przez zero!");
-  return a / b;
-}
-
-// Test z try/catch
-try {
-  divide(10, 0);
-  console.log("FAIL - oczekiwano błędu");
-} catch (error) {
-  console.log("PASS - złapano:", error.message);
-}
-
-// W Cypress / Jest:
-// expect(() => divide(10, 0)).to.throw("Dzielenie przez zero!");
-        </code></pre>
-        <div class="exercise">
-          <h3>Ćwiczenie: Error handling</h3>
-          <ol>
-            <li>Napisz funkcję <code>parseUserData(jsonString)</code> - parsuje JSON i waliduje pola</li>
-            <li>Rzuć <code>Error</code> jeśli brakuje <code>name</code> lub <code>email</code></li>
-            <li>Użyj <code>try/catch</code> do przetestowania różnych przypadków</li>
-          </ol>
-        </div>
-        <aside class="notes">
-          Pokaż, jak try/catch może służyć do testowania - sprawdzamy czy funkcja rzuca błąd.
-          W prawdziwych frameworkach testowych mamy do tego dedykowane asercje.
-          Daj 10 minut na ćwiczenie.
-        </aside>
-      </section>
-
-      <!-- ============================================================
-           BLOCK 5: Wprowadzenie do TypeScript (~15-18 slides)
-           ============================================================ -->
-
-      <!-- Slide 33: Section divider - TypeScript -->
-      <section class="section-slide">
-        <span class="section-number">04</span>
-        <h2>Wprowadzenie do TypeScript</h2>
-        <p>JavaScript z typami</p>
-        <aside class="notes">
-          TypeScript to nadzbiór JavaScriptu - każdy kod JS jest prawidłowym kodem TS.
-          TS dodaje system typów, który pomaga wykrywać błędy przed uruchomieniem kodu.
-        </aside>
-      </section>
-
-      <!-- Slide 34: Czym jest TypeScript? -->
-      <section>
-        <h2>Czym jest TypeScript?</h2>
-        <div class="columns">
-          <div class="col">
-            <ul>
-              <li class="fragment"><strong>Nadzbiór JavaScript</strong> - każdy JS jest prawidłowym TS</li>
-              <li class="fragment">Dodaje <strong>statyczne typowanie</strong></li>
-              <li class="fragment">Kompiluje się do JavaScript</li>
-              <li class="fragment">Stworzony przez <strong>Microsoft</strong></li>
-              <li class="fragment">Używany w Angular, Cypress, Playwright</li>
-            </ul>
-          </div>
-          <div class="col fragment">
-            <pre><code data-trim data-noescape class="language-typescript">
-// TypeScript
-let name: string = "Jan";
-let age: number = 30;
-let isActive: boolean = true;
-
-// Kompilacja (tsc) ↓
-
-// JavaScript
-let name = "Jan";
-let age = 30;
-let isActive = true;
-            </code></pre>
-          </div>
-        </div>
-        <aside class="notes">
-          TypeScript = JavaScript + typy. Przeglądarka nie rozumie TS, więc trzeba go skompilować do JS.
-          Kompilator TypeScript (tsc) sprawdza typy i generuje czysty JavaScript.
-        </aside>
-      </section>
-
-      <!-- Slide 35: Dlaczego TypeScript? -->
-      <section>
-        <h2>Dlaczego TypeScript?</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>JavaScript</h3>
-            <pre><code data-trim data-noescape class="language-javascript">
-function greet(user) {
-  return "Cześć, " + user.name;
-}
-
-// Brak błędu do momentu
-// uruchomienia!
-greet("Jan");
-// "Cześć, undefined" 😔
-            </code></pre>
-          </div>
-          <div class="col">
-            <h3>TypeScript</h3>
-            <pre><code data-trim data-noescape class="language-typescript">
-function greet(user: { name: string }) {
-  return "Cześć, " + user.name;
-}
-
-// BŁĄD w edytorze!
-// Argument type 'string' is
-// not assignable to parameter
-greet("Jan"); // ❌ Błąd kompilacji
-            </code></pre>
-          </div>
-        </div>
+  <!-- Slide 16: Kiedy mockować, kiedy nie -->
+  <section>
+    <h2>Kiedy mockować, kiedy nie?</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Mockuj gdy:</h3>
         <ul>
-          <li class="fragment"><strong>Bezpieczeństwo</strong> - błędy wykrywane przed uruchomieniem</li>
-          <li class="fragment"><strong>Autocomplete</strong> - edytor podpowiada właściwości i metody</li>
-          <li class="fragment"><strong>Dokumentacja</strong> - typy opisują kształt danych</li>
+          <li>Dane są dynamiczne/losowe</li>
+          <li>Backend jest niestabilny</li>
+          <li>Testujesz edge cases (błędy API)</li>
+          <li>Chcesz szybkie testy w CI</li>
+          <li>Zależy Ci na izolacji frontendowej</li>
         </ul>
-        <aside class="notes">
-          To kluczowy slajd - pokaż, jak TS chroni przed błędami, które w JS wyjdą dopiero na produkcji.
-          Autocomplete to ogromna oszczędność czasu - edytor zna typ i podpowiada metody.
-        </aside>
-      </section>
+      </div>
+      <div class="col">
+        <h3>Nie mockuj gdy:</h3>
+        <ul>
+          <li>Smoke testy produkcyjne</li>
+          <li>Testy integracyjne API</li>
+          <li>Chcesz przetestować cały flow</li>
+          <li>Sprawdzasz wydajność</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tip fragment">
+      <h3>Złota zasada</h3>
+      <p>80% testów z mockami (szybkie, stabilne) + 20% bez mocków (realistyczne).</p>
+    </div>
+    <aside class="notes">
+      To nie jest albo-albo. Najlepsza strategia to mieszanka. Większość testów E2E z mockami,
+      a kilka kluczowych scenariuszy (happy path) z prawdziwym backendem. Smoke testy na produkcji
+      powinny zawsze używać prawdziwego API.
+    </aside>
+  </section>
 
-      <!-- Slide 36: Instalacja i konfiguracja -->
-      <section>
-        <h2>Instalacja TypeScript</h2>
+  <!-- Slide 17: Mockowanie błędów -->
+  <section>
+    <h2>Mockowanie błędów API</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - symulacja błędu 500
+cy.intercept('GET', '/api/products', {
+  statusCode: 500,
+  body: { error: 'Server Error' }
+}).as('serverError');
+
+cy.visit('/products');
+cy.wait('@serverError');
+cy.get('[data-testid="error-message"]')
+  .should('contain', 'Wystąpił błąd');
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Playwright - symulacja błędu serwera
+await page.route('**/api/products', route => {
+  route.fulfill({ status: 500, body: 'Internal Server Error' });
+});
+await page.goto('/products');
+await expect(page.getByText('Wystąpił błąd')).toBeVisible();
+    </code></pre>
+    <div class="tip">
+      <h3>Testuj obsługę błędów</h3>
+      <p>Możesz symulować różne kody: 400, 401, 403, 404, 500 - a nawet timeout sieciowy.</p>
+    </div>
+    <aside class="notes">
+      Testowanie obsługi błędów jest często pomijane, a to kluczowe dla UX. Czy aplikacja
+      wyświetla przyjazny komunikat? Czy można spróbować ponownie? Mocki pozwalają łatwo
+      symulować różne kody błędów.
+    </aside>
+  </section>
+
+  <!-- Slide 18: Ćwiczenie - dynamiczne dane -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie: Asercje dla dynamicznych danych</h3>
+      <p>Napisz asercje dla następujących elementów w rossmann-test-app:</p>
+      <ol>
+        <li>Powitanie z imieniem użytkownika i datą</li>
+        <li>Numer zamówienia w formacie <code>ORD-XXXXX</code></li>
+        <li>Lista rekomendowanych produktów (min. 1 produkt)</li>
+        <li>Cena produktu w formacie <code>XX,XX zl</code></li>
+      </ol>
+      <p><strong>Czas:</strong> 15 minut</p>
+    </div>
+    <aside class="notes">
+      Daj uczestnikom 15 minut. Pomagaj tym, którzy mają problemy z regexami.
+      Po czasie omów rozwiązania na wspólnym ekranie. Zwróć uwagę na różne podejścia uczestników.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 3: Dobre praktyki programistyczne w testach (~1h, ~12 slides)
+       ============================================================ -->
+
+  <!-- Slide 19: Section divider -->
+  <section class="section-slide">
+    <span class="section-number">02</span>
+    <h2>Dobre praktyki w testach</h2>
+    <p>Jak pisać testy, które łatwo utrzymać i zrozumieć</p>
+    <aside class="notes">
+      Ten blok to zbiór najważniejszych praktyk. Nie trzeba stosować wszystkich od razu -
+      najważniejsze to zacząć od dobrej struktury i nazewnictwa, a resztę dodawać stopniowo.
+    </aside>
+  </section>
+
+  <!-- Slide 20: DRY w testach -->
+  <section>
+    <h2>DRY w testach - z umiarem</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Źle - kopiuj/wklej</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-// Instalacja
-npm install typescript --save-dev
+// Ten sam login w każdym teście
+it('test 1', () => {
+  cy.visit('/login');
+  cy.get('[data-testid="email"]')
+    .type('test@rossmann.pl');
+  cy.get('[data-testid="password"]')
+    .type('Test1234');
+  cy.get('[data-testid="login-btn"]')
+    .click();
+  // ...reszta testu
+});
 
-// Kompilacja pliku
-npx tsc plik.ts
-
-// Inicjalizacja konfiguracji
-npx tsc --init
+it('test 2', () => {
+  // Ten sam login skopiowany...
+});
         </code></pre>
-        <p>Plik <code>tsconfig.json</code> - konfiguracja kompilatora:</p>
+      </div>
+      <div class="col fragment">
+        <h3>Ale nie przesadzaj!</h3>
+        <p>Czytelność > DRY w testach</p>
         <pre><code data-trim data-noescape class="language-javascript">
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "strict": true,
-    "outDir": "./dist"
+// Za dużo abstrakcji
+it('test 1', () => {
+  doEverything('scenario-1');
+});
+
+// Lepiej - czytelne kroki
+it('test 1', () => {
+  login('test@rossmann.pl');
+  addToCart('Szampon');
+  checkout();
+  verifyOrder();
+});
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Test powinien być czytelny jak historia. Każdy powinien szybko zrozumieć CO test robi,
+      nawet bez czytania implementacji helperów. Za dużo abstrakcji sprawia, że trzeba
+      przekopywać się przez wiele plików, żeby zrozumieć prosty test.
+    </aside>
+  </section>
+
+  <!-- Slide 21: Custom commands - Cypress -->
+  <section>
+    <h2>Custom commands - Cypress</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/support/commands.js
+Cypress.Commands.add('login', (email, password) => {
+  cy.visit('/login');
+  cy.get('[data-testid="email"]').type(email);
+  cy.get('[data-testid="password"]').type(password);
+  cy.get('[data-testid="login-btn"]').click();
+  cy.url().should('include', '/dashboard');
+});
+
+Cypress.Commands.add('addToCart', (productName) => {
+  cy.contains('[data-testid="product-card"]', productName)
+    .find('[data-testid="add-to-cart"]')
+    .click();
+});
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Użycie w teście - czyste i czytelne
+it('should complete purchase flow', () => {
+  cy.login('test@rossmann.pl', 'Test1234');
+  cy.addToCart('Szampon');
+  cy.get('[data-testid="cart-badge"]').should('contain', '1');
+});
+    </code></pre>
+    <aside class="notes">
+      Custom commands to odpowiednik helperów w Cypress. Definiujemy je raz w support/commands.js,
+      a potem używamy w każdym teście. Cypress automatycznie ładuje pliki z katalogu support/.
+    </aside>
+  </section>
+
+  <!-- Slide 22: Fixtures - Playwright -->
+  <section>
+    <h2>W Playwright: Fixtures</h2>
+    <p><small>Odpowiednik Custom Commands z poprzedniego slajdu - w Playwright mechanizm dependency injection.</small></p>
+    <pre><code data-trim data-noescape class="language-javascript">
+// fixtures.ts
+import { test as base } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+
+export const test = base.extend({
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
   },
-  "include": ["src/**/*"]
-}
+  dashboardPage: async ({ page }, use) => {
+    await use(new DashboardPage(page));
+  },
+});
+
+export { expect } from '@playwright/test';
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Użycie w teście
+import { test, expect } from './fixtures';
+
+test('should login and see dashboard', async ({ loginPage, dashboardPage }) => {
+  await loginPage.login('test@rossmann.pl', 'Test1234');
+  await expect(dashboardPage.welcomeMessage).toBeVisible();
+});
+    </code></pre>
+    <aside class="notes">
+      Fixtures w Playwright to mechanizm dependency injection. Deklarujemy zależności testu,
+      a Playwright automatycznie je tworzy i niszczy. To mocniejszy mechanizm niż beforeEach -
+      fixtures mogą mieć zależności między sobą i automatyczne czyszczenie.
+    </aside>
+  </section>
+
+  <!-- Slide 23: beforeEach / afterEach -->
+  <section>
+    <h2>Setup i teardown - hooki</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+describe('Dashboard', () => {
+  beforeEach(() => {
+    // Wykonuje się PRZED KAŻDYM testem
+    cy.login('test@rossmann.pl', 'Test1234');
+  });
+
+  afterEach(() => {
+    // Wykonuje się PO KAŻDYM teście
+    cy.clearCookies();
+    cy.clearLocalStorage();
+  });
+
+  it('should display welcome message', () => {
+    cy.get('[data-testid="welcome"]').should('be.visible');
+  });
+
+  it('should show product list', () => {
+    cy.get('[data-testid="product-card"]')
+      .should('have.length.greaterThan', 0);
+  });
+});
+    </code></pre>
+    <aside class="notes">
+      beforeEach to idealne miejsce na powtarzalne kroki setup - logowanie, nawigacja, ustawienie stanu.
+      afterEach to czyszczenie - ciasteczka, localStorage, dane testowe. Są też beforeAll/afterAll
+      (before/after w Cypress) - wykonują się raz dla całego describe.
+    </aside>
+  </section>
+
+  <!-- Slide 24: Izolacja testów -->
+  <section>
+    <h2>Izolacja testów</h2>
+    <div class="warning">
+      <h3>Każdy test MUSI być niezależny</h3>
+      <p>Testy nie mogą zależeć od kolejności wykonania ani od stanu zostawionego przez inny test.</p>
+    </div>
+    <div class="columns">
+      <div class="col">
+        <h3>Źle</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Test 1 tworzy produkt
+it('creates product', () => {
+  cy.createProduct('Szampon');
+});
+
+// Test 2 ZAKLADA, ze produkt istnieje
+it('edits product', () => {
+  cy.get('[data-testid="Szampon"]')
+    .click(); // Nie zadziala solo!
+});
         </code></pre>
-        <aside class="notes">
-          Nie trzeba się zagłębiać w konfigurację - w Cypress/Playwright TS jest prekonfigurowany.
-          Pokaż tylko, że istnieje tsconfig.json i że "strict: true" włącza pełne sprawdzanie typów.
-        </aside>
-      </section>
+      </div>
+      <div class="col fragment">
+        <h3>Dobrze</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Każdy test tworzy własne dane
+it('edits product', () => {
+  // Arrange
+  cy.createProduct('Szampon');
 
-      <!-- Slide 37: Typy podstawowe -->
-      <section>
-        <h2>Typy podstawowe</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Typy proste (primitives)
-let productName: string = "Szampon";
-let price: number = 12.99;
-let isAvailable: boolean = true;
-let nothing: null = null;
-let notDefined: undefined = undefined;
+  // Act
+  cy.get('[data-testid="Szampon"]')
+    .click();
+  cy.get('[data-testid="name"]')
+    .clear().type('Nowy Szampon');
+  cy.get('[data-testid="save"]').click();
 
-// any - wyłącza sprawdzanie typów (unikaj!)
-let flexible: any = "tekst";
-flexible = 42;        // OK
-flexible = true;      // OK
-
-// Tablice
-let scores: number[] = [10, 20, 30];
-let names: string[] = ["Jan", "Anna"];
+  // Assert
+  cy.contains('Nowy Szampon');
+});
         </code></pre>
-        <div class="warning">
-          <h3>Unikaj <code>any</code></h3>
-          <p><code>any</code> wyłącza sprawdzanie typów - traci się cały sens TypeScript. Używaj tylko w ostateczności.</p>
-        </div>
-        <aside class="notes">
-          Typy podstawowe odpowiadają typom JS: string, number, boolean.
-          any to "wyjście awaryjne" - gdy nie znamy typu. Ale tracisz wtedy ochronę TS.
-          Tablice typujemy dodając [] po typie elementu.
-        </aside>
-      </section>
+      </div>
+    </div>
+    <aside class="notes">
+      Testy mogą być uruchamiane w dowolnej kolejności, równolegle, lub pojedynczo.
+      Jeśli test 2 wymaga danych z testu 1, to jest błąd projektowy. Każdy test powinien
+      sam tworzyć potrzebne dane (lub używać mocków) i sprzątać po sobie.
+    </aside>
+  </section>
 
-      <!-- Slide 38: Adnotacje typów -->
-      <section>
-        <h2>Adnotacje typów</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Jawna adnotacja typu
-let city: string = "Łódź";
+  <!-- Slide 25: Arrange-Act-Assert -->
+  <section>
+    <h2>Wzorzec Arrange-Act-Assert</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+it('should add product to cart and update total', () => {
+  // ARRANGE - przygotuj warunki
+  cy.intercept('GET', '/api/products', {
+    body: [{ id: 1, name: 'Szampon', price: 15.99 }]
+  });
+  cy.visit('/products');
 
-// Inferencja typów - TS sam "zgaduje" typ
-let country = "Polska";  // TS wie, że to string
-country = 42;            // ❌ Błąd!
+  // ACT - wykonaj akcje
+  cy.get('[data-testid="add-to-cart"]').first().click();
 
-// Zmienne bez wartości - adnotacja wymagana
-let username: string;
-username = "Jan";        // ✅ OK
-username = 123;          // ❌ Błąd!
-        </code></pre>
-        <div class="tip">
-          <h3>Inferencja typów</h3>
-          <p>Nie musisz pisać typu wszędzie - TypeScript jest sprytny i sam wywnioskuje typ z przypisanej wartości.</p>
-        </div>
-        <aside class="notes">
-          TS ma silną inferencję typów - jeśli przypisujesz wartość od razu, TS sam wykrywa typ.
-          Adnotacja jest potrzebna, gdy deklarujesz zmienną bez wartości początkowej.
-          Dobra praktyka: polegaj na inferencji, dodawaj adnotacje gdy potrzebne.
-        </aside>
-      </section>
+  // ASSERT - sprawdz wynik
+  cy.get('[data-testid="cart-badge"]').should('contain', '1');
+  cy.get('[data-testid="cart-total"]').should('contain', '15,99');
+});
+    </code></pre>
+    <div class="tip">
+      <h3>AAA - czytelna struktura</h3>
+      <p>Arrange (Przygotuj) - Act (Wykonaj) - Assert (Sprawdź). Każdy test powinien mieć te 3 fazy.</p>
+    </div>
+    <aside class="notes">
+      AAA to standard w testowaniu. Pomaga utrzymać testy czytelne i dobrze zorganizowane.
+      Arrange: dane, mocki, nawigacja. Act: kliknięcie, wpisanie tekstu, wysłanie formularza.
+      Assert: sprawdzenie wyniku. Nie mieszaj tych faz!
+    </aside>
+  </section>
 
-      <!-- Slide 39: Typy dla funkcji -->
-      <section>
-        <h2>Typy dla funkcji</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Typowanie parametrów i wartości zwracanej
-function add(a: number, b: number): number {
-  return a + b;
-}
+  <!-- Slide 26: Nazewnictwo testów -->
+  <section>
+    <h2>Nazewnictwo testów</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Describe - nazwa strony/funkcjonalności
+describe('Login Page', () => {
 
-// Arrow function z typami
-const multiply = (a: number, b: number): number => a * b;
+  // Test - "should [oczekiwane zachowanie] when [warunek]"
+  it('should redirect to dashboard when credentials are valid', () => {
+    // ...
+  });
 
-// Funkcja bez wartości zwracanej
-function logMessage(message: string): void {
-  console.log(message);
-}
+  it('should display error message when password is incorrect', () => {
+    // ...
+  });
 
-// Parametry opcjonalne
-function greet(name: string, greeting?: string): string {
-  return `${greeting || "Cześć"}, ${name}!`;
-}
+  it('should disable submit button when form is empty', () => {
+    // ...
+  });
+});
+    </code></pre>
+    <div class="tip">
+      <h3>Dobra nazwa testu to dokumentacja</h3>
+      <p>Czytając nazwy testów powinno się rozumieć, co aplikacja robi - bez czytania kodu.</p>
+    </div>
+    <aside class="notes">
+      Dobre nazwy testów to jak dokumentacja wymagań. Gdy test się wysypie w CI,
+      z nazwy powinno być jasne, co nie działa. "test 1", "login test" to złe nazwy.
+      "should redirect to dashboard when credentials are valid" - od razu wiadomo, co się stało.
+    </aside>
+  </section>
 
-greet("Jan");           // "Cześć, Jan!"
-greet("Jan", "Hej");   // "Hej, Jan!"
-        </code></pre>
-        <aside class="notes">
-          Typ zwracany po dwukropku za nawiasami parametrów.
-          void = funkcja nic nie zwraca (jak console.log).
-          ? = parametr opcjonalny - może być pominięty. Musi być na końcu listy.
-        </aside>
-      </section>
-
-      <!-- Slide 40: Tablice z typami -->
-      <section>
-        <h2>Tablice z typami</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Dwa zapisy - ten sam efekt
-let prices: number[] = [9.99, 19.99, 29.99];
-let names: Array&lt;string&gt; = ["Jan", "Anna"];
-
-// Tablice obiektów
-let products: { name: string; price: number }[] = [
-  { name: "Szampon", price: 12.99 },
-  { name: "Krem", price: 24.99 }
-];
-
-// Metody tablicowe zachowują typy!
-const expensive = products.filter(p => p.price > 20);
-// expensive: { name: string; price: number }[]
-
-const productNames = products.map(p => p.name);
-// productNames: string[]
-        </code></pre>
-        <aside class="notes">
-          Dwie notacje: number[] i Array<number> - to to samo, pierwsza jest krótsza.
-          Metody tablicowe automatycznie zachowują informacje o typach - filter zwraca ten sam typ, map może zmienić typ.
-        </aside>
-      </section>
-
-      <!-- Slide 41: Interfejsy -->
-      <section>
-        <h2>Interfejsy</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Definiowanie kształtu obiektu
-interface User {
-  name: string;
-  email: string;
-  age: number;
-  role: string;
-}
-
-// Użycie interfejsu
-const admin: User = {
-  name: "Jan Kowalski",
-  email: "jan@rossmann.pl",
-  age: 30,
-  role: "admin"
-};
-
-// Funkcja przyjmująca User
-function displayUser(user: User): string {
-  return `${user.name} (${user.role})`;
-}
-        </code></pre>
-        <aside class="notes">
-          Interfejs to kontrakt - opisuje kształt obiektu.
-          Jeśli brakuje wymaganego pola lub jest złego typu - błąd kompilacji.
-          Interfejsy są kluczowe w dużych projektach - definiują "umowy" między częściami kodu.
-        </aside>
-      </section>
-
-      <!-- Slide 42: Interfejsy opcjonalne -->
-      <section>
-        <h2>Właściwości opcjonalne</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-interface Product {
-  name: string;
-  price: number;
-  description?: string;  // opcjonalne
-  discount?: number;     // opcjonalne
-}
-
-// OK - bez opcjonalnych pól
-const basic: Product = {
-  name: "Szampon",
-  price: 12.99
-};
-
-// OK - z opcjonalnymi polami
-const detailed: Product = {
-  name: "Krem nawilżający",
-  price: 29.99,
-  description: "Krem do twarzy",
-  discount: 10
-};
-        </code></pre>
-        <div class="tip">
-          <h3>Znak <code>?</code></h3>
-          <p><code>?</code> po nazwie pola oznacza, że pole jest opcjonalne. Typ to <code>string | undefined</code>.</p>
-        </div>
-        <aside class="notes">
-          Znak ? robi pole opcjonalnym - nie trzeba go podawać.
-          Ale jeśli je podamy, musi być odpowiedniego typu.
-          Często używane w API - nie wszystkie pola odpowiedzi są zawsze obecne.
-        </aside>
-      </section>
-
-      <!-- Slide 43: Enum -->
-      <section>
-        <h2>Enum - wyliczenia</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-enum OrderStatus {
-  Pending = "PENDING",
-  Processing = "PROCESSING",
-  Shipped = "SHIPPED",
-  Delivered = "DELIVERED",
-  Cancelled = "CANCELLED"
-}
-
-interface Order {
-  id: number;
-  status: OrderStatus;
-}
-
-const order: Order = {
-  id: 1001,
-  status: OrderStatus.Pending
-};
-
-// Zamiast:
-// status: "PENDIGN" ← literówka nie zostanie wykryta w JS!
-// W TS: OrderStatus.Pendign ← ❌ Błąd kompilacji!
-        </code></pre>
-        <aside class="notes">
-          Enum to zbiór nazwanych stałych. Zamiast "magicznych stringów" używamy wartości z enum.
-          Główna zaleta: autocomplete i ochrona przed literówkami.
-          W przykładzie: "PENDIGN" w JS przeszłoby bez błędu, w TS z enum - nie.
-        </aside>
-      </section>
-
-      <!-- Slide 44: Type aliases -->
-      <section>
-        <h2>Type aliases i Union types</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Type alias - nadanie nazwy typowi
-type ID = string | number;
-
-let userId: ID = 123;
-userId = "abc-456";  // ✅ OK - string | number
-
-// Union type - jeden z kilku typów
-type Status = "active" | "inactive" | "blocked";
-
-let userStatus: Status = "active";    // ✅ OK
-userStatus = "deleted";               // ❌ Błąd!
-
-// Łączenie interfejsów
-interface Address {
-  street: string;
-  city: string;
-}
-
-type UserWithAddress = User & Address; // intersection
-        </code></pre>
-        <aside class="notes">
-          Type alias to alternatywa dla interface - nadaje nazwę złożonemu typowi.
-          Union type (|) = "jeden z tych typów". Literal union = konkretne wartości.
-          Intersection (&) = "oba typy jednocześnie".
-        </aside>
-      </section>
-
-      <!-- Slide 45: Union types - głębiej -->
-      <section>
-        <h2>Union types w praktyce</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// Parametr może być stringiem lub liczbą
-function formatId(id: string | number): string {
-  if (typeof id === "string") {
-    return id.toUpperCase();
-  }
-  return `ID-${id}`;
-}
-
-formatId("abc");   // "ABC"
-formatId(123);     // "ID-123"
-
-// Typ odpowiedzi z API
-type ApiResponse = {
-  success: true;
-  data: User[];
-} | {
-  success: false;
-  error: string;
-};
-
-function handleResponse(response: ApiResponse) {
-  if (response.success) {
-    console.log(response.data); // TS wie, że data istnieje
-  } else {
-    console.log(response.error); // TS wie, że error istnieje
+  <!-- Slide 27: Fixtures - dane testowe JSON -->
+  <section>
+    <h2>Dane testowe w plikach JSON</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// fixtures/users.json
+{
+  "validUser": {
+    "email": "test@rossmann.pl",
+    "password": "Test1234",
+    "name": "Anna Testowa"
+  },
+  "invalidUser": {
+    "email": "bad@rossmann.pl",
+    "password": "wrong"
   }
 }
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Cypress - automatyczne ładowanie fixtures
+it('should login with valid credentials', () => {
+  cy.fixture('users').then((users) => {
+    cy.login(users.validUser.email, users.validUser.password);
+    cy.contains(users.validUser.name);
+  });
+});
+
+// Playwright - import JSON
+import users from './fixtures/users.json';
+
+test('should login', async ({ page }) => {
+  await loginPage.login(users.validUser.email, users.validUser.password);
+});
+    </code></pre>
+    <aside class="notes">
+      Dane testowe w osobnych plikach JSON. Łatwo zmieniać, łatwo przeglądać, czytelne w kodzie.
+      W Cypress fixtures ładujemy przez cy.fixture(). W Playwright importujemy jak zwykły moduł.
+      Nie hardkoduj danych w testach - wyciągnij do fixtures.
+    </aside>
+  </section>
+
+  <!-- Slide 28: CI/CD -->
+  <section>
+    <h2>CI/CD - testy w pipeline</h2>
+    <pre><code data-trim data-noescape class="language-yaml">
+# .github/workflows/e2e-tests.yml - Cypress
+name: E2E Tests
+on: [push, pull_request]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx cypress run
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-results
+          path: cypress/screenshots/
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-yaml">
+# W Playwright wyglada to tak:
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
+    </code></pre>
+    <div class="tip">
+      <h3>Automatyzacja testów</h3>
+      <p>Testy E2E powinny uruchamiać się automatycznie przy każdym pushu i pull requeście.</p>
+    </div>
+    <aside class="notes">
+      GitHub Actions to jedno z wielu narzędzi CI - jest też GitLab CI, Jenkins, Azure DevOps.
+      Kluczowe: testy uruchamiają się automatycznie, wyniki są widoczne w PR, raporty zapisywane
+      jako artefakty. upload-artifact zachowuje raport HTML nawet gdy testy failują (if: failure()).
+    </aside>
+  </section>
+
+  <!-- Slide 29: Raportowanie -->
+  <section>
+    <h2>Raportowanie wyników</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Cypress</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// cypress.config.js
+module.exports = defineConfig({
+  e2e: {
+    screenshotOnRunFailure: true,
+    video: true,
+    reporter: 'mochawesome',
+    reporterOptions: {
+      reportDir: 'results',
+      html: true,
+    },
+  },
+});
         </code></pre>
-        <aside class="notes">
-          Discriminated union (success: true vs false) to potężny wzorzec.
-          TypeScript automatycznie zawęża typ wewnątrz if - "type narrowing".
-          Często używane do modelowania odpowiedzi z API.
-        </aside>
-      </section>
+      </div>
+      <div class="col">
+        <h3>Playwright</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// playwright.config.ts
+export default defineConfig({
+  reporter: [
+    ['html', { open: 'never' }],
+    ['list']
+  ],
+  use: {
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
+  },
+});
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Screenshoty i video na failurze to must-have. Trace w Playwright nagrywa pełną interakcję,
+      którą można odtworzyć krok po kroku. To nieocenione przy debugowaniu testów, które failują
+      w CI, ale przechodzą lokalnie.
+    </aside>
+  </section>
 
-      <!-- Slide 46: TypeScript w Cypress -->
-      <section>
-        <h2>TypeScript w Cypress</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-// cypress/e2e/login.cy.ts  ← rozszerzenie .ts
+  <!-- Slide 30: Anty-wzorce -->
+  <section>
+    <h2>Anty-wzorce w testach E2E</h2>
+    <div class="warning">
+      <h3>Unikaj tych błędów</h3>
+      <ul>
+        <li class="fragment"><strong>Hardkodowane waity</strong> - <code>cy.wait(5000)</code> zamiast czekania na element</li>
+        <li class="fragment"><strong>Zależne testy</strong> - test B wymaga danych z testu A</li>
+        <li class="fragment"><strong>Testowanie implementacji</strong> - sprawdzanie klas CSS zamiast zachowania</li>
+        <li class="fragment"><strong>Za dużo w jednym teście</strong> - test sprawdza 20 rzeczy na raz</li>
+        <li class="fragment"><strong>Brak cleanup</strong> - dane testowe zostają w bazie</li>
+        <li class="fragment"><strong>Ignorowanie flaky testów</strong> - "czasem nie przechodzi, to skip"</li>
+      </ul>
+    </div>
+    <aside class="notes">
+      Omów każdy anty-wzorzec z przykładem. Hardkodowane waity to najczęstszy problem -
+      spowalniają testy i nadal mogą failować na wolnym CI. Flaky testy to tykająca bomba -
+      ignorowanie ich prowadzi do utraty zaufania w cały suite testowy.
+    </aside>
+  </section>
 
-interface LoginCredentials {
-  username: string;
-  password: string;
+  <!-- Slide 31: Ćwiczenie - refaktoryzacja -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie: Refaktoryzacja testu</h3>
+      <p>Popraw poniższy test stosując poznane praktyki:</p>
+      <pre><code data-trim data-noescape class="language-javascript">
+it('test', () => {
+  cy.visit('/login');
+  cy.get('#email').type('test@rossmann.pl');
+  cy.get('#pass').type('Test1234');
+  cy.get('.submit').click();
+  cy.wait(3000);
+  cy.get('.products .item:nth-child(1) .add-btn').click();
+  cy.wait(2000);
+  cy.get('.cart-count').should('have.text', '1');
+  cy.get('.products .item:nth-child(1) .price')
+    .should('have.text', '15.99 zl');
+});
+      </code></pre>
+      <p><strong>Co poprawić:</strong> nazewnictwo, selektory, waity, strukturę AAA, DRY</p>
+      <p><strong>Czas:</strong> 15 minut</p>
+    </div>
+    <aside class="notes">
+      Daj uczestnikom 15 minut. Główne problemy do znalezienia: zła nazwa testu, selektory CSS
+      zamiast data-testid, cy.wait(3000) zamiast czekania na element, za dużo w jednym teście,
+      brak struktury AAA. Po czasie pokaż rozwiązanie na następnym slajdzie.
+    </aside>
+  </section>
+
+  <!-- Slide 32: Rozwiązanie refaktoryzacji -->
+  <section>
+    <h2>Rozwiązanie - po refaktoryzacji</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+describe('Cart', () => {
+  beforeEach(() => {
+    cy.login('test@rossmann.pl', 'Test1234');
+  });
+
+  it('should update cart badge when product is added', () => {
+    // Arrange
+    cy.get('[data-testid="product-card"]').first().as('product');
+
+    // Act
+    cy.get('@product')
+      .find('[data-testid="add-to-cart"]')
+      .click();
+
+    // Assert
+    cy.get('[data-testid="cart-badge"]')
+      .should('be.visible')
+      .and('contain', '1');
+  });
+});
+    </code></pre>
+    <div class="tip">
+      <h3>Co się zmieniło?</h3>
+      <p>Nazwa opisuje zachowanie, selektory data-testid, brak hardkodowanych waitów, login w beforeEach, wzorzec AAA.</p>
+    </div>
+    <aside class="notes">
+      Omów każdą zmianę. Login wyciągnięty do beforeEach. Nazwa testu opisuje oczekiwane zachowanie.
+      Selektory data-testid zamiast klas CSS. Brak cy.wait() - Cypress automatycznie czeka na elementy.
+      Test sprawdza jedną rzecz - badge koszyka po dodaniu produktu.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 4: Warsztat - Budujemy testy (~3h, ~20 slides)
+       ============================================================ -->
+
+  <!-- Slide 33: Section divider -->
+  <section class="section-slide">
+    <span class="section-number">03</span>
+    <h2>Warsztat praktyczny</h2>
+    <p>Budujemy testy E2E dla rossmann-test-app</p>
+    <aside class="notes">
+      To jest główna część dnia - 3 godziny praktycznej pracy. Uczestnicy będą pisać prawdziwe
+      testy od zera. Pracujemy razem, krok po kroku. Każdy ćwiczy na swoim komputerze,
+      ale pomagamy sobie nawzajem. Przerwa po każdym ćwiczeniu.
+    </aside>
+  </section>
+
+  <!-- Slide 34: Wprowadzenie do rossmann-test-app -->
+  <section>
+    <h2>Aplikacja testowa - rossmann-test-app</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Funkcjonalności</h3>
+        <ul>
+          <li>Logowanie / rejestracja</li>
+          <li>Lista produktów z wyszukiwaniem</li>
+          <li>Filtrowanie po kategoriach</li>
+          <li>Koszyk zakupowy</li>
+          <li>Spersonalizowane powitanie</li>
+          <li>Powiadomienia toast</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Dane testowe</h3>
+        <pre><code data-trim data-noescape class="language-javascript">
+// Użytkownik testowy
+{
+  email: "test@rossmann.pl",
+  password: "Test1234",
+  name: "Anna Testowa"
 }
 
-const validUser: LoginCredentials = {
-  username: "admin",
-  password: "pass123"
+// URL aplikacji
+http://localhost:3000
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">
+      Upewnij się, że wszyscy mają uruchomioną aplikację na localhost:3000. Pokaż aplikację w
+      przeglądarce, przejdź przez główne funkcjonalności. Pokaż DevTools i data-testid atrybuty
+      w DOM. To zajmie ok. 5 minut.
+    </aside>
+  </section>
+
+  <!-- Slide 35: Ćwiczenie 1 - Setup -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie 1: Setup projektu Cypress (~30 min)</h3>
+      <p>Inicjalizacja nowego projektu testowego od zera:</p>
+      <ol>
+        <li>Utwórz nowy folder na testy</li>
+        <li>Zainstaluj Cypress</li>
+        <li>Skonfiguruj <code>cypress.config.js</code></li>
+        <li>Utwórz strukturę katalogów</li>
+        <li>Uruchom pierwszy test</li>
+      </ol>
+    </div>
+    <aside class="notes">
+      Prowadź krok po kroku. Poczekaj aż wszyscy skończą każdy krok zanim przejdziesz dalej.
+      Pomagaj indywidualnie tym, którzy mają problemy z instalacją. To ok. 30 minut łącznie.
+    </aside>
+  </section>
+
+  <!-- Slide 36: Setup - komendy -->
+  <section>
+    <h2>Krok 1: Inicjalizacja projektu</h2>
+    <pre><code data-trim data-noescape class="language-bash">
+# Utwórz folder i wejdź do niego
+mkdir rossmann-e2e-tests
+cd rossmann-e2e-tests
+
+# Zainicjuj projekt i zainstaluj Cypress
+npm init -y
+npm install cypress --save-dev
+
+# Otwórz Cypress (tworzy strukturę automatycznie)
+npx cypress open
+    </code></pre>
+    <p>Przy pierwszym uruchomieniu Cypress:</p>
+    <ul>
+      <li class="fragment">Wybierz <strong>E2E Testing</strong></li>
+      <li class="fragment">Cypress automatycznie utworzy strukturę katalogów</li>
+      <li class="fragment">Wybierz przeglądarkę - <strong>Chrome</strong></li>
+    </ul>
+    <div class="console-output fragment">
+      <p>Oczekiwany wynik:</p>
+      <pre>
+Cypress automatycznie tworzy:
+  cypress/e2e/
+  cypress/support/
+  cypress/fixtures/
+  cypress.config.js
+      </pre>
+    </div>
+    <aside class="notes">
+      npm install cypress --save-dev instaluje Cypress jako devDependency. npx cypress open
+      uruchamia Cypress w trybie interaktywnym i automatycznie generuje strukturę katalogów.
+      Przy pierwszym uruchomieniu może trochę potrwać - pobiera plik binarny Cypress.
+    </aside>
+  </section>
+
+  <!-- Slide 37: Konfiguracja -->
+  <section>
+    <h2>Krok 2: Konfiguracja cypress.config.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+const { defineConfig } = require('cypress');
+
+module.exports = defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:8080',
+    specPattern: 'cypress/e2e/**/*.cy.js',
+    viewportWidth: 1280,
+    viewportHeight: 720,
+    screenshotOnRunFailure: true,
+    video: false,
+  },
+});
+    </code></pre>
+    <aside class="notes">
+      Omów kluczowe opcje: baseUrl - nie trzeba pisać pełnego URL w testach, specPattern - wzorzec
+      nazw plików testowych, viewport - rozmiar okna przeglądarki, screenshotOnRunFailure -
+      automatyczne screenshoty przy błędach, video: false - wyłączamy nagrywanie dla szybkości.
+    </aside>
+  </section>
+
+  <!-- Slide 38: Struktura projektu -->
+  <section>
+    <h2>Krok 3: Struktura katalogów</h2>
+    <pre><code data-trim data-noescape class="language-bash">
+cypress/
+  e2e/                    # Pliki testowe
+    login.cy.js
+    products.cy.js
+    cart.cy.js
+  support/
+    commands.js           # Custom commands
+    e2e.js                # Support file
+    pages/                # Page Objects
+      loginPage.js
+      dashboardPage.js
+      cartPage.js
+  fixtures/               # Dane testowe
+    users.json
+cypress.config.js
+    </code></pre>
+    <div class="tip">
+      <h3>Konwencja</h3>
+      <p><code>npx cypress open</code> tworzy strukturę automatycznie. Pliki testowe: <code>*.cy.js</code>, page objects w <code>support/pages/</code>, dane testowe w <code>fixtures/</code>.</p>
+    </div>
+    <aside class="notes">
+      Cypress automatycznie tworzy katalogi przy pierwszym uruchomieniu npx cypress open.
+      Wyjaśnij, dlaczego separujemy page objects, testy i dane - Single Responsibility Principle.
+      Katalog support/ zawiera pliki ładowane automatycznie przed każdym testem.
+    </aside>
+  </section>
+
+  <!-- Slide 39: Pierwszy test -->
+  <section>
+    <h2>Krok 4: Pierwszy test - weryfikacja setupu</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/e2e/smoke.cy.js
+describe('Smoke test', () => {
+  it('app is running', () => {
+    cy.visit('/');
+    cy.title().should('contain', 'Rossmann');
+  });
+});
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-bash">
+# Uruchom test w terminalu
+npx cypress run --spec cypress/e2e/smoke.cy.js
+
+# Lub uruchom z interfejsem graficznym
+npx cypress open
+    </code></pre>
+    <div class="console-output fragment">
+      <pre>
+  1 passing (2.1s)
+      </pre>
+    </div>
+    <aside class="notes">
+      Upewnij się, że WSZYSTKIM test przechodzi zanim przejdziesz dalej. Najczęstsze problemy:
+      aplikacja nie jest uruchomiona na localhost:8080, złe ścieżki do plików, literówki.
+      Pokaż npx cypress open - graficzny interfejs do uruchamiania testów.
+    </aside>
+  </section>
+
+  <!-- Slide 40: Dane testowe -->
+  <section>
+    <h2>Krok 5: Dane testowe</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/fixtures/users.json
+{
+  "validUser": {
+    "email": "test@rossmann.pl",
+    "password": "Test1234",
+    "name": "Anna Testowa"
+  },
+  "invalidUser": {
+    "email": "wrong@rossmann.pl",
+    "password": "BadPassword"
+  },
+  "emptyUser": {
+    "email": "",
+    "password": ""
+  }
+}
+    </code></pre>
+    <div class="tip">
+      <h3>Dlaczego osobny plik?</h3>
+      <p>Dane testowe w jednym miejscu - łatwo zmieniać bez dotykania kodu testów. Różne warianty dla różnych scenariuszy.</p>
+    </div>
+    <aside class="notes">
+      Mamy kilka wariantów: poprawny użytkownik, niepoprawny, pusty - do testowania różnych scenariuszy.
+      W prawdziwym projekcie może być więcej wariantów. Dane wrażliwe (hasła produkcyjne) NIGDY
+      w fixtures - to tylko dane testowe dla środowiska testowego.
+    </aside>
+  </section>
+
+  <!-- Slide 41: Ćwiczenie 2 - Testy logowania -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie 2: Testy logowania (~30 min)</h3>
+      <p>Utwórz Page Object dla strony logowania i napisz testy:</p>
+      <ol>
+        <li>Utwórz <code>loginPage.js</code> z selektorami i metodami</li>
+        <li>Test: poprawne logowanie przekierowuje na dashboard</li>
+        <li>Test: błędne hasło wyświetla komunikat o błędzie</li>
+        <li>Test: wylogowanie czyści sesję</li>
+      </ol>
+      <p><strong>Czas:</strong> 30 minut</p>
+    </div>
+    <aside class="notes">
+      Pokaż na ekranie DevTools z otwartą stroną logowania. Wskaż data-testid atrybuty
+      na elementach formularza. Niech uczestnicy sami zidentyfikują potrzebne selektory.
+      Daj 10 minut na próbę samodzielną, potem pokaż podpowiedzi.
+    </aside>
+  </section>
+
+  <!-- Slide 42: Podpowiedzi - LoginPage -->
+  <section>
+    <h2>Podpowiedzi - loginPage</h2>
+    <p>Potrzebne selektory i metody:</p>
+    <ul>
+      <li class="fragment"><code>cy.get('[data-testid="login-email-input"]')</code> - pole email</li>
+      <li class="fragment"><code>cy.get('[data-testid="login-password-input"]')</code> - pole hasło</li>
+      <li class="fragment"><code>cy.get('[data-testid="login-submit-btn"]')</code> - przycisk logowania</li>
+      <li class="fragment"><code>cy.get('[data-testid="login-error"]')</code> - komunikat błędu</li>
+      <li class="fragment"><code>cy.get('[data-testid="logout-btn"]')</code> - przycisk wylogowania</li>
+    </ul>
+    <p class="fragment">Metody: <code>visit()</code>, <code>login(email, password)</code>, <code>fillEmail(email)</code>, <code>fillPassword(password)</code></p>
+    <aside class="notes">
+      Odkrywaj fragmenty jeden po drugim. Daj uczestnikom chwilę na każdy selektor.
+      Pytaj: "Jaką metodę powinien mieć loginPage?" - niech sami wymyślą interfejs obiektu.
+    </aside>
+  </section>
+
+  <!-- Slide 43: Rozwiązanie - LoginPage -->
+  <section>
+    <h2>Rozwiązanie - loginPage.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/support/pages/loginPage.js
+export const loginPage = {
+  visit() {
+    cy.visit('/');
+  },
+
+  fillEmail(email) {
+    cy.get('[data-testid="login-email-input"]').type(email);
+  },
+
+  fillPassword(password) {
+    cy.get('[data-testid="login-password-input"]').type(password);
+  },
+
+  submit() {
+    cy.get('[data-testid="login-submit-btn"]').click();
+  },
+
+  login(email, password) {
+    this.visit();
+    this.fillEmail(email);
+    this.fillPassword(password);
+    this.submit();
+  },
+
+  getError() {
+    return cy.get('[data-testid="login-error"]');
+  }
 };
+    </code></pre>
+    <aside class="notes">
+      W Cypress Page Object to zwykły obiekt z metodami, nie klasa. Każda metoda używa cy.get()
+      z data-testid. Metoda login() łączy visit + wypełnienie formularza + submit. getError()
+      zwraca element - można na nim wywołać asercje.
+    </aside>
+  </section>
+
+  <!-- Slide 44: Rozwiązanie - testy logowania -->
+  <section>
+    <h2>Rozwiązanie - login.cy.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/e2e/login.cy.js
+import { loginPage } from '../support/pages/loginPage';
 
 describe('Login Page', () => {
-  it('should login successfully', () => {
-    cy.visit('/login');
-    cy.get('#username').type(validUser.username);
-    cy.get('#password').type(validUser.password);
-    cy.get('#submit').click();
-    cy.url().should('include', '/dashboard');
+  beforeEach(() => {
+    loginPage.visit();
+  });
+
+  it('should redirect to dashboard on valid login', () => {
+    cy.fixture('users').then((users) => {
+      loginPage.login(users.validUser.email, users.validUser.password);
+      cy.url().should('include', 'dashboard');
+      cy.contains(users.validUser.name).should('be.visible');
+    });
+  });
+
+  it('should show error on invalid credentials', () => {
+    cy.fixture('users').then((users) => {
+      loginPage.login(users.invalidUser.email, users.invalidUser.password);
+      loginPage.getError().should('be.visible');
+      loginPage.getError().should('contain', 'Nieprawidlowy');
+    });
+  });
+
+  it('should clear session on logout', () => {
+    cy.fixture('users').then((users) => {
+      loginPage.login(users.validUser.email, users.validUser.password);
+      cy.url().should('include', 'dashboard');
+      cy.get('[data-testid="logout-btn"]').click();
+      cy.url().should('include', 'index');
+    });
   });
 });
-        </code></pre>
-        <div class="tip">
-          <h3>Cypress + TypeScript</h3>
-          <p>Cypress obsługuje TypeScript od razu - wystarczy zmienić rozszerzenie na <code>.ts</code>.</p>
-        </div>
-        <aside class="notes">
-          Cypress ma wbudowane wsparcie dla TS - nie trzeba dodatkowej konfiguracji.
-          Interfejsy pomagają utrzymać porządek w danych testowych.
-          Autocomplete działa na komendach Cypress dzięki @types/cypress.
-        </aside>
-      </section>
+    </code></pre>
+    <aside class="notes">
+      Omów test po teście. Zwróć uwagę na beforeEach - nawigujemy do strony logowania.
+      cy.fixture('users') ładuje dane z cypress/fixtures/users.json.
+      Test 1: logowanie + sprawdzenie URL i nazwy użytkownika. Test 2: zły login + komunikat błędu.
+      Test 3: login, logout, sprawdzenie powrotu do strony głównej. Każdy test jest niezależny dzięki beforeEach.
+    </aside>
+  </section>
 
-      <!-- Slide 47: Porównanie JS vs TS -->
-      <section>
-        <h2>JS vs TS - porównanie</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>JavaScript</h3>
-            <pre><code data-trim data-noescape class="language-javascript">
-function createUser(name, age) {
-  return {
-    name: name,
-    age: age,
-    isAdult: age >= 18
-  };
-}
-
-const users = [
-  createUser("Jan", 30),
-  createUser("Anna", 25)
-];
-
-const names = users.map(u => u.name);
-            </code></pre>
-          </div>
-          <div class="col">
-            <h3>TypeScript</h3>
-            <pre><code data-trim data-noescape class="language-typescript">
-interface User {
-  name: string;
-  age: number;
-  isAdult: boolean;
-}
-
-function createUser(
-  name: string, age: number
-): User {
-  return {
-    name, age,
-    isAdult: age >= 18
-  };
-}
-
-const users: User[] = [
-  createUser("Jan", 30),
-  createUser("Anna", 25)
-];
-
-const names: string[] = users.map(
-  u => u.name
-);
-            </code></pre>
-          </div>
-        </div>
-        <aside class="notes">
-          Pokaz side by side. TS to więcej kodu, ale edytor zna typ każdej zmiennej.
-          Przy małych projektach różnica jest mała, ale przy dużych - TS ratuje życie.
-        </aside>
-      </section>
-
-      <!-- Slide 48: Ćwiczenie TypeScript -->
-      <section>
-        <h2>Ćwiczenie: TypeScript</h2>
-        <div class="exercise">
-          <h3>Zadanie 1: Typowanie</h3>
-          <ol>
-            <li>Stwórz interfejs <code>Product</code> z polami: <code>name</code>, <code>price</code>, <code>category</code>, opcjonalny <code>discount</code></li>
-            <li>Stwórz enum <code>Category</code> z wartościami: <code>Cosmetics</code>, <code>Hygiene</code>, <code>Food</code></li>
-            <li>Napisz funkcję <code>calculateFinalPrice(product: Product): number</code></li>
-            <li>Stwórz tablicę produktów i przefiltruj po kategorii</li>
-          </ol>
-        </div>
-        <div class="exercise">
-          <h3>Zadanie 2: Klasa w TypeScript</h3>
-          <ol>
-            <li>Przepisz klasę <code>ShoppingCart</code> z wcześniejszego ćwiczenia w TypeScript</li>
-            <li>Dodaj typy do wszystkich metod i właściwości</li>
-            <li>Użyj interfejsu <code>CartItem</code> z polami: <code>product: Product</code>, <code>quantity: number</code></li>
-          </ol>
-        </div>
-        <aside class="notes">
-          Daj 15-20 minut na oba zadania. Ćwiczenie łączy wiedzę o klasach z TypeScript.
-          Pomóż osobom, które mają trudności - niech zaczną od interfejsu i jednej funkcji.
-        </aside>
-      </section>
-
-      <!-- Slide 49: Rozwiązanie TypeScript -->
-      <section>
-        <h2>Rozwiązanie: TypeScript</h2>
-        <pre><code data-trim data-noescape class="language-typescript">
-enum Category { Cosmetics, Hygiene, Food }
-
-interface Product {
-  name: string;
-  price: number;
-  category: Category;
-  discount?: number;
-}
-
-function calculateFinalPrice(product: Product): number {
-  const discount = product.discount ?? 0;
-  return product.price * (1 - discount / 100);
-}
-
-const products: Product[] = [
-  { name: "Szampon", price: 15.99, category: Category.Cosmetics },
-  { name: "Pasta", price: 8.49, category: Category.Hygiene, discount: 10 },
-  { name: "Krem", price: 29.99, category: Category.Cosmetics, discount: 20 }
-];
-
-const cosmetics = products.filter(
-  p => p.category === Category.Cosmetics
-);
-        </code></pre>
-        <aside class="notes">
-          Omów rozwiązanie. Zwróć uwagę na operator ?? (nullish coalescing) - zwraca prawą stronę jeśli lewa jest null/undefined.
-          Pokaż jak enum zapobiega literówkom w kategorii.
-        </aside>
-      </section>
-
-      <!-- ============================================================
-           BLOCK 6: Test końcowy (~10-12 slides)
-           ============================================================ -->
-
-      <!-- Slide 50: Section divider - Test końcowy -->
-      <section class="section-slide">
-        <span class="section-number">05</span>
-        <h2>Test końcowy</h2>
-        <p>Sprawdzenie wiedzy z 5 dni szkolenia</p>
-        <aside class="notes">
-          Test końcowy - podkreśl, że to nie egzamin, a sposób na sprawdzenie postępów.
-          Nie ma ocen - chodzi o utrwalenie wiedzy.
-        </aside>
-      </section>
-
-      <!-- Slide 51: Informacje o teście -->
-      <section>
-        <h2>Informacje o teście</h2>
-        <ul>
-          <li><strong>Część 1:</strong> Pytania wielokrotnego wyboru (15 pytań)</li>
-          <li><strong>Część 2:</strong> Zadania praktyczne (4 zadania)</li>
-          <li><strong>Czas:</strong> ~60 minut (30 min + 30 min)</li>
-          <li><strong>Materiały:</strong> Można korzystać z notatek i prezentacji</li>
-        </ul>
-        <div class="tip">
-          <h3>Bez stresu!</h3>
-          <p>Test służy utrwaleniu wiedzy - nie ma ocen. Pracuj we własnym tempie.</p>
-        </div>
-        <aside class="notes">
-          Uspokój uczestników - to forma powtórki, nie egzamin.
-          Mogą korzystać z notatek i prezentacji, ale nie z ChatGPT / Google.
-        </aside>
-      </section>
-
-      <!-- Slide 52: Quiz - Zmienne i typy -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 1: Zmienne i typy</h3>
-          <p>Jaki będzie wynik <code>typeof null</code>?</p>
-          <ol>
-            <li><code>"null"</code></li>
-            <li><code>"undefined"</code></li>
-            <li><code>"object"</code></li>
-            <li><code>"boolean"</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 3</strong> - <code>"object"</code> (znany bug w JS)</p>
-        </div>
-        <aside class="notes">
-          Klasyczne pytanie o historyczny bug w JavaScript.
-          typeof null zwraca "object" - to błąd z pierwszej wersji JS, którego nie można naprawić ze względu na kompatybilność wsteczną.
-        </aside>
-      </section>
-
-      <!-- Slide 53: Quiz - let vs const -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 2: Zmienne</h3>
-          <p>Które stwierdzenie o <code>const</code> jest prawdziwe?</p>
-          <ol>
-            <li>Wartość <code>const</code> nigdy nie może się zmienić</li>
-            <li>Nie można zmienić referencji, ale można modyfikować obiekt</li>
-            <li><code>const</code> działa tak samo jak <code>let</code></li>
-            <li><code>const</code> ma zasięg globalny</li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - Referencja jest stała, ale zawartość obiektu/tablicy można zmieniać</p>
-        </div>
-        <aside class="notes">
-          Ważne rozróżnienie: const chroni przed ponownym przypisaniem, ale nie "zamraża" obiektu.
-          const arr = [1,2,3]; arr.push(4) - to działa! Ale arr = [5,6] - błąd.
-        </aside>
-      </section>
-
-      <!-- Slide 54: Quiz - Operatory -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 3: Operatory</h3>
-          <p>Jaki jest wynik <code>"5" === 5</code>?</p>
-          <ol>
-            <li><code>true</code></li>
-            <li><code>false</code></li>
-            <li><code>"5"</code></li>
-            <li><code>TypeError</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>===</code> porównuje typ i wartość, string !== number</p>
-        </div>
-        <aside class="notes">
-          === (strict equality) sprawdza zarówno typ jak i wartość. "5" to string, 5 to number - różne typy = false.
-          == (loose equality) skonwertowałoby i zwróciło true - dlatego zawsze używamy ===.
-        </aside>
-      </section>
-
-      <!-- Slide 55: Quiz - Warunki -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 4: Instrukcje warunkowe</h3>
-          <p>Które wartości są <strong>falsy</strong> w JavaScript?</p>
-          <ol>
-            <li><code>0</code>, <code>""</code>, <code>null</code>, <code>undefined</code>, <code>NaN</code>, <code>false</code></li>
-            <li><code>0</code>, <code>"0"</code>, <code>null</code>, <code>undefined</code></li>
-            <li><code>0</code>, <code>""</code>, <code>[]</code>, <code>{}</code></li>
-            <li><code>null</code>, <code>undefined</code>, <code>false</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 1</strong> - Jest 6 wartości falsy. Uwaga: <code>"0"</code>, <code>[]</code>, <code>{}</code> są truthy!</p>
-        </div>
-        <aside class="notes">
-          6 falsy values - warto zapamiętać. Wszystko inne jest truthy.
-          Częsty błąd: "0" (niepusty string) i [] (pusta tablica) są truthy!
-        </aside>
-      </section>
-
-      <!-- Slide 56: Quiz - Pętle -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 5: Pętle</h3>
-          <p>Ile razy wykona się ta pętla?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-for (let i = 0; i < 5; i++) {
-  if (i === 3) break;
-  console.log(i);
-}
-          </code></pre>
-          <ol>
-            <li>5 razy (0, 1, 2, 3, 4)</li>
-            <li>3 razy (0, 1, 2)</li>
-            <li>4 razy (0, 1, 2, 3)</li>
-            <li>Nieskończona pętla</li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>break</code> przerywa pętlę gdy i === 3, wypisuje: 0, 1, 2</p>
-        </div>
-        <aside class="notes">
-          break przerywa pętlę natychmiast - gdy i === 3, console.log się nie wykona.
-          Wypisane zostaną: 0, 1, 2. Czyli 3 iteracje.
-        </aside>
-      </section>
-
-      <!-- Slide 57: Quiz - Funkcje -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 6: Funkcje</h3>
-          <p>Jaki jest wynik?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-const greet = (name = "Gość") => `Cześć, ${name}!`;
-console.log(greet());
-          </code></pre>
-          <ol>
-            <li><code>"Cześć, undefined!"</code></li>
-            <li><code>"Cześć, Gość!"</code></li>
-            <li><code>Error</code></li>
-            <li><code>"Cześć, !"</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - Parametr domyślny <code>"Gość"</code> jest używany, gdy nie podano argumentu</p>
-        </div>
-        <aside class="notes">
-          Parametry domyślne (default parameters) - gdy nie podamy argumentu, użyta jest wartość domyślna.
-          Arrow function z template literal.
-        </aside>
-      </section>
-
-      <!-- Slide 58: Quiz - Tablice -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 7: Metody tablicowe</h3>
-          <p>Jaki jest wynik?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-const numbers = [1, 2, 3, 4, 5];
-const result = numbers.filter(n => n > 2).map(n => n * 10);
-console.log(result);
-          </code></pre>
-          <ol>
-            <li><code>[30, 40, 50]</code></li>
-            <li><code>[10, 20, 30, 40, 50]</code></li>
-            <li><code>[3, 4, 5]</code></li>
-            <li><code>[30]</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 1</strong> - <code>filter</code> zostawia [3,4,5], potem <code>map</code> mnoży przez 10</p>
-        </div>
-        <aside class="notes">
-          Łańcuchowanie metod: filter zwraca nową tablicę [3,4,5], map tworzy kolejną [30,40,50].
-          Oryginalna tablica numbers nie jest zmieniana.
-        </aside>
-      </section>
-
-      <!-- Slide 59: Quiz - Obiekty -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 8: Obiekty</h3>
-          <p>Jaki jest wynik?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-const user = { name: "Jan", age: 30 };
-const { name, age, role = "user" } = user;
-console.log(role);
-          </code></pre>
-          <ol>
-            <li><code>undefined</code></li>
-            <li><code>"user"</code></li>
-            <li><code>null</code></li>
-            <li><code>Error</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - Destructuring z wartością domyślną: <code>role</code> nie istnieje w obiekcie, więc używana jest wartość <code>"user"</code></p>
-        </div>
-        <aside class="notes">
-          Destructuring z default value - gdy właściwość nie istnieje w obiekcie, używana jest wartość domyślna.
-          Gdyby nie było = "user", role byłoby undefined.
-        </aside>
-      </section>
-
-      <!-- Slide 60: Quiz - DOM -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 9: DOM</h3>
-          <p>Jak poprawnie dodać event listener?</p>
-          <ol>
-            <li><code>element.onClick = function() {}</code></li>
-            <li><code>element.addEventListener("click", function() {})</code></li>
-            <li><code>element.addEvent("click", function() {})</code></li>
-            <li><code>element.on("click", function() {})</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>addEventListener</code> to standardowa metoda DOM</p>
-        </div>
-        <aside class="notes">
-          addEventListener to poprawna metoda. onClick działa ale nadpisuje poprzedni handler.
-          .on() to metoda jQuery, nie natywny DOM. addEvent nie istnieje.
-        </aside>
-      </section>
-
-      <!-- Slide 61: Quiz - async/await -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 10: Asynchroniczność</h3>
-          <p>Co się stanie, jeśli <code>fetch</code> zwróci błąd sieciowy, a nie ma <code>try/catch</code>?</p>
-          <ol>
-            <li>Zwróci <code>null</code></li>
-            <li>Zwróci pusty obiekt <code>{}</code></li>
-            <li>Promise zostanie odrzucony (rejected) - Unhandled Promise Rejection</li>
-            <li>Przeglądarka automatycznie ponowi żądanie</li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 3</strong> - Nieobsłużony rejected Promise to częsty błąd</p>
-        </div>
-        <aside class="notes">
-          Unhandled Promise Rejection - poważny problem. Dlatego zawsze używaj try/catch z async/await.
-          Nowoczesne środowiska (Node 15+) mogą nawet zakończyć proces przy unhandled rejection.
-        </aside>
-      </section>
-
-      <!-- Slide 62: Quiz - Klasy -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 11: Klasy</h3>
-          <p>Co robi słowo kluczowe <code>extends</code>?</p>
-          <ol>
-            <li>Tworzy nową instancję klasy</li>
-            <li>Tworzy relację dziedziczenia między klasami</li>
-            <li>Dodaje nowe metody do istniejącej klasy</li>
-            <li>Eksportuje klasę z modułu</li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>extends</code> tworzy klasę potomną dziedziczącą z klasy bazowej</p>
-        </div>
-        <aside class="notes">
-          extends ustanawia relację "is a" - Dog extends Animal: pies jest zwierzęciem.
-          Klasa potomna dziedziczy metody i właściwości, może je nadpisywać.
-        </aside>
-      </section>
-
-      <!-- Slide 63: Quiz - Klasy 2 -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 12: Klasy - static</h3>
-          <p>Jak wywołać metodę statyczną?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-class MathHelper {
-  static square(n) { return n * n; }
-}
-          </code></pre>
-          <ol>
-            <li><code>const m = new MathHelper(); m.square(5);</code></li>
-            <li><code>MathHelper.square(5);</code></li>
-            <li><code>square(5);</code></li>
-            <li><code>this.square(5);</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - Metody statyczne wywołujemy na klasie, nie na instancji</p>
-        </div>
-        <aside class="notes">
-          static metoda należy do klasy, nie do instancji. Wywołanie na instancji to TypeError.
-          Przykład: Math.random(), Math.max() - to są metody statyczne.
-        </aside>
-      </section>
-
-      <!-- Slide 64: Quiz - TypeScript -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 13: TypeScript</h3>
-          <p>Jaki typ powinny mieć parametry?</p>
-          <pre><code data-trim data-noescape class="language-typescript">
-function calculateTotal(price: ???, quantity: ???): ??? {
-  return price * quantity;
-}
-          </code></pre>
-          <ol>
-            <li><code>string, string, string</code></li>
-            <li><code>number, number, number</code></li>
-            <li><code>any, any, any</code></li>
-            <li><code>int, int, int</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - W TypeScript nie ma <code>int</code> - wszystkie liczby to <code>number</code></p>
-        </div>
-        <aside class="notes">
-          W TypeScript (i JavaScript) nie ma rozróżnienia na int/float - wszystko to number.
-          any wyłącza sprawdzanie typów, string nie pozwoliłoby na mnożenie.
-        </aside>
-      </section>
-
-      <!-- Slide 65: Quiz - TypeScript interface -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 14: TypeScript - interface</h3>
-          <p>Który zapis jest poprawny?</p>
-          <ol>
-            <li><code>interface User { name: string, age: number }</code></li>
-            <li><code>interface User { name: string; age: number; }</code></li>
-            <li><code>interface User { name = string; age = number; }</code></li>
-            <li>Oba 1 i 2 są poprawne</li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 4</strong> - W interfejsach można używać zarówno <code>,</code> jak i <code>;</code> jako separatora</p>
-        </div>
-        <aside class="notes">
-          TypeScript akceptuje zarówno przecinki jak i średniki w interfejsach.
-          Konwencjonalnie używa się średników, ale oba zapisy są prawidłowe.
-          Zapis z = jest nieprawidłowy - to adnotacja typu, nie przypisanie.
-        </aside>
-      </section>
-
-      <!-- Slide 66: Quiz - Error handling -->
-      <section>
-        <div class="quiz">
-          <h3>Pytanie 15: Error handling</h3>
-          <p>Co wypisze ten kod?</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-try {
-  throw new Error("Ups!");
-  console.log("A");
-} catch (e) {
-  console.log("B");
-} finally {
-  console.log("C");
-}
-          </code></pre>
-          <ol>
-            <li><code>"A" "B" "C"</code></li>
-            <li><code>"B" "C"</code></li>
-            <li><code>"A" "C"</code></li>
-            <li><code>"C"</code></li>
-          </ol>
-          <p class="fragment"><strong>Odpowiedź: 2</strong> - <code>throw</code> przerywa try, catch łapie błąd, finally wykonuje się zawsze</p>
-        </div>
-        <aside class="notes">
-          throw przerywa wykonanie bloku try - "A" nigdy się nie wypisze.
-          catch łapie błąd - wypisuje "B". finally wykonuje się zawsze - wypisuje "C".
-        </aside>
-      </section>
-
-      <!-- Slide 67: Część praktyczna - info -->
-      <section>
-        <h2>Część 2: Zadania praktyczne</h2>
-        <p>4 zadania - samodzielna praca na komputerze</p>
-        <ul>
-          <li><strong>Czas:</strong> ~30 minut</li>
-          <li><strong>Narzędzie:</strong> Konsola DevTools lub edytor kodu</li>
-          <li><strong>Materiały:</strong> Można korzystać z prezentacji i notatek</li>
-        </ul>
-        <aside class="notes">
-          Przejdź do zadań praktycznych. Daj jasne instrukcje: mogą używać notatek i prezentacji.
-          Pomagaj osobom, które mają trudności - celem jest nauka, nie stres.
-        </aside>
-      </section>
-
-      <!-- Slide 68: Zadanie 1 - Funkcja na tablicy -->
-      <section>
-        <div class="exercise">
-          <h3>Zadanie 1: Przetwarzanie tablicy</h3>
-          <p>Napisz funkcję <code>getProductSummary(products)</code>, która:</p>
-          <ol>
-            <li>Przyjmuje tablicę obiektów <code>{ name, price, category }</code></li>
-            <li>Filtruje produkty droższe niż 20 zł</li>
-            <li>Sortuje je od najdroższego</li>
-            <li>Zwraca tablicę stringów: <code>"Nazwa - XX.XX zł"</code></li>
-          </ol>
-          <pre><code data-trim data-noescape class="language-javascript">
-// Dane testowe:
-const products = [
-  { name: "Szampon", price: 15.99, category: "Włosy" },
-  { name: "Krem", price: 29.99, category: "Pielęgnacja" },
-  { name: "Pasta", price: 8.49, category: "Higiena" },
-  { name: "Serum", price: 49.99, category: "Pielęgnacja" },
-  { name: "Żel", price: 22.50, category: "Higiena" }
-];
-// Oczekiwany wynik:
-// ["Serum - 49.99 zł", "Krem - 29.99 zł", "Żel - 22.50 zł"]
-          </code></pre>
-        </div>
-        <aside class="notes">
-          Zadanie łączy filter, sort i map - kluczowe metody tablicowe z dnia 3.
-          Podpowiedź: sort((a, b) => b.price - a.price) sortuje malejąco.
-        </aside>
-      </section>
-
-      <!-- Slide 69: Zadanie 2 - Napraw błąd -->
-      <section>
-        <div class="exercise">
-          <h3>Zadanie 2: Znajdź i napraw błędy</h3>
-          <p>Ten kod zawiera <strong>3 błędy</strong>. Znajdź je i napraw:</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-class UserValidator {
-  constructor(users) {
-    this.users = users;
-  }
-
-  getAdults() {
-    return this.users.filter(user => user.age > 18);
-  }
-
-  getEmails() {
-    return this.users.map(user => {
-      user.email.toUpperCase()
-    });
-  }
-
-  findByName(name) {
-    return this.users.find(user => user.name = name);
-  }
-}
-
-const validator = new UserValidator([
-  { name: "Jan", age: 25, email: "jan@test.pl" },
-  { name: "Anna", age: 17, email: "anna@test.pl" }
-]);
-          </code></pre>
-        </div>
-        <aside class="notes">
-          3 błędy:
-          1. getAdults: > 18 powinno być >= 18 (osoba z 18 lat jest dorosła)
-          2. getEmails: brak return w map (lub usunąć klamry dla implicit return)
-          3. findByName: = zamiast === (przypisanie zamiast porównania)
-        </aside>
-      </section>
-
-      <!-- Slide 70: Zadanie 3 - Przeczytaj kod -->
-      <section>
-        <div class="exercise">
-          <h3>Zadanie 3: Co robi ten kod?</h3>
-          <p>Przeczytaj kod i opisz: (a) co robi, (b) jaki będzie wynik:</p>
-          <pre><code data-trim data-noescape class="language-javascript">
-async function checkStatus(urls) {
-  const results = [];
-
-  for (const url of urls) {
-    try {
-      const response = await fetch(url);
-      results.push({
-        url,
-        status: response.status,
-        ok: response.ok
-      });
-    } catch (error) {
-      results.push({
-        url,
-        status: 0,
-        ok: false
-      });
-    }
-  }
-
-  return results.filter(r => !r.ok);
-}
-          </code></pre>
-        </div>
-        <aside class="notes">
-          Odpowiedź: Funkcja sprawdza listę URLi, pobiera status każdego.
-          Jeśli fetch się nie uda - dodaje obiekt z status: 0.
-          Na końcu filtruje i zwraca TYLKO te, które nie są OK (błędy).
-          To typowa funkcja do health-checku wielu endpointów.
-        </aside>
-      </section>
-
-      <!-- Slide 71: Zadanie 4 - Napisz klasę -->
-      <section>
-        <div class="exercise">
-          <h3>Zadanie 4: Napisz klasę TestSuite</h3>
-          <p>Stwórz klasę <code>TestSuite</code>, która:</p>
-          <ol>
-            <li>W constructorze przyjmuje <code>name</code> i tworzy pustą tablicę <code>tests</code></li>
-            <li>Ma metodę <code>addTest(testName, testFn)</code> - dodaje test do tablicy</li>
-            <li>Ma metodę <code>runAll()</code> - uruchamia wszystkie testy w <code>try/catch</code> i zwraca wyniki:</li>
-          </ol>
-          <pre><code data-trim data-noescape class="language-javascript">
-// Przykład użycia:
-const suite = new TestSuite("Math tests");
-suite.addTest("addition", () => {
-  if (2 + 2 !== 4) throw new Error("2+2 should be 4");
-});
-suite.addTest("failing test", () => {
-  throw new Error("This test fails");
-});
-
-const results = suite.runAll();
-// [{ name: "addition", passed: true },
-//  { name: "failing test", passed: false, error: "This test fails" }]
-          </code></pre>
-        </div>
-        <aside class="notes">
-          To zadanie łączy klasy, tablice, try/catch i funkcje.
-          Kluczowe: runAll() iteruje po testach, każdy uruchamia w try/catch.
-          Jeśli testFn() nie rzuci błędu - passed: true, jeśli rzuci - passed: false + error message.
-        </aside>
-      </section>
-
-      <!-- ============================================================
-           BLOCK 7: Podsumowanie (~5 slides)
-           ============================================================ -->
-
-      <!-- Slide 72: Co się nauczyliśmy? -->
-      <section>
-        <h2>Co się nauczyliśmy?</h2>
-        <div class="columns">
-          <div class="col">
-            <h3>Dzień 1-2</h3>
-            <ul>
-              <li>Zmienne: <code>let</code>, <code>const</code></li>
-              <li>Typy danych i <code>typeof</code></li>
-              <li>Operatory i porównania</li>
-              <li>Instrukcje warunkowe</li>
-              <li>Pętle: <code>for</code>, <code>while</code></li>
-              <li>Funkcje i arrow functions</li>
-              <li>Scope i closures</li>
-            </ul>
-          </div>
-          <div class="col">
-            <h3>Dzień 3-5</h3>
-            <ul>
-              <li>Tablice i metody: map, filter, reduce</li>
-              <li>Obiekty i destructuring</li>
-              <li>DOM i eventy</li>
-              <li>Promise, async/await, fetch</li>
-              <li>Klasy i dziedziczenie</li>
-              <li>Moduły ES (import/export)</li>
-              <li>Error handling (try/catch)</li>
-              <li>Podstawy TypeScript</li>
-            </ul>
-          </div>
-        </div>
-        <aside class="notes">
-          Szybkie podsumowanie - pokaż jak dużo przeszli w 5 dni.
-          Od "czym jest zmienna" do klas, modułów i TypeScript. To duży postęp!
-        </aside>
-      </section>
-
-      <!-- Slide 73: Ścieżka dalszej nauki -->
-      <section>
-        <h2>Co dalej? Ścieżka nauki</h2>
-        <ul>
-          <li class="fragment"><strong>Utrwalaj podstawy</strong> - codziennie 15-30 min praktyki</li>
-          <li class="fragment"><strong>Cypress</strong> - pisz testy automatyczne w prawdziwych projektach</li>
-          <li class="fragment"><strong>TypeScript</strong> - stopniowo dodawaj typy do swoich testów</li>
-          <li class="fragment"><strong>k6</strong> - testy wydajnościowe z JavaScript</li>
-          <li class="fragment"><strong>Node.js</strong> - JavaScript po stronie serwera</li>
-        </ul>
-        <div class="tip">
-          <h3>Klucz do sukcesu</h3>
-          <p>Regularna praktyka jest ważniejsza niż intensywna nauka raz na miesiąc.</p>
-        </div>
-        <aside class="notes">
-          Podkreśl, że najważniejsza jest regularna praktyka. 15 minut dziennie > 3h raz w tygodniu.
-          Zachęć do pisania prawdziwych testów w pracy - to najlepsza forma nauki.
-        </aside>
-      </section>
-
-      <!-- Slide 74: Przydatne zasoby -->
-      <section>
-        <h2>Przydatne zasoby</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Zasób</th>
-              <th>Opis</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>MDN Web Docs</strong></td>
-              <td>Dokumentacja JS - twoje "źródło prawdy"</td>
-              <td>developer.mozilla.org</td>
-            </tr>
-            <tr>
-              <td><strong>javascript.info</strong></td>
-              <td>Kurs JS od podstaw po zaawansowane</td>
-              <td>javascript.info</td>
-            </tr>
-            <tr>
-              <td><strong>TypeScript Handbook</strong></td>
-              <td>Oficjalna dokumentacja TS</td>
-              <td>typescriptlang.org/docs</td>
-            </tr>
-            <tr>
-              <td><strong>Cypress Docs</strong></td>
-              <td>Dokumentacja Cypress</td>
-              <td>docs.cypress.io</td>
-            </tr>
-            <tr>
-              <td><strong>TS Playground</strong></td>
-              <td>Interaktywny edytor TS w przeglądarce</td>
-              <td>typescriptlang.org/play</td>
-            </tr>
-          </tbody>
-        </table>
-        <aside class="notes">
-          Polecaj MDN jako pierwsze źródło - najlepsza dokumentacja JS w internecie.
-          javascript.info - świetny kurs z ćwiczeniami, dostępny też po polsku.
-          TS Playground - idealny do eksperymentowania z TypeScript bez instalacji.
-        </aside>
-      </section>
-
-      <!-- Slide 75: Q&A -->
-      <section>
-        <h2>Pytania i odpowiedzi</h2>
-        <p>Czas na Wasze pytania!</p>
-        <ul>
-          <li>Tematy z dzisiejszego dnia</li>
-          <li>Tematy z całego szkolenia</li>
-          <li>Zastosowanie w codziennej pracy</li>
-          <li>Następne kroki w nauce</li>
-        </ul>
-        <aside class="notes">
-          Otwórz na pytania. Jeśli nie ma pytań - możesz zapytać:
-          "Co było najtrudniejsze?", "Co Was zaskoczyło?", "Czego chcielibyście się nauczyć więcej?"
-        </aside>
-      </section>
-
-      <!-- Slide 76: Thank you -->
-      <section class="title-slide">
-        <h1>Dziękujemy!</h1>
-        <p class="subtitle">JavaScript dla Testerów - Rossmann 2026</p>
-        <p>Powodzenia w automatyzacji testów!</p>
-        <br>
-        <p><small>Kontakt i materiały szkoleniowe dostępne w repozytorium kursu</small></p>
-        <aside class="notes">
-          Podziękuj za udział i zaangażowanie. Przypomnij, że materiały szkoleniowe (prezentacje i ćwiczenia) są dostępne.
-          Zachęć do kontaktu w razie pytań po szkoleniu. Powodzenia!
-        </aside>
-      </section>
-
+  <!-- Slide 45: Ćwiczenie 3 - Lista produktów -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie 3: Testy listy produktów (~45 min)</h3>
+      <p>Utwórz <code>dashboardPage.js</code> i napisz testy:</p>
+      <ol>
+        <li>Produkty są wyświetlane na stronie</li>
+        <li>Wyszukiwanie filtruje produkty</li>
+        <li>Filtr kategorii działa poprawnie</li>
+        <li>Dodanie do koszyka aktualizuje badge</li>
+      </ol>
+      <p><strong>Wskazówka:</strong> Zaloguj się w <code>beforeEach</code> używając loginPage</p>
+      <p><strong>Czas:</strong> 45 minut</p>
     </div>
-  </div>
+    <aside class="notes">
+      To dłuższe ćwiczenie. Uczestnicy muszą stworzyć nowy Page Object i zintegrować go
+      z istniejącym LoginPage (logowanie w beforeEach). Daj 20 minut na samodzielną pracę,
+      potem pokaż podpowiedzi, a na końcu pełne rozwiązanie.
+    </aside>
+  </section>
 
-  <script src="../node_modules/reveal.js/dist/reveal.js"></script>
-  <script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
-  <script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
-  <script>
-    Reveal.initialize({
-      hash: true,
-      slideNumber: true,
-      view: 'scroll',
-      scrollProgress: true,
-      plugins: [RevealHighlight, RevealNotes]
+  <!-- Slide 46: Podpowiedzi - DashboardPage -->
+  <section>
+    <h2>Podpowiedzi - dashboardPage</h2>
+    <p>Potrzebne selektory:</p>
+    <ul>
+      <li class="fragment"><code>cy.get('[data-testid="product-card"]')</code> - karta produktu</li>
+      <li class="fragment"><code>cy.get('[data-testid="search-input"]')</code> - pole wyszukiwania</li>
+      <li class="fragment"><code>cy.get('[data-testid="category-filter"]')</code> - filtr kategorii</li>
+      <li class="fragment"><code>cy.get('[data-testid="add-to-cart"]')</code> - przycisk dodania do koszyka</li>
+      <li class="fragment"><code>cy.get('[data-testid="cart-badge"]')</code> - badge koszyka</li>
+      <li class="fragment"><code>cy.get('[data-testid="product-name"]')</code> - nazwa produktu w karcie</li>
+    </ul>
+    <p class="fragment">Metody: <code>search(query)</code>, <code>filterByCategory(cat)</code>, <code>addFirstProductToCart()</code>, <code>getCartBadge()</code></p>
+    <aside class="notes">
+      Daj chwilę na zapisanie selektorów. Pokaż w DevTools, gdzie te atrybuty data-testid są w DOM.
+      Metody to abstrakcje akcji użytkownika - nazwy powinny opisywać CO robimy, nie JAK.
+    </aside>
+  </section>
+
+  <!-- Slide 47: Rozwiązanie - DashboardPage -->
+  <section>
+    <h2>Rozwiązanie - dashboardPage.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/support/pages/dashboardPage.js
+export const dashboardPage = {
+  getProductCards() {
+    return cy.get('[data-testid="product-card"]');
+  },
+
+  search(query) {
+    cy.get('[data-testid="search-input"]').clear().type(query);
+  },
+
+  filterByCategory(category) {
+    cy.get(`[data-testid="category-${category}"]`).click();
+  },
+
+  addFirstProductToCart() {
+    cy.get('[data-testid="product-card"]').first()
+      .find('[data-testid="add-to-cart"]').click();
+  },
+
+  getCartBadge() {
+    return cy.get('[data-testid="cart-badge"]');
+  }
+};
+    </code></pre>
+    <aside class="notes">
+      W Cypress Page Object to obiekt z metodami zwracającymi elementy. getProductCards() zwraca
+      wszystkie karty produktów. search() czyści pole i wpisuje tekst. filterByCategory() klika
+      odpowiedni filtr. addFirstProductToCart() klika przycisk na pierwszej karcie.
+    </aside>
+  </section>
+
+  <!-- Slide 48: Rozwiązanie - testy produktów -->
+  <section>
+    <h2>Rozwiązanie - products.cy.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/e2e/products.cy.js
+import { loginPage } from '../support/pages/loginPage';
+import { dashboardPage } from '../support/pages/dashboardPage';
+
+describe('Products Page', () => {
+  beforeEach(() => {
+    cy.fixture('users').then((users) => {
+      loginPage.login(users.validUser.email, users.validUser.password);
     });
-  </script>
+  });
+
+  it('should display products on page', () => {
+    dashboardPage.getProductCards()
+      .should('have.length.greaterThan', 0);
+  });
+
+  it('should filter products by search query', () => {
+    dashboardPage.search('szampon');
+    dashboardPage.getProductCards()
+      .should('have.length.greaterThan', 0);
+  });
+    </code></pre>
+    <aside class="notes">
+      Pierwsza część rozwiązania. beforeEach loguje użytkownika używając fixture.
+      Test 1: sprawdza, że jakiekolwiek produkty istnieją. Test 2: wyszukiwanie zwraca wyniki.
+      Kontynuacja na następnym slajdzie.
+    </aside>
+  </section>
+
+  <!-- Slide 49: Rozwiązanie - testy produktów cd. -->
+  <section>
+    <h2>Rozwiązanie - products.cy.js (cd.)</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+  it('should filter products by category', () => {
+    dashboardPage.filterByCategory('pielegnacja');
+    dashboardPage.getProductCards().should('have.length.greaterThan', 0);
+
+    // Sprawdź, że każdy widoczny produkt jest z wybranej kategorii
+    dashboardPage.getProductCards().each(($card) => {
+      cy.wrap($card)
+        .find('[data-testid="product-category"]')
+        .should('contain', 'Pielegnacja');
+    });
+  });
+
+  it('should update cart badge when product is added', () => {
+    dashboardPage.addFirstProductToCart();
+    dashboardPage.getCartBadge().should('have.text', '1');
+
+    // Dodaj ten sam produkt ponownie
+    dashboardPage.addFirstProductToCart();
+    dashboardPage.getCartBadge().should('have.text', '2');
+  });
+});
+    </code></pre>
+    <aside class="notes">
+      Test kategorii: używa .each() do iteracji po wszystkich kartach i sprawdzenia kategorii.
+      cy.wrap() opakowuje element jQuery w obiekt Cypress. Test koszyka: dodaje produkt dwukrotnie
+      i sprawdza, czy badge się aktualizuje.
+    </aside>
+  </section>
+
+  <!-- Slide 50: Ćwiczenie 4 - Koszyk -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie 4: Testy koszyka (~30 min)</h3>
+      <p>Utwórz <code>cartPage.js</code> i napisz testy:</p>
+      <ol>
+        <li>Koszyk wyświetla dodane produkty</li>
+        <li>Zmiana ilości produktu działa</li>
+        <li>Usunięcie produktu z koszyka</li>
+        <li>Suma jest obliczana poprawnie</li>
+        <li>Pusty koszyk wyświetla odpowiedni komunikat</li>
+      </ol>
+      <p><strong>Wskazówka:</strong> Dodaj produkt w <code>beforeEach</code>, żeby koszyk nie był pusty</p>
+      <p><strong>Czas:</strong> 30 minut</p>
+    </div>
+    <aside class="notes">
+      Trzecie ćwiczenie z Page Objects. Do tego momentu uczestnicy powinni już czuć wzorzec:
+      1) zidentyfikuj selektory, 2) stwórz Page Object, 3) napisz testy. Daj więcej czasu
+      na samodzielną pracę, pomagaj indywidualnie.
+    </aside>
+  </section>
+
+  <!-- Slide 51: Rozwiązanie - CartPage -->
+  <section>
+    <h2>Rozwiązanie - cartPage.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/support/pages/cartPage.js
+export const cartPage = {
+  visit() {
+    cy.visit('/cart.html');
+  },
+
+  getCartItems() {
+    return cy.get('[data-testid="cart-item"]');
+  },
+
+  getTotal() {
+    return cy.get('[data-testid="cart-total"]');
+  },
+
+  getEmptyMessage() {
+    return cy.get('[data-testid="empty-cart"]');
+  },
+
+  changeQuantity(index, qty) {
+    cy.get('[data-testid="cart-item"]').eq(index)
+      .find('[data-testid="quantity-input"]').clear().type(qty);
+  },
+
+  removeItem(index) {
+    cy.get('[data-testid="cart-item"]').eq(index)
+      .find('[data-testid="remove-btn"]').click();
+  }
+};
+    </code></pre>
+    <aside class="notes">
+      cartPage jest prostsza niż dashboardPage. Kluczowe metody: changeQuantity przyjmuje indeks
+      elementu i nową ilość, removeItem usuwa element po indeksie. getTotal zwraca element sumy
+      na którym można wywołać asercje.
+    </aside>
+  </section>
+
+  <!-- Slide 52: Rozwiązanie - testy koszyka -->
+  <section>
+    <h2>Rozwiązanie - cart.cy.js</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// cypress/e2e/cart.cy.js
+import { loginPage } from '../support/pages/loginPage';
+import { dashboardPage } from '../support/pages/dashboardPage';
+import { cartPage } from '../support/pages/cartPage';
+
+describe('Cart Page', () => {
+  beforeEach(() => {
+    cy.fixture('users').then((users) => {
+      loginPage.login(users.validUser.email, users.validUser.password);
+    });
+    dashboardPage.addFirstProductToCart();
+    cartPage.visit();
+  });
+
+  it('should display added products in cart', () => {
+    cartPage.getCartItems().should('have.length', 1);
+  });
+
+  it('should update quantity of item', () => {
+    cartPage.changeQuantity(0, '3');
+    // Poczekaj na aktualizację sumy
+    cartPage.getTotal().should('not.contain', '0');
+  });
+    </code></pre>
+    <aside class="notes">
+      beforeEach: logowanie + dodanie produktu + nawigacja do koszyka. Każdy test zaczyna
+      z jednym produktem w koszyku. Test ilości: zmiana na 3, sprawdzenie że suma się zmieniła.
+    </aside>
+  </section>
+
+  <!-- Slide 53: Rozwiązanie - testy koszyka cd. -->
+  <section>
+    <h2>Rozwiązanie - cart.cy.js (cd.)</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+  it('should remove item from cart', () => {
+    cartPage.removeItem(0);
+    cartPage.getCartItems().should('have.length', 0);
+    cartPage.getEmptyMessage().should('be.visible');
+  });
+
+  it('should calculate total correctly', () => {
+    // Mock z kontrolowanymi cenami
+    cy.intercept('GET', '/api/cart', {
+      body: {
+        items: [
+          { id: 1, name: 'Szampon', price: 15.99, quantity: 2 },
+          { id: 2, name: 'Odzywka', price: 19.99, quantity: 1 }
+        ],
+        total: 51.97
+      }
+    });
+    cartPage.visit();
+    cartPage.getTotal().should('contain', '51,97');
+  });
+
+  it('should show empty cart message when cart is empty', () => {
+    cartPage.removeItem(0);
+    cartPage.getEmptyMessage().should('be.visible');
+    cartPage.getEmptyMessage()
+      .should('contain', 'Koszyk jest pusty');
+  });
+});
+    </code></pre>
+    <aside class="notes">
+      Test usuwania: po usunięciu jedynego elementu powinien pojawić się komunikat o pustym koszyku.
+      Test sumy: mockujemy API koszyka z cy.intercept() z kontrolowanymi danymi, dzięki czemu znamy oczekiwaną sumę.
+      Test pustego koszyka: weryfikacja przyjaznego komunikatu UX.
+    </aside>
+  </section>
+
+  <!-- Slide 54: Ćwiczenie 5 - Testy zaawansowane -->
+  <section>
+    <div class="exercise">
+      <h3>Ćwiczenie 5: Testy zaawansowane (~15 min)</h3>
+      <p>Dodatkowe scenariusze dla chętnych:</p>
+      <ol>
+        <li>Spersonalizowane powitanie zawiera imię użytkownika</li>
+        <li>Powiadomienie toast pojawia się po dodaniu do koszyka</li>
+        <li>Test responsywności - mobile viewport</li>
+      </ol>
+      <p><strong>Wskazówka:</strong> Użyj <code>cy.viewport()</code> dla testu responsywności</p>
+    </div>
+    <aside class="notes">
+      To opcjonalne ćwiczenie dla szybszych uczestników. Nie wszyscy muszą je skończyć.
+      Pokaż rozwiązania po 15 minutach, niezależnie od tego, kto skończył.
+    </aside>
+  </section>
+
+  <!-- Slide 55: Rozwiązanie - powitanie i toast -->
+  <section>
+    <h2>Rozwiązanie - testy zaawansowane (1/2)</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Spersonalizowane powitanie
+it('should display personalized greeting', () => {
+  cy.fixture('users').then((users) => {
+    cy.login(users.validUser.email, users.validUser.password);
+    cy.get('[data-testid="greeting"]')
+      .should('be.visible')
+      .and('contain', users.validUser.name);
+    // Nie sprawdzamy daty - dynamiczna!
+  });
+});
+
+// Powiadomienie toast
+it('should show toast after adding to cart', () => {
+  cy.login('test@rossmann.pl', 'Test1234');
+  dashboardPage.addFirstProductToCart();
+  cy.get('[data-testid="toast-notification"]')
+    .should('be.visible')
+    .and('contain', 'Dodano do koszyka');
+});
+    </code></pre>
+    <aside class="notes">
+      Toast: sprawdzamy, że pojawia się i ma odpowiedni tekst. Cypress automatycznie retryuje
+      asercje, więc nie trzeba czekać na animację. cy.login() to custom command zdefiniowany
+      w cypress/support/commands.js.
+    </aside>
+  </section>
+
+  <!-- Slide 56: Rozwiązanie - responsywność -->
+  <section>
+    <h2>Rozwiązanie - testy zaawansowane (2/2)</h2>
+    <pre><code data-trim data-noescape class="language-javascript">
+// Test responsywnosci - mobilny viewport
+it('should adapt to mobile viewport', () => {
+  cy.viewport(390, 844);
+  cy.login('test@rossmann.pl', 'Test1234');
+
+  // Menu mobilne powinno być widoczne
+  cy.get('[data-testid="mobile-menu"]').should('be.visible');
+  // Nawigacja desktopowa powinna być ukryta
+  cy.get('[data-testid="desktop-nav"]').should('not.be.visible');
+});
+
+// Alternatywa - użyj presetów Cypress
+it('should work on iPhone viewport', () => {
+  cy.viewport('iphone-xr');
+  cy.login('test@rossmann.pl', 'Test1234');
+  cy.get('[data-testid="mobile-menu"]').should('be.visible');
+});
+    </code></pre>
+    <aside class="notes">
+      Dwa podejścia do testowania responsywności. cy.viewport(width, height) daje pełną kontrolę.
+      cy.viewport('iphone-xr') używa wbudowanych presetów urządzeń. Cypress ma wiele presetów:
+      iphone-6, iphone-xr, samsung-s10, macbook-15 itp.
+    </aside>
+  </section>
+
+  <!-- Slide 57: Typowe problemy -->
+  <section>
+    <h2>Typowe problemy i rozwiązania</h2>
+    <div class="warning">
+      <h3>FAQ z warsztatu</h3>
+      <ul>
+        <li class="fragment"><strong>"Test timeout"</strong> - element nie istnieje lub ma inny data-testid. Sprawdź w DevTools.</li>
+        <li class="fragment"><strong>"Element not visible"</strong> - element jest w DOM, ale ukryty. Sprawdź CSS display/visibility.</li>
+        <li class="fragment"><strong>"cy.get() returned more than one element"</strong> - selektor pasuje do wielu elementów. Użyj <code>.first()</code>, <code>.eq(0)</code> lub bardziej precyzyjnego selektora.</li>
+        <li class="fragment"><strong>"Timed out retrying"</strong> - Cypress nie może znaleźć elementu w czasie defaultCommandTimeout.</li>
+      </ul>
+    </div>
+    <div class="tip fragment">
+      <h3>Debugowanie</h3>
+      <p>Użyj <code>npx cypress open</code> do interaktywnego debugowania testów. Cypress pokazuje każdy krok z podglądem DOM.</p>
+    </div>
+    <aside class="notes">
+      Przejdź przez typowe problemy, które uczestnicy prawdopodobnie napotkali. Pokaż jak
+      debugować każdy z nich. Cypress open mode jest bardzo pomocny - pokazuje każdy krok
+      testu z podglądem aplikacji i snapshotem DOM. Można też użyć cy.pause() do zatrzymania testu.
+    </aside>
+  </section>
+
+  <!-- Slide 58: Uruchomienie pełnego suite -->
+  <section>
+    <h2>Uruchomienie pełnego zestawu testów</h2>
+    <pre><code data-trim data-noescape class="language-bash">
+# Uruchom wszystkie testy
+npx cypress run
+
+# Uruchom z interfejsem graficznym
+npx cypress open
+
+# Uruchom konkretny plik
+npx cypress run --spec cypress/e2e/login.cy.js
+
+# Uruchom na Chrome
+npx cypress run --browser chrome
+
+# Uruchom na Firefox
+npx cypress run --browser firefox
+    </code></pre>
+    <div class="console-output fragment">
+      <pre>
+  (Run Finished)
+
+  Spec                    Tests  Passing  Failing
+  login.cy.js             3      3        0
+  products.cy.js          4      4        0
+  cart.cy.js              5      5        0
+
+  All specs passed!       12     12       0
+      </pre>
+    </div>
+    <aside class="notes">
+      Uruchom pełny suite na wspólnym ekranie. npx cypress run uruchamia testy w trybie headless.
+      npx cypress open otwiera graficzny interfejs, w którym można klikać i obserwować testy.
+      To dobry moment na przerwę przed podsumowaniem.
+    </aside>
+  </section>
+
+  <!-- ============================================================
+       BLOCK 5: Podsumowanie szkolenia (~30 min, ~8 slides)
+       ============================================================ -->
+
+  <!-- Slide 59: Section divider -->
+  <section class="section-slide">
+    <span class="section-number">04</span>
+    <h2>Podsumowanie szkolenia</h2>
+    <p>5 dni JavaScript dla testerów - co dalej?</p>
+    <aside class="notes">
+      Przechodzimy do podsumowania całego 5-dniowego szkolenia. To ważny moment - uczestnicy
+      powinni wyjść z poczuciem, że dużo się nauczyli i mają jasny plan dalszego rozwoju.
+    </aside>
+  </section>
+
+  <!-- Slide 60: Czego się nauczyliśmy -->
+  <section>
+    <h2>5 dni - czego się nauczyliśmy?</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Dzień 1-2: Fundamenty JS</h3>
+        <ul>
+          <li>Zmienne, typy danych, operatory</li>
+          <li>Instrukcje warunkowe, pętle</li>
+          <li>Funkcje i zakres zmiennych</li>
+          <li>DevTools - konsola przeglądarki</li>
+        </ul>
+        <h3>Dzień 3: Struktury danych</h3>
+        <ul>
+          <li>Tablice i metody iteracyjne</li>
+          <li>Obiekty i destrukturyzacja</li>
+          <li>JSON - format wymiany danych</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Dzień 4: Testowanie</h3>
+        <ul>
+          <li>async/await w kontekście testów</li>
+          <li>Selektory CSS i data-testid</li>
+          <li>Page Object Model</li>
+          <li>Co automatyzować, a co nie</li>
+          <li>Zarządzanie sekretami</li>
+        </ul>
+        <h3>Dzień 5: Warsztat</h3>
+        <ul>
+          <li>Testowanie dynamicznych danych</li>
+          <li>Dobre praktyki w testach</li>
+          <li>Budowa testów E2E od zera</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Szybkie podsumowanie każdego dnia. Zapytaj uczestników, co było najtrudniejsze,
+      co najbardziej przydatne, co ich zaskoczyło. To dobry feedback dla trenera.
+    </aside>
+  </section>
+
+  <!-- Slide 61: Umiejętności checklist -->
+  <section>
+    <h2>Zdobyte umiejętności</h2>
+    <ul>
+      <li class="fragment">Rozumiem zmienne, typy, funkcje, tablice i obiekty w JavaScript</li>
+      <li class="fragment">Potrafię czytać i pisać kod async/await</li>
+      <li class="fragment">Wiem, jak dobierać stabilne selektory (data-testid)</li>
+      <li class="fragment">Rozumiem i potrafię zastosować wzorzec Page Object Model</li>
+      <li class="fragment">Umiem pisać testy E2E w Cypress od zera</li>
+      <li class="fragment">Znam dobre praktyki: AAA, izolacja, nazewnictwo, DRY</li>
+      <li class="fragment">Potrafię mockować odpowiedzi API w testach</li>
+      <li class="fragment">Wiem, jak skonfigurować testy w CI/CD pipeline</li>
+    </ul>
+    <div class="tip fragment">
+      <h3>To dopiero początek!</h3>
+      <p>Najlepsza nauka to praktyka. Zacznijcie od małego projektu i rozwijajcie umiejętności stopniowo.</p>
+    </div>
+    <aside class="notes">
+      Przejdź przez każdy punkt. Poproś o podniesienie ręki - kto czuje się pewnie z danym tematem?
+      To pomaga zidentyfikować obszary do powtórki. Podkreśl, że to fundament - dalszy rozwój
+      wymaga codziennej praktyki.
+    </aside>
+  </section>
+
+  <!-- Slide 62: Zalecane zasoby -->
+  <section>
+    <h2>Zalecane zasoby</h2>
+    <div class="columns">
+      <div class="col">
+        <h3>Dokumentacja</h3>
+        <ul>
+          <li><strong>Playwright</strong> - <a href="https://playwright.dev">playwright.dev</a></li>
+          <li><strong>Cypress</strong> - <a href="https://docs.cypress.io">docs.cypress.io</a></li>
+          <li><strong>Testing Library</strong> - <a href="https://testing-library.com">testing-library.com</a></li>
+          <li><strong>MDN Web Docs</strong> - <a href="https://developer.mozilla.org">developer.mozilla.org</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Nauka i rozwój</h3>
+        <ul>
+          <li><strong>javascript.info</strong> - darmowy kurs JS</li>
+          <li><strong>Test Automation University</strong> - darmowe kursy z certyfikatami</li>
+          <li><strong>Playwright YouTube</strong> - oficjalny kanał z tutorialami</li>
+          <li><strong>"JavaScript for QA Engineers"</strong> - polecana książka</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Podziel się linkami na czacie lub mailem. Playwright docs są świetne - mają interaktywne przykłady.
+      Test Automation University (applitools) ma darmowe kursy z certyfikatami.
+      javascript.info to najlepsza darmowa dokumentacja JS.
+    </aside>
+  </section>
+
+  <!-- Slide 63: Następne kroki -->
+  <section>
+    <h2>Następne kroki dla zespołu</h2>
+    <ol>
+      <li class="fragment"><strong>Tydzień 1-2:</strong> Zidentyfikujcie 3-5 kluczowych scenariuszy do automatyzacji</li>
+      <li class="fragment"><strong>Tydzień 3-4:</strong> Napiszcie pierwsze testy dla jednego scenariusza</li>
+      <li class="fragment"><strong>Miesiąc 2:</strong> Skonfigurujcie CI/CD i uruchamiajcie testy automatycznie</li>
+      <li class="fragment"><strong>Miesiąc 3:</strong> Rozszerzcie pokrycie o kolejne scenariusze</li>
+      <li class="fragment"><strong>Ciągle:</strong> Code review testów, dzielenie się wiedzą w zespole</li>
+    </ol>
+    <div class="tip fragment">
+      <h3>Zacznijcie od małego</h3>
+      <p>Lepiej mieć 5 stabilnych testów niż 50 niestabilnych. Jakość > ilość.</p>
+    </div>
+    <aside class="notes">
+      Daj konkretny plan działania. Uczestnicy powinni wiedzieć, co robić jutro, za tydzień,
+      za miesiąc. Zaproponuj spotkanie follow-up za 2-4 tygodnie, żeby sprawdzić postępy
+      i odpowiedzieć na pytania, które pojawią się w praktyce.
+    </aside>
+  </section>
+
+  <!-- Slide 64: Pytania i odpowiedzi -->
+  <section>
+    <h2>Pytania i odpowiedzi</h2>
+    <p>Czas na Wasze pytania - o JavaScript, testowanie, narzędzia, cokolwiek!</p>
+    <div class="tip">
+      <h3>Nie ma głupich pytań</h3>
+      <p>Jeśli masz wątpliwość - zapytaj teraz. Inni prawdopodobnie mają to samo pytanie.</p>
+    </div>
+    <aside class="notes">
+      Zarezerwuj minimum 15 minut na pytania. Jeśli nie ma pytań, zadaj sam:
+      "Co było najtrudniejsze?", "Co chcielibyście pogłębić?",
+      "Jakie macie obawy przed wdrożeniem automatyzacji?".
+      Zapisz pytania, na które nie znasz odpowiedzi - odeślij odpowiedź mailem.
+    </aside>
+  </section>
+
+  <!-- Slide 65: Zakończenie -->
+  <section class="title-slide">
+    <span class="day-number">Gratulacje!</span>
+    <h1>Szkolenie zakończone</h1>
+    <p class="subtitle">JavaScript dla testerów - 5 dni intensywnej nauki</p>
+    <p>Dziękuję za udział i zaangażowanie!</p>
+    <p><small>Kontakt: szkolenia@bottega.com.pl</small></p>
+    <aside class="notes">
+      Podziękuj za udział i zaangażowanie. Przypomnij o materiałach szkoleniowych - slajdy
+      zostają u uczestników. Zachęć do kontaktu w razie pytań. Poproś o wypełnienie ankiety
+      ewaluacyjnej, jeśli jest. Powodzenia w automatyzacji!
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="../node_modules/reveal.js/dist/reveal.js"></script>
+<script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+<script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: true,
+    view: 'scroll',
+    scrollProgress: true,
+    plugins: [RevealHighlight, RevealNotes]
+  });
+</script>
 </body>
 </html>
