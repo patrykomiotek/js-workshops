@@ -53,10 +53,10 @@
       <h3>Powtórzenie: Strategie selektorów</h3>
       <p>Uszereguj selektory od najlepszego do najgorszego w kontekście testów:</p>
       <ol>
-        <li><code>cy.get('.btn-primary')</code></li>
-        <li><code>cy.get('[data-testid="submit-btn"]')</code></li>
-        <li><code>cy.get('#app > div:nth-child(3) > button')</code></li>
-        <li><code>cy.get('button').contains('Wyślij')</code></li>
+        <li><code>page.locator('.btn-primary')</code></li>
+        <li><code>page.getByTestId('submit-btn')</code></li>
+        <li><code>page.locator('#app > div:nth-child(3) > button')</code></li>
+        <li><code>page.getByRole('button', { name: 'Wyślij' })</code></li>
       </ol>
       <p class="fragment"><strong>Odpowiedź: 2, 4, 1, 3</strong> - data-testid jest najbardziej stabilny, zagnieżdżone selektory CSS są najgorsze</p>
     </div>
@@ -152,11 +152,10 @@
       <div class="col">
         <h3>Źle - kruche</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - nie rób tak!
-cy.get('[data-testid="date"]')
-  .should('have.text', '07.03.2026');
+// Nie rób tak!
+await expect(page.getByTestId('date'))
+  .toHaveText('07.03.2026');
 
-// Playwright - nie rób tak!
 await expect(greeting).toHaveText(
   'Witaj, Anna! Dzis jest 07.03.2026'
 );
@@ -165,12 +164,12 @@ await expect(greeting).toHaveText(
       <div class="col fragment">
         <h3>Dobrze - elastyczne</h3>
         <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - regex na format daty
-cy.get('[data-testid="date"]')
-  .invoke('text')
-  .should('match', /\d{2}\.\d{2}\.\d{4}/);
+// Regex na format daty
+const dateText = await page
+  .getByTestId('date').textContent();
+expect(dateText).toMatch(/\d{2}\.\d{2}\.\d{4}/);
 
-// Playwright - partial match
+// Partial match - sprawdzaj stałą część
 await expect(greeting)
   .toContainText('Witaj, Anna!');
         </code></pre>
@@ -187,18 +186,18 @@ await expect(greeting)
   <section>
     <h2>Strategia: zakresy dat i czasów</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - sprawdź timestamp w rozsądnym zakresie
-cy.get('[data-testid="order-time"]')
-  .invoke('attr', 'data-timestamp')
-  .then((timestamp) => {
-    const orderTime = new Date(Number(timestamp));
-    const now = new Date();
-    const diffMinutes = (now - orderTime) / 1000 / 60;
-    expect(diffMinutes).to.be.lessThan(5);
-  });
+// Sprawdź timestamp w rozsądnym zakresie
+test('should have recent order time', async ({ page }) => {
+  const timestamp = await page.getByTestId('order-time')
+    .getAttribute('data-timestamp');
+  const orderTime = new Date(Number(timestamp));
+  const now = new Date();
+  const diffMinutes = (now - orderTime) / 1000 / 60;
+  expect(diffMinutes).toBeLessThan(5);
+});
     </code></pre>
     <pre><code data-trim data-noescape class="language-javascript">
-// Playwright - sprawdź, że data jest "dzisiejsza"
+// Sprawdź, że data jest "dzisiejsza"
 test('should display today date', async ({ page }) => {
   await page.goto('/dashboard');
 
@@ -220,12 +219,7 @@ test('should display today date', async ({ page }) => {
   <section>
     <h2>Losowe identyfikatory</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - sprawdzaj format, nie wartość
-cy.get('[data-testid="order-id"]')
-  .invoke('text')
-  .should('match', /^ORD-\d+$/);
-
-// Playwright - sprawdzaj format
+// Sprawdzaj format, nie wartość
 const orderId = await page.getByTestId('order-id').textContent();
 expect(orderId).toMatch(/^ORD-\d+$/);
     </code></pre>
@@ -253,21 +247,18 @@ expect(orderId).toMatch(/^ORD-\d+$/);
     <p>Rekomendacje, oferty, propozycje - różne dla każdego użytkownika</p>
     <pre><code data-trim data-noescape class="language-javascript">
 // Źle - konkretny produkt może zniknąć z rekomendacji
-cy.get('[data-testid="recommendations"]')
-  .should('contain', 'Szampon XYZ');
+await expect(page.getByTestId('recommendations'))
+  .toContainText('Szampon XYZ');
 
 // Dobrze - sprawdzaj strukturę, nie treść
-cy.get('[data-testid="recommendations"]')
-  .should('exist')
-  .find('[data-testid="product-card"]')
-  .should('have.length.greaterThan', 0);
+await expect(page.getByTestId('recommendations')).toBeVisible();
+await expect(page.getByTestId('product-card')).not.toHaveCount(0);
 
-// Dobrze - sprawdzaj, że każda karta ma wymagane elementy
-cy.get('[data-testid="product-card"]').first().within(() => {
-  cy.get('[data-testid="product-name"]').should('not.be.empty');
-  cy.get('[data-testid="product-price"]').should('not.be.empty');
-  cy.get('[data-testid="add-to-cart"]').should('be.visible');
-});
+// Dobrze - sprawdzaj, że pierwsza karta ma wymagane elementy
+const firstCard = page.getByTestId('product-card').first();
+await expect(firstCard.getByTestId('product-name')).not.toBeEmpty();
+await expect(firstCard.getByTestId('product-price')).not.toBeEmpty();
+await expect(firstCard.getByTestId('add-to-cart')).toBeVisible();
     </code></pre>
     <aside class="notes">
       Klucz: testuj STRUKTURĘ, nie TREŚĆ dynamiczną. Sprawdź, że sekcja rekomendacji istnieje,
@@ -280,11 +271,11 @@ cy.get('[data-testid="product-card"]').first().within(() => {
     <h2>Ceny i formatowanie walutowe</h2>
     <pre><code data-trim data-noescape class="language-javascript">
 // Sprawdzaj format ceny, nie konkretną wartość
-cy.get('[data-testid="product-price"]')
-  .invoke('text')
-  .should('match', /^\d+,\d{2}\s?zl$/);
+const priceFormat = await page
+  .getByTestId('product-price').textContent();
+expect(priceFormat).toMatch(/^\d+,\d{2}\s?zl$/);
 
-// Playwright - sprawdzaj, że cena jest liczbą > 0
+// Sprawdzaj, że cena jest liczbą > 0
 const priceText = await page.getByTestId('product-price').textContent();
 const price = parseFloat(
   priceText.replace(',', '.').replace(/[^\d.]/g, '')
@@ -331,39 +322,9 @@ expect(price).toBeGreaterThan(0);
     </aside>
   </section>
 
-  <!-- Slide 14: Cypress - cy.intercept() -->
+  <!-- Slide 14: Playwright - page.route() -->
   <section>
-    <h2>Cypress - <code>cy.intercept()</code></h2>
-    <pre><code data-trim data-noescape class="language-javascript">
-describe('Products page', () => {
-  it('displays mocked products', () => {
-    cy.intercept('GET', '/api/products', {
-      body: [
-        { id: 1, name: 'Test Product', price: 29.99 },
-        { id: 2, name: 'Another Product', price: 49.99 }
-      ]
-    }).as('getProducts');
-
-    cy.visit('/products');
-    cy.wait('@getProducts');
-
-    cy.get('[data-testid="product-card"]')
-      .should('have.length', 2);
-    cy.contains('Test Product').should('be.visible');
-    cy.contains('29,99 zl').should('be.visible');
-  });
-});
-    </code></pre>
-    <aside class="notes">
-      cy.intercept() przechwytuje żądania HTTP pasujące do wzorca URL. .as() nadaje alias, którego
-      możemy użyć w cy.wait(). cy.wait('@getProducts') czeka na wykonanie żądania.
-      Dzięki temu testy są deterministyczne.
-    </aside>
-  </section>
-
-  <!-- Slide 15: Playwright - page.route() -->
-  <section>
-    <h2>Playwright - <code>page.route()</code></h2>
+    <h2>Mockowanie API - <code>page.route()</code></h2>
     <pre><code data-trim data-noescape class="language-javascript">
 import { test, expect } from '@playwright/test';
 
@@ -383,12 +344,13 @@ test('displays mocked products', async ({ page }) => {
   await page.goto('/products');
 
   // Teraz wiemy dokładnie, jakie dane zobaczymy
+  await expect(page.getByTestId('product-card')).toHaveCount(2);
   await expect(page.getByText('Test Product')).toBeVisible();
   await expect(page.getByText('29,99 zl')).toBeVisible();
 });
     </code></pre>
     <aside class="notes">
-      W Playwright odpowiednikiem cy.intercept() jest page.route(). Używamy ** jako wildcard
+      page.route() przechwytuje żądania HTTP pasujące do wzorca URL. Używamy ** jako wildcard
       dla dowolnego hosta. route.fulfill() zwraca kontrolowaną odpowiedź. Dzięki temu test
       nie zależy od stanu bazy danych ani dostępności backendu.
     </aside>
@@ -433,16 +395,18 @@ test('displays mocked products', async ({ page }) => {
   <section>
     <h2>Mockowanie błędów API</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - symulacja błędu 500
-cy.intercept('GET', '/api/products', {
-  statusCode: 500,
-  body: { error: 'Server Error' }
-}).as('serverError');
+// Symulacja błędu 500
+await page.route('**/api/products', route => {
+  route.fulfill({
+    status: 500,
+    contentType: 'application/json',
+    body: JSON.stringify({ error: 'Server Error' })
+  });
+});
 
-cy.visit('/products');
-cy.wait('@serverError');
-cy.get('[data-testid="error-message"]')
-  .should('contain', 'Wystąpił błąd');
+await page.goto('/products');
+await expect(page.getByTestId('error-message'))
+  .toContainText('Wystąpił błąd');
     </code></pre>
     <pre><code data-trim data-noescape class="language-javascript">
 // Playwright - symulacja błędu serwera
@@ -505,18 +469,18 @@ await expect(page.getByText('Wystąpił błąd')).toBeVisible();
         <h3>Źle - kopiuj/wklej</h3>
         <pre><code data-trim data-noescape class="language-javascript">
 // Ten sam login w każdym teście
-it('test 1', () => {
-  cy.visit('/login');
-  cy.get('[data-testid="email"]')
-    .type('test@rossmann.pl');
-  cy.get('[data-testid="password"]')
-    .type('Test1234');
-  cy.get('[data-testid="login-btn"]')
+test('test 1', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByTestId('email')
+    .fill('test@rossmann.pl');
+  await page.getByTestId('password')
+    .fill('Test1234');
+  await page.getByTestId('login-btn')
     .click();
   // ...reszta testu
 });
 
-it('test 2', () => {
+test('test 2', async ({ page }) => {
   // Ten sam login skopiowany...
 });
         </code></pre>
@@ -526,16 +490,16 @@ it('test 2', () => {
         <p>Czytelność > DRY w testach</p>
         <pre><code data-trim data-noescape class="language-javascript">
 // Za dużo abstrakcji
-it('test 1', () => {
-  doEverything('scenario-1');
+test('test 1', async ({ page }) => {
+  await doEverything(page, 'scenario-1');
 });
 
 // Lepiej - czytelne kroki
-it('test 1', () => {
-  login('test@rossmann.pl');
-  addToCart('Szampon');
-  checkout();
-  verifyOrder();
+test('test 1', async ({ page }) => {
+  await login(page, 'test@rossmann.pl');
+  await addToCart(page, 'Szampon');
+  await checkout(page);
+  await verifyOrder(page);
 });
         </code></pre>
       </div>
@@ -547,36 +511,39 @@ it('test 1', () => {
     </aside>
   </section>
 
-  <!-- Slide 21: Custom commands - Cypress -->
+  <!-- Slide 21: Helper functions - Playwright -->
   <section>
-    <h2>Custom commands - Cypress</h2>
+    <h2>Helper functions - Playwright</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/support/commands.js
-Cypress.Commands.add('login', (email, password) => {
-  cy.visit('/login');
-  cy.get('[data-testid="email"]').type(email);
-  cy.get('[data-testid="password"]').type(password);
-  cy.get('[data-testid="login-btn"]').click();
-  cy.url().should('include', '/dashboard');
-});
+// helpers/auth.ts
+import { Page } from '@playwright/test';
 
-Cypress.Commands.add('addToCart', (productName) => {
-  cy.contains('[data-testid="product-card"]', productName)
-    .find('[data-testid="add-to-cart"]')
-    .click();
-});
+export async function login(page: Page, email: string, password: string) {
+  await page.goto('/login');
+  await page.getByTestId('email').fill(email);
+  await page.getByTestId('password').fill(password);
+  await page.getByTestId('login-btn').click();
+  await page.waitForURL('**/dashboard');
+}
+
+export async function addToCart(page: Page, productName: string) {
+  await page.getByTestId('product-card')
+    .filter({ hasText: productName })
+    .getByTestId('add-to-cart').click();
+}
     </code></pre>
     <pre><code data-trim data-noescape class="language-javascript">
 // Użycie w teście - czyste i czytelne
-it('should complete purchase flow', () => {
-  cy.login('test@rossmann.pl', 'Test1234');
-  cy.addToCart('Szampon');
-  cy.get('[data-testid="cart-badge"]').should('contain', '1');
+test('should complete purchase flow', async ({ page }) => {
+  await login(page, 'test@rossmann.pl', 'Test1234');
+  await addToCart(page, 'Szampon');
+  await expect(page.getByTestId('cart-badge')).toContainText('1');
 });
     </code></pre>
     <aside class="notes">
-      Custom commands to odpowiednik helperów w Cypress. Definiujemy je raz w support/commands.js,
-      a potem używamy w każdym teście. Cypress automatycznie ładuje pliki z katalogu support/.
+      W Playwright tworzymy zwykłe funkcje async, które przyjmują page jako argument.
+      Importujemy je w testach jak zwykłe moduły. Alternatywnie można użyć fixtures
+      (dependency injection) - pokażemy to na następnym slajdzie.
     </aside>
   </section>
 
@@ -621,32 +588,34 @@ test('should login and see dashboard', async ({ loginPage, dashboardPage }) => {
   <section>
     <h2>Setup i teardown - hooki</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-describe('Dashboard', () => {
-  beforeEach(() => {
+import { test, expect } from '@playwright/test';
+import { login } from './helpers/auth';
+
+test.describe('Dashboard', () => {
+  test.beforeEach(async ({ page }) => {
     // Wykonuje się PRZED KAŻDYM testem
-    cy.login('test@rossmann.pl', 'Test1234');
+    await login(page, 'test@rossmann.pl', 'Test1234');
   });
 
-  afterEach(() => {
+  test.afterEach(async ({ context }) => {
     // Wykonuje się PO KAŻDYM teście
-    cy.clearCookies();
-    cy.clearLocalStorage();
+    await context.clearCookies();
   });
 
-  it('should display welcome message', () => {
-    cy.get('[data-testid="welcome"]').should('be.visible');
+  test('should display welcome message', async ({ page }) => {
+    await expect(page.getByTestId('welcome')).toBeVisible();
   });
 
-  it('should show product list', () => {
-    cy.get('[data-testid="product-card"]')
-      .should('have.length.greaterThan', 0);
+  test('should show product list', async ({ page }) => {
+    const cards = page.getByTestId('product-card');
+    await expect(cards).not.toHaveCount(0);
   });
 });
     </code></pre>
     <aside class="notes">
       beforeEach to idealne miejsce na powtarzalne kroki setup - logowanie, nawigacja, ustawienie stanu.
-      afterEach to czyszczenie - ciasteczka, localStorage, dane testowe. Są też beforeAll/afterAll
-      (before/after w Cypress) - wykonują się raz dla całego describe.
+      afterEach to czyszczenie - ciasteczka, dane testowe. W Playwright każdy test domyślnie
+      dostaje świeży kontekst przeglądarki, więc izolacja jest wbudowana.
     </aside>
   </section>
 
@@ -662,13 +631,13 @@ describe('Dashboard', () => {
         <h3>Źle</h3>
         <pre><code data-trim data-noescape class="language-javascript">
 // Test 1 tworzy produkt
-it('creates product', () => {
-  cy.createProduct('Szampon');
+test('creates product', async ({ page }) => {
+  await createProduct(page, 'Szampon');
 });
 
 // Test 2 ZAKLADA, ze produkt istnieje
-it('edits product', () => {
-  cy.get('[data-testid="Szampon"]')
+test('edits product', async ({ page }) => {
+  await page.getByTestId('Szampon')
     .click(); // Nie zadziala solo!
 });
         </code></pre>
@@ -677,19 +646,19 @@ it('edits product', () => {
         <h3>Dobrze</h3>
         <pre><code data-trim data-noescape class="language-javascript">
 // Każdy test tworzy własne dane
-it('edits product', () => {
+test('edits product', async ({ page }) => {
   // Arrange
-  cy.createProduct('Szampon');
+  await createProduct(page, 'Szampon');
 
   // Act
-  cy.get('[data-testid="Szampon"]')
-    .click();
-  cy.get('[data-testid="name"]')
-    .clear().type('Nowy Szampon');
-  cy.get('[data-testid="save"]').click();
+  await page.getByTestId('Szampon').click();
+  await page.getByTestId('name')
+    .fill('Nowy Szampon');
+  await page.getByTestId('save').click();
 
   // Assert
-  cy.contains('Nowy Szampon');
+  await expect(page.getByText('Nowy Szampon'))
+    .toBeVisible();
 });
         </code></pre>
       </div>
@@ -705,19 +674,23 @@ it('edits product', () => {
   <section>
     <h2>Wzorzec Arrange-Act-Assert</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-it('should add product to cart and update total', () => {
+test('should add product to cart and update total', async ({ page }) => {
   // ARRANGE - przygotuj warunki
-  cy.intercept('GET', '/api/products', {
-    body: [{ id: 1, name: 'Szampon', price: 15.99 }]
+  await page.route('**/api/products', route => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ id: 1, name: 'Szampon', price: 15.99 }])
+    });
   });
-  cy.visit('/products');
+  await page.goto('/products');
 
   // ACT - wykonaj akcje
-  cy.get('[data-testid="add-to-cart"]').first().click();
+  await page.getByTestId('add-to-cart').first().click();
 
   // ASSERT - sprawdz wynik
-  cy.get('[data-testid="cart-badge"]').should('contain', '1');
-  cy.get('[data-testid="cart-total"]').should('contain', '15,99');
+  await expect(page.getByTestId('cart-badge')).toContainText('1');
+  await expect(page.getByTestId('cart-total')).toContainText('15,99');
 });
     </code></pre>
     <div class="tip">
@@ -735,19 +708,19 @@ it('should add product to cart and update total', () => {
   <section>
     <h2>Nazewnictwo testów</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// Describe - nazwa strony/funkcjonalności
-describe('Login Page', () => {
+// test.describe - nazwa strony/funkcjonalności
+test.describe('Login Page', () => {
 
-  // Test - "should [oczekiwane zachowanie] when [warunek]"
-  it('should redirect to dashboard when credentials are valid', () => {
+  // test - "should [oczekiwane zachowanie] when [warunek]"
+  test('should redirect to dashboard when credentials are valid', async ({ page }) => {
     // ...
   });
 
-  it('should display error message when password is incorrect', () => {
+  test('should display error message when password is incorrect', async ({ page }) => {
     // ...
   });
 
-  it('should disable submit button when form is empty', () => {
+  test('should disable submit button when form is empty', async ({ page }) => {
     // ...
   });
 });
@@ -781,24 +754,18 @@ describe('Login Page', () => {
 }
     </code></pre>
     <pre><code data-trim data-noescape class="language-javascript">
-// Cypress - automatyczne ładowanie fixtures
-it('should login with valid credentials', () => {
-  cy.fixture('users').then((users) => {
-    cy.login(users.validUser.email, users.validUser.password);
-    cy.contains(users.validUser.name);
-  });
-});
-
-// Playwright - import JSON
+// Playwright - import JSON jako moduł
 import users from './fixtures/users.json';
 
-test('should login', async ({ page }) => {
+test('should login with valid credentials', async ({ page }) => {
+  const loginPage = new LoginPage(page);
   await loginPage.login(users.validUser.email, users.validUser.password);
+  await expect(page.getByText(users.validUser.name)).toBeVisible();
 });
     </code></pre>
     <aside class="notes">
       Dane testowe w osobnych plikach JSON. Łatwo zmieniać, łatwo przeglądać, czytelne w kodzie.
-      W Cypress fixtures ładujemy przez cy.fixture(). W Playwright importujemy jak zwykły moduł.
+      W Playwright importujemy JSON jak zwykły moduł (wymaga resolveJsonModule: true w tsconfig).
       Nie hardkoduj danych w testach - wyciągnij do fixtures.
     </aside>
   </section>
@@ -807,7 +774,7 @@ test('should login', async ({ page }) => {
   <section>
     <h2>CI/CD - testy w pipeline</h2>
     <pre><code data-trim data-noescape class="language-yaml">
-# .github/workflows/e2e-tests.yml - Cypress
+# .github/workflows/e2e-tests.yml - Playwright
 name: E2E Tests
 on: [push, pull_request]
 
@@ -820,17 +787,13 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - run: npx cypress run
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-results
-          path: cypress/screenshots/
-    </code></pre>
-    <pre><code data-trim data-noescape class="language-yaml">
-# W Playwright wyglada to tak:
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
+          name: playwright-report
+          path: playwright-report/
     </code></pre>
     <div class="tip">
       <h3>Automatyzacja testów</h3>
@@ -840,48 +803,37 @@ jobs:
       GitHub Actions to jedno z wielu narzędzi CI - jest też GitLab CI, Jenkins, Azure DevOps.
       Kluczowe: testy uruchamiają się automatycznie, wyniki są widoczne w PR, raporty zapisywane
       jako artefakty. upload-artifact zachowuje raport HTML nawet gdy testy failują (if: failure()).
+      npx playwright install --with-deps instaluje przeglądarki z zależnościami systemowymi.
     </aside>
   </section>
 
   <!-- Slide 29: Raportowanie -->
   <section>
     <h2>Raportowanie wyników</h2>
-    <div class="columns">
-      <div class="col">
-        <h3>Cypress</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
-// cypress.config.js
-module.exports = defineConfig({
-  e2e: {
-    screenshotOnRunFailure: true,
-    video: true,
-    reporter: 'mochawesome',
-    reporterOptions: {
-      reportDir: 'results',
-      html: true,
-    },
-  },
-});
-        </code></pre>
-      </div>
-      <div class="col">
-        <h3>Playwright</h3>
-        <pre><code data-trim data-noescape class="language-javascript">
+    <pre><code data-trim data-noescape class="language-javascript">
 // playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
 export default defineConfig({
   reporter: [
-    ['html', { open: 'never' }],
-    ['list']
+    ['html', { open: 'never' }],  // Raport HTML
+    ['list']                       // Wyniki w terminalu
   ],
   use: {
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    trace: 'on-first-retry',
+    screenshot: 'only-on-failure', // Screenshot przy błędzie
+    video: 'retain-on-failure',    // Nagranie tylko przy błędzie
+    trace: 'on-first-retry',      // Trace przy pierwszym retry
   },
+  retries: 1,                     // Retry flaków
 });
-        </code></pre>
-      </div>
-    </div>
+    </code></pre>
+    <pre><code data-trim data-noescape class="language-bash">
+# Otwarcie raportu HTML
+npx playwright show-report
+
+# Otwarcie trace viewer
+npx playwright show-trace trace.zip
+    </code></pre>
     <aside class="notes">
       Screenshoty i video na failurze to must-have. Trace w Playwright nagrywa pełną interakcję,
       którą można odtworzyć krok po kroku. To nieocenione przy debugowaniu testów, które failują
@@ -895,7 +847,7 @@ export default defineConfig({
     <div class="warning">
       <h3>Unikaj tych błędów</h3>
       <ul>
-        <li class="fragment"><strong>Hardkodowane waity</strong> - <code>cy.wait(5000)</code> zamiast czekania na element</li>
+        <li class="fragment"><strong>Hardkodowane waity</strong> - <code>await page.waitForTimeout(5000)</code> zamiast czekania na element</li>
         <li class="fragment"><strong>Zależne testy</strong> - test B wymaga danych z testu A</li>
         <li class="fragment"><strong>Testowanie implementacji</strong> - sprawdzanie klas CSS zamiast zachowania</li>
         <li class="fragment"><strong>Za dużo w jednym teście</strong> - test sprawdza 20 rzeczy na raz</li>
@@ -916,17 +868,17 @@ export default defineConfig({
       <h3>Ćwiczenie: Refaktoryzacja testu</h3>
       <p>Popraw poniższy test stosując poznane praktyki:</p>
       <pre><code data-trim data-noescape class="language-javascript">
-it('test', () => {
-  cy.visit('/login');
-  cy.get('#email').type('test@rossmann.pl');
-  cy.get('#pass').type('Test1234');
-  cy.get('.submit').click();
-  cy.wait(3000);
-  cy.get('.products .item:nth-child(1) .add-btn').click();
-  cy.wait(2000);
-  cy.get('.cart-count').should('have.text', '1');
-  cy.get('.products .item:nth-child(1) .price')
-    .should('have.text', '15.99 zl');
+test('test', async ({ page }) => {
+  await page.goto('/login');
+  await page.locator('#email').fill('test@rossmann.pl');
+  await page.locator('#pass').fill('Test1234');
+  await page.locator('.submit').click();
+  await page.waitForTimeout(3000);
+  await page.locator('.products .item:nth-child(1) .add-btn').click();
+  await page.waitForTimeout(2000);
+  await expect(page.locator('.cart-count')).toHaveText('1');
+  await expect(page.locator('.products .item:nth-child(1) .price'))
+    .toHaveText('15.99 zl');
 });
       </code></pre>
       <p><strong>Co poprawić:</strong> nazewnictwo, selektory, waity, strukturę AAA, DRY</p>
@@ -934,7 +886,7 @@ it('test', () => {
     </div>
     <aside class="notes">
       Daj uczestnikom 15 minut. Główne problemy do znalezienia: zła nazwa testu, selektory CSS
-      zamiast data-testid, cy.wait(3000) zamiast czekania na element, za dużo w jednym teście,
+      zamiast data-testid, waitForTimeout(3000) zamiast czekania na element, za dużo w jednym teście,
       brak struktury AAA. Po czasie pokaż rozwiązanie na następnym slajdzie.
     </aside>
   </section>
@@ -943,24 +895,23 @@ it('test', () => {
   <section>
     <h2>Rozwiązanie - po refaktoryzacji</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-describe('Cart', () => {
-  beforeEach(() => {
-    cy.login('test@rossmann.pl', 'Test1234');
+test.describe('Cart', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page, 'test@rossmann.pl', 'Test1234');
   });
 
-  it('should update cart badge when product is added', () => {
+  test('should update cart badge when product is added', async ({ page }) => {
     // Arrange
-    cy.get('[data-testid="product-card"]').first().as('product');
+    const product = page.getByTestId('product-card').first();
 
     // Act
-    cy.get('@product')
-      .find('[data-testid="add-to-cart"]')
-      .click();
+    await product.getByTestId('add-to-cart').click();
 
     // Assert
-    cy.get('[data-testid="cart-badge"]')
-      .should('be.visible')
-      .and('contain', '1');
+    await expect(page.getByTestId('cart-badge'))
+      .toBeVisible();
+    await expect(page.getByTestId('cart-badge'))
+      .toContainText('1');
   });
 });
     </code></pre>
@@ -970,7 +921,7 @@ describe('Cart', () => {
     </div>
     <aside class="notes">
       Omów każdą zmianę. Login wyciągnięty do beforeEach. Nazwa testu opisuje oczekiwane zachowanie.
-      Selektory data-testid zamiast klas CSS. Brak cy.wait() - Cypress automatycznie czeka na elementy.
+      Selektory getByTestId zamiast klas CSS. Brak waitForTimeout - Playwright automatycznie czeka na elementy.
       Test sprawdza jedną rzecz - badge koszyka po dodaniu produktu.
     </aside>
   </section>
@@ -1031,12 +982,12 @@ http://localhost:3000
   <!-- Slide 35: Ćwiczenie 1 - Setup -->
   <section>
     <div class="exercise">
-      <h3>Ćwiczenie 1: Setup projektu Cypress (~30 min)</h3>
+      <h3>Ćwiczenie 1: Setup projektu Playwright (~30 min)</h3>
       <p>Inicjalizacja nowego projektu testowego od zera:</p>
       <ol>
         <li>Utwórz nowy folder na testy</li>
-        <li>Zainstaluj Cypress</li>
-        <li>Skonfiguruj <code>cypress.config.js</code></li>
+        <li>Zainstaluj Playwright</li>
+        <li>Skonfiguruj <code>playwright.config.ts</code></li>
         <li>Utwórz strukturę katalogów</li>
         <li>Uruchom pierwszy test</li>
       </ol>
@@ -1055,57 +1006,57 @@ http://localhost:3000
 mkdir rossmann-e2e-tests
 cd rossmann-e2e-tests
 
-# Zainicjuj projekt i zainstaluj Cypress
+# Zainicjuj projekt i zainstaluj Playwright
 npm init -y
-npm install cypress --save-dev
-
-# Otwórz Cypress (tworzy strukturę automatycznie)
-npx cypress open
+npm init playwright@latest
     </code></pre>
-    <p>Przy pierwszym uruchomieniu Cypress:</p>
+    <p>Kreator Playwright zapyta o:</p>
     <ul>
-      <li class="fragment">Wybierz <strong>E2E Testing</strong></li>
-      <li class="fragment">Cypress automatycznie utworzy strukturę katalogów</li>
-      <li class="fragment">Wybierz przeglądarkę - <strong>Chrome</strong></li>
+      <li class="fragment">Język - wybierz <strong>TypeScript</strong></li>
+      <li class="fragment">Folder na testy - <strong>tests</strong></li>
+      <li class="fragment">GitHub Actions - <strong>true</strong></li>
+      <li class="fragment">Instalacja przeglądarek - <strong>true</strong></li>
     </ul>
     <div class="console-output fragment">
       <p>Oczekiwany wynik:</p>
       <pre>
-Cypress automatycznie tworzy:
-  cypress/e2e/
-  cypress/support/
-  cypress/fixtures/
-  cypress.config.js
+Playwright tworzy automatycznie:
+  tests/
+  playwright.config.ts
+  .github/workflows/playwright.yml
       </pre>
     </div>
     <aside class="notes">
-      npm install cypress --save-dev instaluje Cypress jako devDependency. npx cypress open
-      uruchamia Cypress w trybie interaktywnym i automatycznie generuje strukturę katalogów.
-      Przy pierwszym uruchomieniu może trochę potrwać - pobiera plik binarny Cypress.
+      npm init playwright@latest uruchamia kreator, który tworzy strukturę projektu i instaluje
+      przeglądarki (Chromium, Firefox, WebKit). Przy pierwszym uruchomieniu może trochę potrwać -
+      pobiera pliki binarne przeglądarek (~300 MB).
     </aside>
   </section>
 
   <!-- Slide 37: Konfiguracja -->
   <section>
-    <h2>Krok 2: Konfiguracja cypress.config.js</h2>
+    <h2>Krok 2: Konfiguracja playwright.config.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-const { defineConfig } = require('cypress');
+import { defineConfig } from '@playwright/test';
 
-module.exports = defineConfig({
-  e2e: {
-    baseUrl: 'http://localhost:8080',
-    specPattern: 'cypress/e2e/**/*.cy.js',
-    viewportWidth: 1280,
-    viewportHeight: 720,
-    screenshotOnRunFailure: true,
-    video: false,
+export default defineConfig({
+  testDir: './tests',
+  baseURL: 'http://localhost:8080',
+  use: {
+    viewport: { width: 1280, height: 720 },
+    screenshot: 'only-on-failure',
+    video: 'off',
+    trace: 'on-first-retry',
   },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+  ],
 });
     </code></pre>
     <aside class="notes">
-      Omów kluczowe opcje: baseUrl - nie trzeba pisać pełnego URL w testach, specPattern - wzorzec
-      nazw plików testowych, viewport - rozmiar okna przeglądarki, screenshotOnRunFailure -
-      automatyczne screenshoty przy błędach, video: false - wyłączamy nagrywanie dla szybkości.
+      Omów kluczowe opcje: baseURL - nie trzeba pisać pełnego URL w testach, testDir - folder z testami,
+      viewport - rozmiar okna przeglądarki, screenshot: 'only-on-failure' -
+      automatyczne screenshoty przy błędach, trace - nagrywanie interakcji do debugowania.
     </aside>
   </section>
 
@@ -1113,30 +1064,26 @@ module.exports = defineConfig({
   <section>
     <h2>Krok 3: Struktura katalogów</h2>
     <pre><code data-trim data-noescape class="language-bash">
-cypress/
-  e2e/                    # Pliki testowe
-    login.cy.js
-    products.cy.js
-    cart.cy.js
-  support/
-    commands.js           # Custom commands
-    e2e.js                # Support file
-    pages/                # Page Objects
-      loginPage.js
-      dashboardPage.js
-      cartPage.js
+tests/
+  login.spec.ts           # Pliki testowe
+  products.spec.ts
+  cart.spec.ts
+  pages/                  # Page Objects
+    LoginPage.ts
+    DashboardPage.ts
+    CartPage.ts
   fixtures/               # Dane testowe
     users.json
-cypress.config.js
+playwright.config.ts
     </code></pre>
     <div class="tip">
       <h3>Konwencja</h3>
-      <p><code>npx cypress open</code> tworzy strukturę automatycznie. Pliki testowe: <code>*.cy.js</code>, page objects w <code>support/pages/</code>, dane testowe w <code>fixtures/</code>.</p>
+      <p><code>npm init playwright@latest</code> tworzy strukturę automatycznie. Pliki testowe: <code>*.spec.ts</code>, page objects w <code>tests/pages/</code>, dane testowe w <code>tests/fixtures/</code>.</p>
     </div>
     <aside class="notes">
-      Cypress automatycznie tworzy katalogi przy pierwszym uruchomieniu npx cypress open.
+      Kreator Playwright tworzy podstawową strukturę. My dodajemy foldery pages/ i fixtures/.
       Wyjaśnij, dlaczego separujemy page objects, testy i dane - Single Responsibility Principle.
-      Katalog support/ zawiera pliki ładowane automatycznie przed każdym testem.
+      W Playwright nie ma automatycznego ładowania plików - importujemy jawnie co potrzebujemy.
     </aside>
   </section>
 
@@ -1144,30 +1091,30 @@ cypress.config.js
   <section>
     <h2>Krok 4: Pierwszy test - weryfikacja setupu</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/e2e/smoke.cy.js
-describe('Smoke test', () => {
-  it('app is running', () => {
-    cy.visit('/');
-    cy.title().should('contain', 'Rossmann');
-  });
+// tests/smoke.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('app is running', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle(/Rossmann/);
 });
     </code></pre>
     <pre><code data-trim data-noescape class="language-bash">
 # Uruchom test w terminalu
-npx cypress run --spec cypress/e2e/smoke.cy.js
+npx playwright test tests/smoke.spec.ts
 
 # Lub uruchom z interfejsem graficznym
-npx cypress open
+npx playwright test --ui
     </code></pre>
     <div class="console-output fragment">
       <pre>
-  1 passing (2.1s)
+  1 passed (2.1s)
       </pre>
     </div>
     <aside class="notes">
       Upewnij się, że WSZYSTKIM test przechodzi zanim przejdziesz dalej. Najczęstsze problemy:
       aplikacja nie jest uruchomiona na localhost:8080, złe ścieżki do plików, literówki.
-      Pokaż npx cypress open - graficzny interfejs do uruchamiania testów.
+      Pokaż npx playwright test --ui - graficzny interfejs do uruchamiania testów.
     </aside>
   </section>
 
@@ -1175,7 +1122,7 @@ npx cypress open
   <section>
     <h2>Krok 5: Dane testowe</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/fixtures/users.json
+// tests/fixtures/users.json
 {
   "validUser": {
     "email": "test@rossmann.pl",
@@ -1228,11 +1175,11 @@ npx cypress open
     <h2>Podpowiedzi - loginPage</h2>
     <p>Potrzebne selektory i metody:</p>
     <ul>
-      <li class="fragment"><code>cy.get('[data-testid="login-email-input"]')</code> - pole email</li>
-      <li class="fragment"><code>cy.get('[data-testid="login-password-input"]')</code> - pole hasło</li>
-      <li class="fragment"><code>cy.get('[data-testid="login-submit-btn"]')</code> - przycisk logowania</li>
-      <li class="fragment"><code>cy.get('[data-testid="login-error"]')</code> - komunikat błędu</li>
-      <li class="fragment"><code>cy.get('[data-testid="logout-btn"]')</code> - przycisk wylogowania</li>
+      <li class="fragment"><code>page.getByTestId('login-email-input')</code> - pole email</li>
+      <li class="fragment"><code>page.getByTestId('login-password-input')</code> - pole hasło</li>
+      <li class="fragment"><code>page.getByTestId('login-submit-btn')</code> - przycisk logowania</li>
+      <li class="fragment"><code>page.getByTestId('login-error')</code> - komunikat błędu</li>
+      <li class="fragment"><code>page.getByTestId('logout-btn')</code> - przycisk wylogowania</li>
     </ul>
     <p class="fragment">Metody: <code>visit()</code>, <code>login(email, password)</code>, <code>fillEmail(email)</code>, <code>fillPassword(password)</code></p>
     <aside class="notes">
@@ -1243,86 +1190,83 @@ npx cypress open
 
   <!-- Slide 43: Rozwiązanie - LoginPage -->
   <section>
-    <h2>Rozwiązanie - loginPage.js</h2>
+    <h2>Rozwiązanie - LoginPage.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/support/pages/loginPage.js
-export const loginPage = {
-  visit() {
-    cy.visit('/');
-  },
+// tests/pages/LoginPage.ts
+import { Page, Locator } from '@playwright/test';
 
-  fillEmail(email) {
-    cy.get('[data-testid="login-email-input"]').type(email);
-  },
+export class LoginPage {
+  readonly page: Page;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly submitBtn: Locator;
+  readonly error: Locator;
 
-  fillPassword(password) {
-    cy.get('[data-testid="login-password-input"]').type(password);
-  },
-
-  submit() {
-    cy.get('[data-testid="login-submit-btn"]').click();
-  },
-
-  login(email, password) {
-    this.visit();
-    this.fillEmail(email);
-    this.fillPassword(password);
-    this.submit();
-  },
-
-  getError() {
-    return cy.get('[data-testid="login-error"]');
+  constructor(page: Page) {
+    this.page = page;
+    this.emailInput = page.getByTestId('login-email-input');
+    this.passwordInput = page.getByTestId('login-password-input');
+    this.submitBtn = page.getByTestId('login-submit-btn');
+    this.error = page.getByTestId('login-error');
   }
-};
+
+  async visit() { await this.page.goto('/'); }
+
+  async login(email: string, password: string) {
+    await this.visit();
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitBtn.click();
+  }
+}
     </code></pre>
     <aside class="notes">
-      W Cypress Page Object to zwykły obiekt z metodami, nie klasa. Każda metoda używa cy.get()
-      z data-testid. Metoda login() łączy visit + wypełnienie formularza + submit. getError()
-      zwraca element - można na nim wywołać asercje.
+      W Playwright Page Object to klasa, która przyjmuje page w konstruktorze. Lokatory definiujemy
+      jako pola klasy - są leniwe, nie wyszukują elementu od razu. Metoda login() łączy visit +
+      wypełnienie formularza + submit. error to locator - można na nim wywołać asercje.
     </aside>
   </section>
 
   <!-- Slide 44: Rozwiązanie - testy logowania -->
   <section>
-    <h2>Rozwiązanie - login.cy.js</h2>
+    <h2>Rozwiązanie - login.spec.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/e2e/login.cy.js
-import { loginPage } from '../support/pages/loginPage';
+// tests/login.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+import users from './fixtures/users.json';
 
-describe('Login Page', () => {
-  beforeEach(() => {
-    loginPage.visit();
+test.describe('Login Page', () => {
+  let loginPage: LoginPage;
+
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    await loginPage.visit();
   });
 
-  it('should redirect to dashboard on valid login', () => {
-    cy.fixture('users').then((users) => {
-      loginPage.login(users.validUser.email, users.validUser.password);
-      cy.url().should('include', 'dashboard');
-      cy.contains(users.validUser.name).should('be.visible');
-    });
+  test('should redirect to dashboard on valid login', async ({ page }) => {
+    await loginPage.login(users.validUser.email, users.validUser.password);
+    await expect(page).toHaveURL(/dashboard/);
+    await expect(page.getByText(users.validUser.name)).toBeVisible();
   });
 
-  it('should show error on invalid credentials', () => {
-    cy.fixture('users').then((users) => {
-      loginPage.login(users.invalidUser.email, users.invalidUser.password);
-      loginPage.getError().should('be.visible');
-      loginPage.getError().should('contain', 'Nieprawidlowy');
-    });
+  test('should show error on invalid credentials', async () => {
+    await loginPage.login(users.invalidUser.email, users.invalidUser.password);
+    await expect(loginPage.error).toBeVisible();
+    await expect(loginPage.error).toContainText('Nieprawidlowy');
   });
 
-  it('should clear session on logout', () => {
-    cy.fixture('users').then((users) => {
-      loginPage.login(users.validUser.email, users.validUser.password);
-      cy.url().should('include', 'dashboard');
-      cy.get('[data-testid="logout-btn"]').click();
-      cy.url().should('include', 'index');
-    });
+  test('should clear session on logout', async ({ page }) => {
+    await loginPage.login(users.validUser.email, users.validUser.password);
+    await expect(page).toHaveURL(/dashboard/);
+    await page.getByTestId('logout-btn').click();
+    await expect(page).toHaveURL(/index/);
   });
 });
     </code></pre>
     <aside class="notes">
-      Omów test po teście. Zwróć uwagę na beforeEach - nawigujemy do strony logowania.
-      cy.fixture('users') ładuje dane z cypress/fixtures/users.json.
+      Omów test po teście. Zwróć uwagę na beforeEach - tworzymy LoginPage i nawigujemy.
+      Dane z fixtures importujemy jak zwykły moduł JSON.
       Test 1: logowanie + sprawdzenie URL i nazwy użytkownika. Test 2: zły login + komunikat błędu.
       Test 3: login, logout, sprawdzenie powrotu do strony głównej. Każdy test jest niezależny dzięki beforeEach.
     </aside>
@@ -1354,12 +1298,12 @@ describe('Login Page', () => {
     <h2>Podpowiedzi - dashboardPage</h2>
     <p>Potrzebne selektory:</p>
     <ul>
-      <li class="fragment"><code>cy.get('[data-testid="product-card"]')</code> - karta produktu</li>
-      <li class="fragment"><code>cy.get('[data-testid="search-input"]')</code> - pole wyszukiwania</li>
-      <li class="fragment"><code>cy.get('[data-testid="category-filter"]')</code> - filtr kategorii</li>
-      <li class="fragment"><code>cy.get('[data-testid="add-to-cart"]')</code> - przycisk dodania do koszyka</li>
-      <li class="fragment"><code>cy.get('[data-testid="cart-badge"]')</code> - badge koszyka</li>
-      <li class="fragment"><code>cy.get('[data-testid="product-name"]')</code> - nazwa produktu w karcie</li>
+      <li class="fragment"><code>page.getByTestId('product-card')</code> - karta produktu</li>
+      <li class="fragment"><code>page.getByTestId('search-input')</code> - pole wyszukiwania</li>
+      <li class="fragment"><code>page.getByTestId('category-filter')</code> - filtr kategorii</li>
+      <li class="fragment"><code>page.getByTestId('add-to-cart')</code> - przycisk dodania do koszyka</li>
+      <li class="fragment"><code>page.getByTestId('cart-badge')</code> - badge koszyka</li>
+      <li class="fragment"><code>page.getByTestId('product-name')</code> - nazwa produktu w karcie</li>
     </ul>
     <p class="fragment">Metody: <code>search(query)</code>, <code>filterByCategory(cat)</code>, <code>addFirstProductToCart()</code>, <code>getCartBadge()</code></p>
     <aside class="notes">
@@ -1370,67 +1314,75 @@ describe('Login Page', () => {
 
   <!-- Slide 47: Rozwiązanie - DashboardPage -->
   <section>
-    <h2>Rozwiązanie - dashboardPage.js</h2>
+    <h2>Rozwiązanie - DashboardPage.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/support/pages/dashboardPage.js
-export const dashboardPage = {
-  getProductCards() {
-    return cy.get('[data-testid="product-card"]');
-  },
+// tests/pages/DashboardPage.ts
+import { Page, Locator } from '@playwright/test';
 
-  search(query) {
-    cy.get('[data-testid="search-input"]').clear().type(query);
-  },
+export class DashboardPage {
+  readonly page: Page;
+  readonly productCards: Locator;
+  readonly searchInput: Locator;
+  readonly cartBadge: Locator;
 
-  filterByCategory(category) {
-    cy.get(`[data-testid="category-${category}"]`).click();
-  },
-
-  addFirstProductToCart() {
-    cy.get('[data-testid="product-card"]').first()
-      .find('[data-testid="add-to-cart"]').click();
-  },
-
-  getCartBadge() {
-    return cy.get('[data-testid="cart-badge"]');
+  constructor(page: Page) {
+    this.page = page;
+    this.productCards = page.getByTestId('product-card');
+    this.searchInput = page.getByTestId('search-input');
+    this.cartBadge = page.getByTestId('cart-badge');
   }
-};
+
+  async search(query: string) {
+    await this.searchInput.fill(query);
+  }
+
+  async filterByCategory(category: string) {
+    await this.page.getByTestId(`category-${category}`).click();
+  }
+
+  async addFirstProductToCart() {
+    await this.productCards.first()
+      .getByTestId('add-to-cart').click();
+  }
+}
     </code></pre>
     <aside class="notes">
-      W Cypress Page Object to obiekt z metodami zwracającymi elementy. getProductCards() zwraca
-      wszystkie karty produktów. search() czyści pole i wpisuje tekst. filterByCategory() klika
-      odpowiedni filtr. addFirstProductToCart() klika przycisk na pierwszej karcie.
+      W Playwright Page Object to klasa z lokatorami jako polami. productCards to locator do
+      wszystkich kart produktów. search() wypełnia pole (fill automatycznie czyści).
+      filterByCategory() klika odpowiedni filtr. addFirstProductToCart() klika przycisk na pierwszej karcie.
     </aside>
   </section>
 
   <!-- Slide 48: Rozwiązanie - testy produktów -->
   <section>
-    <h2>Rozwiązanie - products.cy.js</h2>
+    <h2>Rozwiązanie - products.spec.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/e2e/products.cy.js
-import { loginPage } from '../support/pages/loginPage';
-import { dashboardPage } from '../support/pages/dashboardPage';
+// tests/products.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+import users from './fixtures/users.json';
 
-describe('Products Page', () => {
-  beforeEach(() => {
-    cy.fixture('users').then((users) => {
-      loginPage.login(users.validUser.email, users.validUser.password);
-    });
+test.describe('Products Page', () => {
+  let dashboard: DashboardPage;
+
+  test.beforeEach(async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.login(users.validUser.email, users.validUser.password);
+    dashboard = new DashboardPage(page);
   });
 
-  it('should display products on page', () => {
-    dashboardPage.getProductCards()
-      .should('have.length.greaterThan', 0);
+  test('should display products on page', async () => {
+    await expect(dashboard.productCards).not.toHaveCount(0);
   });
 
-  it('should filter products by search query', () => {
-    dashboardPage.search('szampon');
-    dashboardPage.getProductCards()
-      .should('have.length.greaterThan', 0);
+  test('should filter products by search query', async () => {
+    await dashboard.search('szampon');
+    await expect(dashboard.productCards).not.toHaveCount(0);
   });
     </code></pre>
     <aside class="notes">
-      Pierwsza część rozwiązania. beforeEach loguje użytkownika używając fixture.
+      Pierwsza część rozwiązania. beforeEach loguje użytkownika i tworzy DashboardPage.
       Test 1: sprawdza, że jakiekolwiek produkty istnieją. Test 2: wyszukiwanie zwraca wyniki.
       Kontynuacja na następnym slajdzie.
     </aside>
@@ -1438,34 +1390,33 @@ describe('Products Page', () => {
 
   <!-- Slide 49: Rozwiązanie - testy produktów cd. -->
   <section>
-    <h2>Rozwiązanie - products.cy.js (cd.)</h2>
+    <h2>Rozwiązanie - products.spec.ts (cd.)</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-  it('should filter products by category', () => {
-    dashboardPage.filterByCategory('pielegnacja');
-    dashboardPage.getProductCards().should('have.length.greaterThan', 0);
+  test('should filter products by category', async () => {
+    await dashboard.filterByCategory('pielegnacja');
+    await expect(dashboard.productCards).not.toHaveCount(0);
 
     // Sprawdź, że każdy widoczny produkt jest z wybranej kategorii
-    dashboardPage.getProductCards().each(($card) => {
-      cy.wrap($card)
-        .find('[data-testid="product-category"]')
-        .should('contain', 'Pielegnacja');
-    });
+    const cards = await dashboard.productCards.all();
+    for (const card of cards) {
+      await expect(card.getByTestId('product-category'))
+        .toContainText('Pielegnacja');
+    }
   });
 
-  it('should update cart badge when product is added', () => {
-    dashboardPage.addFirstProductToCart();
-    dashboardPage.getCartBadge().should('have.text', '1');
+  test('should update cart badge when product is added', async () => {
+    await dashboard.addFirstProductToCart();
+    await expect(dashboard.cartBadge).toHaveText('1');
 
     // Dodaj ten sam produkt ponownie
-    dashboardPage.addFirstProductToCart();
-    dashboardPage.getCartBadge().should('have.text', '2');
+    await dashboard.addFirstProductToCart();
+    await expect(dashboard.cartBadge).toHaveText('2');
   });
 });
     </code></pre>
     <aside class="notes">
-      Test kategorii: używa .each() do iteracji po wszystkich kartach i sprawdzenia kategorii.
-      cy.wrap() opakowuje element jQuery w obiekt Cypress. Test koszyka: dodaje produkt dwukrotnie
-      i sprawdza, czy badge się aktualizuje.
+      Test kategorii: używa .all() do pobrania tablicy elementów i pętli for...of do sprawdzenia każdego.
+      Test koszyka: dodaje produkt dwukrotnie i sprawdza, czy badge się aktualizuje.
     </aside>
   </section>
 
@@ -1493,70 +1444,74 @@ describe('Products Page', () => {
 
   <!-- Slide 51: Rozwiązanie - CartPage -->
   <section>
-    <h2>Rozwiązanie - cartPage.js</h2>
+    <h2>Rozwiązanie - CartPage.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/support/pages/cartPage.js
-export const cartPage = {
-  visit() {
-    cy.visit('/cart.html');
-  },
+// tests/pages/CartPage.ts
+import { Page, Locator } from '@playwright/test';
 
-  getCartItems() {
-    return cy.get('[data-testid="cart-item"]');
-  },
+export class CartPage {
+  readonly page: Page;
+  readonly cartItems: Locator;
+  readonly total: Locator;
+  readonly emptyMessage: Locator;
 
-  getTotal() {
-    return cy.get('[data-testid="cart-total"]');
-  },
-
-  getEmptyMessage() {
-    return cy.get('[data-testid="empty-cart"]');
-  },
-
-  changeQuantity(index, qty) {
-    cy.get('[data-testid="cart-item"]').eq(index)
-      .find('[data-testid="quantity-input"]').clear().type(qty);
-  },
-
-  removeItem(index) {
-    cy.get('[data-testid="cart-item"]').eq(index)
-      .find('[data-testid="remove-btn"]').click();
+  constructor(page: Page) {
+    this.page = page;
+    this.cartItems = page.getByTestId('cart-item');
+    this.total = page.getByTestId('cart-total');
+    this.emptyMessage = page.getByTestId('empty-cart');
   }
-};
+
+  async visit() { await this.page.goto('/cart.html'); }
+
+  async changeQuantity(index: number, qty: string) {
+    await this.cartItems.nth(index)
+      .getByTestId('quantity-input').fill(qty);
+  }
+
+  async removeItem(index: number) {
+    await this.cartItems.nth(index)
+      .getByTestId('remove-btn').click();
+  }
+}
     </code></pre>
     <aside class="notes">
-      cartPage jest prostsza niż dashboardPage. Kluczowe metody: changeQuantity przyjmuje indeks
-      elementu i nową ilość, removeItem usuwa element po indeksie. getTotal zwraca element sumy
-      na którym można wywołać asercje.
+      CartPage jest prostsza niż DashboardPage. Kluczowe metody: changeQuantity przyjmuje indeks
+      elementu i nową ilość, removeItem usuwa element po indeksie. total i emptyMessage to lokatory
+      na których można wywołać asercje.
     </aside>
   </section>
 
   <!-- Slide 52: Rozwiązanie - testy koszyka -->
   <section>
-    <h2>Rozwiązanie - cart.cy.js</h2>
+    <h2>Rozwiązanie - cart.spec.ts</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-// cypress/e2e/cart.cy.js
-import { loginPage } from '../support/pages/loginPage';
-import { dashboardPage } from '../support/pages/dashboardPage';
-import { cartPage } from '../support/pages/cartPage';
+// tests/cart.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { CartPage } from './pages/CartPage';
+import users from './fixtures/users.json';
 
-describe('Cart Page', () => {
-  beforeEach(() => {
-    cy.fixture('users').then((users) => {
-      loginPage.login(users.validUser.email, users.validUser.password);
-    });
-    dashboardPage.addFirstProductToCart();
-    cartPage.visit();
+test.describe('Cart Page', () => {
+  let cart: CartPage;
+
+  test.beforeEach(async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.login(users.validUser.email, users.validUser.password);
+    const dashboard = new DashboardPage(page);
+    await dashboard.addFirstProductToCart();
+    cart = new CartPage(page);
+    await cart.visit();
   });
 
-  it('should display added products in cart', () => {
-    cartPage.getCartItems().should('have.length', 1);
+  test('should display added products in cart', async () => {
+    await expect(cart.cartItems).toHaveCount(1);
   });
 
-  it('should update quantity of item', () => {
-    cartPage.changeQuantity(0, '3');
-    // Poczekaj na aktualizację sumy
-    cartPage.getTotal().should('not.contain', '0');
+  test('should update quantity of item', async () => {
+    await cart.changeQuantity(0, '3');
+    await expect(cart.total).not.toContainText('0');
   });
     </code></pre>
     <aside class="notes">
@@ -1567,40 +1522,43 @@ describe('Cart Page', () => {
 
   <!-- Slide 53: Rozwiązanie - testy koszyka cd. -->
   <section>
-    <h2>Rozwiązanie - cart.cy.js (cd.)</h2>
+    <h2>Rozwiązanie - cart.spec.ts (cd.)</h2>
     <pre><code data-trim data-noescape class="language-javascript">
-  it('should remove item from cart', () => {
-    cartPage.removeItem(0);
-    cartPage.getCartItems().should('have.length', 0);
-    cartPage.getEmptyMessage().should('be.visible');
+  test('should remove item from cart', async () => {
+    await cart.removeItem(0);
+    await expect(cart.cartItems).toHaveCount(0);
+    await expect(cart.emptyMessage).toBeVisible();
   });
 
-  it('should calculate total correctly', () => {
+  test('should calculate total correctly', async ({ page }) => {
     // Mock z kontrolowanymi cenami
-    cy.intercept('GET', '/api/cart', {
-      body: {
-        items: [
-          { id: 1, name: 'Szampon', price: 15.99, quantity: 2 },
-          { id: 2, name: 'Odzywka', price: 19.99, quantity: 1 }
-        ],
-        total: 51.97
-      }
+    await page.route('**/api/cart', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: [
+            { id: 1, name: 'Szampon', price: 15.99, quantity: 2 },
+            { id: 2, name: 'Odzywka', price: 19.99, quantity: 1 }
+          ],
+          total: 51.97
+        })
+      });
     });
-    cartPage.visit();
-    cartPage.getTotal().should('contain', '51,97');
+    await cart.visit();
+    await expect(cart.total).toContainText('51,97');
   });
 
-  it('should show empty cart message when cart is empty', () => {
-    cartPage.removeItem(0);
-    cartPage.getEmptyMessage().should('be.visible');
-    cartPage.getEmptyMessage()
-      .should('contain', 'Koszyk jest pusty');
+  test('should show empty cart message when cart is empty', async () => {
+    await cart.removeItem(0);
+    await expect(cart.emptyMessage).toBeVisible();
+    await expect(cart.emptyMessage).toContainText('Koszyk jest pusty');
   });
 });
     </code></pre>
     <aside class="notes">
       Test usuwania: po usunięciu jedynego elementu powinien pojawić się komunikat o pustym koszyku.
-      Test sumy: mockujemy API koszyka z cy.intercept() z kontrolowanymi danymi, dzięki czemu znamy oczekiwaną sumę.
+      Test sumy: mockujemy API koszyka z page.route() z kontrolowanymi danymi, dzięki czemu znamy oczekiwaną sumę.
       Test pustego koszyka: weryfikacja przyjaznego komunikatu UX.
     </aside>
   </section>
@@ -1615,7 +1573,7 @@ describe('Cart Page', () => {
         <li>Powiadomienie toast pojawia się po dodaniu do koszyka</li>
         <li>Test responsywności - mobile viewport</li>
       </ol>
-      <p><strong>Wskazówka:</strong> Użyj <code>cy.viewport()</code> dla testu responsywności</p>
+      <p><strong>Wskazówka:</strong> Użyj opcji <code>viewport</code> w <code>test.use()</code> dla testu responsywności</p>
     </div>
     <aside class="notes">
       To opcjonalne ćwiczenie dla szybszych uczestników. Nie wszyscy muszą je skończyć.
@@ -1628,29 +1586,29 @@ describe('Cart Page', () => {
     <h2>Rozwiązanie - testy zaawansowane (1/2)</h2>
     <pre><code data-trim data-noescape class="language-javascript">
 // Spersonalizowane powitanie
-it('should display personalized greeting', () => {
-  cy.fixture('users').then((users) => {
-    cy.login(users.validUser.email, users.validUser.password);
-    cy.get('[data-testid="greeting"]')
-      .should('be.visible')
-      .and('contain', users.validUser.name);
-    // Nie sprawdzamy daty - dynamiczna!
-  });
+test('should display personalized greeting', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.login(users.validUser.email, users.validUser.password);
+  const greeting = page.getByTestId('greeting');
+  await expect(greeting).toBeVisible();
+  await expect(greeting).toContainText(users.validUser.name);
+  // Nie sprawdzamy daty - dynamiczna!
 });
 
 // Powiadomienie toast
-it('should show toast after adding to cart', () => {
-  cy.login('test@rossmann.pl', 'Test1234');
-  dashboardPage.addFirstProductToCart();
-  cy.get('[data-testid="toast-notification"]')
-    .should('be.visible')
-    .and('contain', 'Dodano do koszyka');
+test('should show toast after adding to cart', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.login('test@rossmann.pl', 'Test1234');
+  const dashboard = new DashboardPage(page);
+  await dashboard.addFirstProductToCart();
+  const toast = page.getByTestId('toast-notification');
+  await expect(toast).toBeVisible();
+  await expect(toast).toContainText('Dodano do koszyka');
 });
     </code></pre>
     <aside class="notes">
-      Toast: sprawdzamy, że pojawia się i ma odpowiedni tekst. Cypress automatycznie retryuje
-      asercje, więc nie trzeba czekać na animację. cy.login() to custom command zdefiniowany
-      w cypress/support/commands.js.
+      Toast: sprawdzamy, że pojawia się i ma odpowiedni tekst. Playwright automatycznie retryuje
+      asercje, więc nie trzeba czekać na animację. Używamy Page Objects do logowania i akcji.
     </aside>
   </section>
 
@@ -1659,27 +1617,28 @@ it('should show toast after adding to cart', () => {
     <h2>Rozwiązanie - testy zaawansowane (2/2)</h2>
     <pre><code data-trim data-noescape class="language-javascript">
 // Test responsywnosci - mobilny viewport
-it('should adapt to mobile viewport', () => {
-  cy.viewport(390, 844);
-  cy.login('test@rossmann.pl', 'Test1234');
+test.describe('Mobile tests', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
 
-  // Menu mobilne powinno być widoczne
-  cy.get('[data-testid="mobile-menu"]').should('be.visible');
-  // Nawigacja desktopowa powinna być ukryta
-  cy.get('[data-testid="desktop-nav"]').should('not.be.visible');
+  test('should adapt to mobile viewport', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.login('test@rossmann.pl', 'Test1234');
+
+    // Menu mobilne powinno być widoczne
+    await expect(page.getByTestId('mobile-menu')).toBeVisible();
+    // Nawigacja desktopowa powinna być ukryta
+    await expect(page.getByTestId('desktop-nav')).not.toBeVisible();
+  });
 });
 
-// Alternatywa - użyj presetów Cypress
-it('should work on iPhone viewport', () => {
-  cy.viewport('iphone-xr');
-  cy.login('test@rossmann.pl', 'Test1234');
-  cy.get('[data-testid="mobile-menu"]').should('be.visible');
-});
+// Alternatywa - użyj wbudowanych urządzeń Playwright
+import { devices } from '@playwright/test';
+test.use({ ...devices['iPhone 13'] });
     </code></pre>
     <aside class="notes">
-      Dwa podejścia do testowania responsywności. cy.viewport(width, height) daje pełną kontrolę.
-      cy.viewport('iphone-xr') używa wbudowanych presetów urządzeń. Cypress ma wiele presetów:
-      iphone-6, iphone-xr, samsung-s10, macbook-15 itp.
+      Dwa podejścia do testowania responsywności. test.use() ustawia viewport dla grupy testów.
+      Playwright ma wbudowane profile urządzeń (devices) z realistycznymi ustawieniami -
+      viewport, userAgent, isMobile, hasTouch. Dostępne: iPhone 13, Pixel 5, Galaxy S9 itp.
     </aside>
   </section>
 
@@ -1691,18 +1650,18 @@ it('should work on iPhone viewport', () => {
       <ul>
         <li class="fragment"><strong>"Test timeout"</strong> - element nie istnieje lub ma inny data-testid. Sprawdź w DevTools.</li>
         <li class="fragment"><strong>"Element not visible"</strong> - element jest w DOM, ale ukryty. Sprawdź CSS display/visibility.</li>
-        <li class="fragment"><strong>"cy.get() returned more than one element"</strong> - selektor pasuje do wielu elementów. Użyj <code>.first()</code>, <code>.eq(0)</code> lub bardziej precyzyjnego selektora.</li>
-        <li class="fragment"><strong>"Timed out retrying"</strong> - Cypress nie może znaleźć elementu w czasie defaultCommandTimeout.</li>
+        <li class="fragment"><strong>"strict mode violation"</strong> - selektor pasuje do wielu elementów. Użyj <code>.first()</code>, <code>.nth(0)</code> lub bardziej precyzyjnego selektora.</li>
+        <li class="fragment"><strong>"Timeout exceeded"</strong> - Playwright nie może znaleźć elementu w czasie timeout (domyślnie 30s).</li>
       </ul>
     </div>
     <div class="tip fragment">
       <h3>Debugowanie</h3>
-      <p>Użyj <code>npx cypress open</code> do interaktywnego debugowania testów. Cypress pokazuje każdy krok z podglądem DOM.</p>
+      <p>Użyj <code>npx playwright test --ui</code> do interaktywnego debugowania. Trace viewer pokazuje każdy krok z podglądem DOM.</p>
     </div>
     <aside class="notes">
       Przejdź przez typowe problemy, które uczestnicy prawdopodobnie napotkali. Pokaż jak
-      debugować każdy z nich. Cypress open mode jest bardzo pomocny - pokazuje każdy krok
-      testu z podglądem aplikacji i snapshotem DOM. Można też użyć cy.pause() do zatrzymania testu.
+      debugować każdy z nich. Playwright UI mode jest bardzo pomocny - pokazuje każdy krok
+      testu z podglądem aplikacji i snapshotem DOM. Można też użyć await page.pause() do zatrzymania testu.
     </aside>
   </section>
 
@@ -1711,36 +1670,35 @@ it('should work on iPhone viewport', () => {
     <h2>Uruchomienie pełnego zestawu testów</h2>
     <pre><code data-trim data-noescape class="language-bash">
 # Uruchom wszystkie testy
-npx cypress run
+npx playwright test
 
 # Uruchom z interfejsem graficznym
-npx cypress open
+npx playwright test --ui
 
 # Uruchom konkretny plik
-npx cypress run --spec cypress/e2e/login.cy.js
+npx playwright test tests/login.spec.ts
 
-# Uruchom na Chrome
-npx cypress run --browser chrome
+# Uruchom na konkretnej przeglądarce
+npx playwright test --project=chromium
 
-# Uruchom na Firefox
-npx cypress run --browser firefox
+# Uruchom w trybie headed (widoczna przeglądarka)
+npx playwright test --headed
     </code></pre>
     <div class="console-output fragment">
       <pre>
-  (Run Finished)
+  Running 12 tests using 4 workers
 
-  Spec                    Tests  Passing  Failing
-  login.cy.js             3      3        0
-  products.cy.js          4      4        0
-  cart.cy.js              5      5        0
+  12 passed (8.2s)
 
-  All specs passed!       12     12       0
+  login.spec.ts           3 passed
+  products.spec.ts        4 passed
+  cart.spec.ts            5 passed
       </pre>
     </div>
     <aside class="notes">
-      Uruchom pełny suite na wspólnym ekranie. npx cypress run uruchamia testy w trybie headless.
-      npx cypress open otwiera graficzny interfejs, w którym można klikać i obserwować testy.
-      To dobry moment na przerwę przed podsumowaniem.
+      Uruchom pełny suite na wspólnym ekranie. npx playwright test uruchamia testy w trybie headless.
+      npx playwright test --ui otwiera graficzny interfejs do interaktywnego uruchamiania testów.
+      Playwright domyślnie uruchamia testy równolegle (4 workers). To dobry moment na przerwę.
     </aside>
   </section>
 
@@ -1809,7 +1767,7 @@ npx cypress run --browser firefox
       <li class="fragment">Potrafię czytać i pisać kod async/await</li>
       <li class="fragment">Wiem, jak dobierać stabilne selektory (data-testid)</li>
       <li class="fragment">Rozumiem i potrafię zastosować wzorzec Page Object Model</li>
-      <li class="fragment">Umiem pisać testy E2E w Cypress od zera</li>
+      <li class="fragment">Umiem pisać testy E2E w Playwright od zera</li>
       <li class="fragment">Znam dobre praktyki: AAA, izolacja, nazewnictwo, DRY</li>
       <li class="fragment">Potrafię mockować odpowiedzi API w testach</li>
       <li class="fragment">Wiem, jak skonfigurować testy w CI/CD pipeline</li>
@@ -1833,7 +1791,6 @@ npx cypress run --browser firefox
         <h3>Dokumentacja</h3>
         <ul>
           <li><strong>Playwright</strong> - <a href="https://playwright.dev">playwright.dev</a></li>
-          <li><strong>Cypress</strong> - <a href="https://docs.cypress.io">docs.cypress.io</a></li>
           <li><strong>Testing Library</strong> - <a href="https://testing-library.com">testing-library.com</a></li>
           <li><strong>MDN Web Docs</strong> - <a href="https://developer.mozilla.org">developer.mozilla.org</a></li>
         </ul>
